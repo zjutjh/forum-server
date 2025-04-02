@@ -1,0 +1,25 @@
+syntax = "proto3";
+import "Base.proto";
+option java_multiple_files = true;
+
+package org.jh.forum.api.dubbo;
+
+message PublishPostReq {
+  string uid = 1;
+  string title = 2;
+  string context = 3;
+  repeated string tagList = 4;
+}
+
+message PublishPostResp {
+  ServiceResult baseResult = 1;
+  string postId = 2;
+}
+
+service CorrectDataService {
+
+  rpc publishPost(PublishPostReq) returns (PublishPostResp);
+
+  rpc publishComment(PublishPostReq) returns (PublishPostResp);
+
+}
