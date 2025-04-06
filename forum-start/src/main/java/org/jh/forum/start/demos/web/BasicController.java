@@ -17,8 +17,8 @@
 package org.jh.forum.start.demos.web;
 
 import org.jh.forum.api.dubbo.CorrectDataService;
-import org.jh.forum.server.demos.nacosconfig.NacosConfigDemoConfiguration;
-import org.springframework.stereotype.Controller;
+import org.jh.forum.server.config.NacosConfigConfiguration;
+import org.jh.forum.server.config.service.NacosConfigAService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -33,7 +33,7 @@ public class BasicController {
     @ResponseBody
     public String hello(@RequestParam(name = "name", defaultValue = "unknown user") String name) {
         correctDataService.publishPost(null);
-        return "Hello " + name + ". I am " + NacosConfigDemoConfiguration.user.getName();
+        return "Hello " + name + ". I am " + NacosConfigAService.nacosConfigA.getName();
     }
 
 }

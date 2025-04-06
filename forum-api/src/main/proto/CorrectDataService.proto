@@ -4,6 +4,9 @@ option java_multiple_files = true;
 
 package org.jh.forum.api.dubbo;
 
+/**
+ * 请求参数
+ */
 message PublishPostReq {
   string uid = 1;
   string title = 2;
@@ -11,15 +14,26 @@ message PublishPostReq {
   repeated string tagList = 4;
 }
 
+/**
+ * 响应参数
+ */
 message PublishPostResp {
-  ServiceResult baseResult = 1;
-  string postId = 2;
+  string postId = 1;
 }
 
+/**
+ * 服务接口
+ */
 service CorrectDataService {
 
-  rpc publishPost(PublishPostReq) returns (PublishPostResp);
+  /**
+   * 发布帖子方法定义
+   */
+  rpc publishPost(PublishPostReq) returns (ServiceResult);
 
-  rpc publishComment(PublishPostReq) returns (PublishPostResp);
+  /**
+   * 发布评论方法定义
+   */
+  rpc publishComment(PublishPostReq) returns (ServiceResult);
 
 }
