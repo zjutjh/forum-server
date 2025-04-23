@@ -2,6 +2,7 @@ package org.jh.forum.common.exceptions;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.poi.util.StringUtil;
 
 /**
@@ -10,7 +11,7 @@ import org.apache.poi.util.StringUtil;
  */
 @Setter
 @Getter
-public class ForumServiceException extends RuntimeException {
+public class ForumServiceException extends RpcException {
     private String errorCode;
     private String errorMsg;
 

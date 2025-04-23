@@ -10,18 +10,25 @@ import org.jh.forum.api.dubbo.CorrectDataService;
 import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.api.dubbo.PublishPostResp;
 import org.jh.forum.api.dubbo.ServiceResult;
+import org.jh.forum.common.annotation.WithLock;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.config.service.NacosConfigAService;
+import org.jh.forum.server.manger.PostManager;
 
+import javax.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * Dubbo 接口的实现类，请手动对本类下所有方法进行弱依赖处理，确保异常不会影响下游服务
  * @author Patrick_Star
  * @version 1.0
  */
 @DubboService(version = "1.0.0")
 @Slf4j
 public class CorrectDataServerImpl implements CorrectDataService {
+
+    @Resource
+    private PostManager postManager;
 
     @Override
     @SentinelResource(value = "publishPost")
@@ -48,18 +55,16 @@ public class CorrectDataServerImpl implements CorrectDataService {
     }
 
     @Override
-    public ServiceResult publishComment(PublishPostReq request) {
+    public ServiceResult publishComment(PublishPostReq request) throws InterruptedException {
         log.info("publishComment");
-        if (StringUtil.isBlank(request.getContext())) {
-            throw new ForumServiceException("123", "context is null");
-        }
-        PublishPostResp resp = PublishPostResp.newBuilder().setPostId("22").build();
+        PublishPostResp resp = PublishPostResp.newBuilder().setPostId(postManager.genPostId(request.getUid())).build();
         Any any = Any.pack(resp);
         return ServiceResult.newBuilder()
                 .setIsSuccess(true)
                 .setData(any)
                 .build();
     }
+
 
     @Override
     public CompletableFuture<ServiceResult> publishCommentAsync(PublishPostReq request) {

@@ -10,6 +10,7 @@ import lombok.Getter;
  */
 @Getter
 public enum ForumConfigNameConstantEnum {
+    FORUM_SWITCH("forum-switch", "DEFAULT_GROUP"),
     NACOS_CONFIG_A("nacos-config-a", "DEFAULT_GROUP"),
     NACOS_CONFIG_B("nacos-config-b", "DEFAULT_GROUP"),
     ;

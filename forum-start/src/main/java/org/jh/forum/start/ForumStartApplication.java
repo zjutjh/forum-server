@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @SpringBootApplication
+@EnableAspectJAutoProxy
 @DubboComponentScan(basePackages = "org.jh.forum.server.dubbo")
 @ComponentScan(basePackages = {"org.jh.forum.server",
                                 "org.jh.forum.start"})

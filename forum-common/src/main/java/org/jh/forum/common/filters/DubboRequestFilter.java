@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
