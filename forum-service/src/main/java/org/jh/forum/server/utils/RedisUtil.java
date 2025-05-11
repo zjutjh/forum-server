@@ -31,8 +31,6 @@ public class RedisUtil {
 
     public static final String LOCK_FAIL = "LOCK_FAIL";
 
-    private static final Long RELEASE_SUCCESS = 1L;
-
     private JedisPool jedisPool;
 
     @PostConstruct
@@ -66,7 +64,7 @@ public class RedisUtil {
      * @param provider 找回方法
      * @return
      */
-    public String load(String key, Integer expireSeconds, Supplier<String> provider) {
+    public String load(String key, Long expireSeconds, Supplier<String> provider) {
         String val = get(key, null);
         if (Objects.isNull(val)) {
             String newVal = provider.get();
@@ -87,7 +85,7 @@ public class RedisUtil {
      * @return
      * @param <T>
      */
-    public <T> T smartLoad(String key, Integer expireSeconds, Supplier<T> provider, Type type) {
+    public <T> T smartLoad(String key, Long expireSeconds, Supplier<T> provider, Type type) {
         String val = get(key, null);
         if (Objects.isNull(val)) {
             T newVal = provider.get();
@@ -100,7 +98,7 @@ public class RedisUtil {
         }
     }
 
-    public <T> List<T> smartLoadList(String key, Integer expireSeconds, Supplier<List<T>> provider, Class<T> clazz) {
+    public <T> List<T> smartLoadList(String key, Long expireSeconds, Supplier<List<T>> provider, Class<T> clazz) {
         String val = get(key, null);
         if (Objects.isNull(val)) {
             List<T> newVal = provider.get();
@@ -144,7 +142,7 @@ public class RedisUtil {
      * @param value
      * @param expireSeconds
      */
-    public String setWithExpire(String key, String value, Integer expireSeconds) {
+    public String setWithExpire(String key, String value, Long expireSeconds) {
         try (Jedis jedis = jedisPool.getResource()) {
             return getOrElse(() -> jedis.setex(key, expireSeconds, value), null);
         } catch (Exception e) {
@@ -214,7 +212,7 @@ public class RedisUtil {
         }
     }
 
-    public <T> void setObject(String key, Integer expireSeconds, Supplier<T> provider) {
+    public <T> void setObject(String key, Long expireSeconds, Supplier<T> provider) {
         T val = provider.get();
         if (Objects.nonNull(val)) {
             setWithExpire(key, JSON.toJSONString(val), expireSeconds);
@@ -228,7 +226,7 @@ public class RedisUtil {
      * @param expire
      * @return
      */
-    public Long lPush(String key, String value, Integer expire) {
+    public Long lPush(String key, String value, Long expire) {
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.expire(key, expire);
             return getOrElse(() -> jedis.lpush(key, value), 0L);
@@ -245,7 +243,7 @@ public class RedisUtil {
      * @param expire
      * @return
      */
-    public Long rPush(String key, String value, Integer expire) {
+    public Long rPush(String key, String value, Long expire) {
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.expire(key, expire);
             return getOrElse(() -> jedis.rpush(key, value), 0L);

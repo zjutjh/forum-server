@@ -1,7 +1,5 @@
 package org.jh.forum.server.aspect;
 
-import cn.hutool.core.collection.CollectionUtil;
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -13,7 +11,6 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.config.service.ForumSwitchService;
 import org.jh.forum.server.utils.RedisUtil;
-import org.springframework.cglib.core.CollectionUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -93,7 +90,7 @@ public class RedisLockAspect {
                 }
             }
             if (!sb.isEmpty()) {
-                return ForumSwitchService.forumSwitch.redisLockGlobalPrefix + "-" + sb.toString();
+                return ForumSwitchService.forumSwitch.redisLockGlobalPrefix + "-" + sb;
             }
         }
         return "";
