@@ -1,5 +1,7 @@
 package org.jh.forum.server.aspect;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,6 +13,7 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.config.service.ForumSwitchService;
 import org.jh.forum.server.utils.RedisUtil;
+import org.springframework.cglib.core.CollectionUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -49,6 +52,7 @@ public class RedisLockAspect {
                 iter ++;
                 getLock = redisUtil.tryLockWithReentrant(lockKey);
                 if (getLock) {
+                    log.info("[RedisLockAspect] get lock success, lockKey: {}", lockKey);
                     break;
                 }
                 lockCount ++;
@@ -62,6 +66,7 @@ public class RedisLockAspect {
             return point.proceed();
         } finally {
             if (getLock) {
+                log.info("[RedisLockAspect] release lock, lockKey: {}", lockKey);
                 redisUtil.releaseLockWithReentrant(lockKey);
             }
         }

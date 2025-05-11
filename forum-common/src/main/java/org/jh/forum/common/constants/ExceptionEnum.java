@@ -11,7 +11,9 @@ import lombok.Setter;
 @Getter
 public enum ExceptionEnum {
     INVALID_PARAMETER("200000", "参数错误"),
-    EXCEED_MAX_GET_LOCK_COUNT("200001", "获取锁超出限制"),
+    DATABASE_ERROR("200001", "数据库异常"),
+    JSON_PARSE_ERROR("200002", "json解析失败"),
+    EXCEED_MAX_GET_LOCK_COUNT("200003", "获取锁超出限制"),
     UNKNOWN_ERROR("200500", "未知错误"),
     ;
 

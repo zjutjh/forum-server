@@ -18,7 +18,7 @@ import java.util.Objects;
 
 /**
  * Nacos 配置初始化和监听变化的Bean
- * 后续新增新的配置，请先到 ForumConfigNameConstants 中添加配置名称，然后建好对应 config 的类，最后建立一个对应的 configService
+ * 后续新增新的配置，请先到 ForumConfigNameConstantEnum 中添加配置名称，然后建好对应 config 的类，最后建立一个对应的 configService
  * @author Patrick_Star
  * @date 2025/04/02
  */
