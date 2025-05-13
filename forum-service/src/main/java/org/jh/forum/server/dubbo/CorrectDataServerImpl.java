@@ -15,7 +15,7 @@ import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.config.service.NacosConfigAService;
 import org.jh.forum.server.manger.PostManager;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -55,9 +55,14 @@ public class CorrectDataServerImpl implements CorrectDataService {
     }
 
     @Override
-    public ServiceResult publishComment(PublishPostReq request) throws InterruptedException {
+    public ServiceResult publishComment(PublishPostReq request) {
         log.info("publishComment");
-        PublishPostResp resp = PublishPostResp.newBuilder().setPostId(postManager.genPostId(request.getUid())).build();
+        PublishPostResp resp = null;
+        try {
+            resp = PublishPostResp.newBuilder().setPostId(postManager.genPostId(request.getUid())).build();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         Any any = Any.pack(resp);
         return ServiceResult.newBuilder()
                 .setIsSuccess(true)

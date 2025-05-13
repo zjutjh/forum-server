@@ -1,6 +1,6 @@
 package org.jh.forum.server.config;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
