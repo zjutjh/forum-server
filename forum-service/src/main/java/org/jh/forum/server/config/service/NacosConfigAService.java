@@ -7,8 +7,7 @@ import org.jh.forum.server.config.NacosConfigA;
 import org.jh.forum.server.config.NacosConfigConfiguration;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
 
 /**
  * @author Patrick_Star

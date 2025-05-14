@@ -3,7 +3,7 @@ package org.jh.forum.common.exceptions;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.poi.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Patrick_Star
@@ -24,7 +24,7 @@ public class ForumServiceException extends RpcException {
     }
 
     public String getErrorMsg() {
-        if (StringUtil.isNotBlank(errorMsg)) {
+        if (StringUtils.isNotBlank(errorMsg)) {
             return errorMsg;
         }
         return getMessage();

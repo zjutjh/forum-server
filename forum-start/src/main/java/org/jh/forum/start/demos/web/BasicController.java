@@ -22,7 +22,7 @@ import org.jh.forum.server.config.NacosConfigConfiguration;
 import org.jh.forum.server.config.service.NacosConfigAService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @RestController
 public class BasicController {
