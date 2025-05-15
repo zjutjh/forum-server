@@ -52,12 +52,18 @@ public class RedisUtil {
     public void init() {
         // 配置连接池参数
         JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(10); // 最大连接数
-        poolConfig.setMaxIdle(5);   // 最大空闲连接数
-        poolConfig.setMinIdle(1);   // 最小空闲连接数
+
+        // 最大连接数
+        poolConfig.setMaxTotal(10);
+
+        // 最大空闲连接数
+        poolConfig.setMaxIdle(5);
+
+        // 最小空闲连接数
+        poolConfig.setMinIdle(1);
 
         // 创建 JedisPool 实例
-        jedisPool = new JedisPool(poolConfig, "localhost", 6379); // 替换为你的 Redis 地址和端口
+        jedisPool = new JedisPool(poolConfig, "localhost", 6379);
     }
 
     /**
