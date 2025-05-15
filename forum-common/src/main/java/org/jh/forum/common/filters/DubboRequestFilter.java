@@ -11,12 +11,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
 /**
  * Dubbo 请求全局过滤器
+ *
  * @author Patrick_Star
  * @date 2025/4/6
  */
@@ -25,12 +25,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 @Activate(group = PROVIDER)
 public class DubboRequestFilter implements Filter {
 
-    private final Map<String, Method> methodCache = new ConcurrentHashMap<>();
-
     private static final String LOG_DELIMITER = "|";
-
     private static final Integer MAX_ARGS_LENGTH = 1024;
-
     private static String ipHost;
 
     static {
@@ -40,6 +36,19 @@ public class DubboRequestFilter implements Filter {
             log.error("getHostAddress error", e);
             ipHost = "";
         }
+    }
+
+    private final Map<String, Method> methodCache = new ConcurrentHashMap<>();
+
+    private static void logError(String serviceName, String methodName, String jsonArgs, Throwable e) {
+        String sb = ipHost +
+                LOG_DELIMITER +
+                serviceName +
+                LOG_DELIMITER +
+                methodName +
+                LOG_DELIMITER +
+                (jsonArgs.length() > MAX_ARGS_LENGTH ? jsonArgs.substring(0, MAX_ARGS_LENGTH) : jsonArgs);
+        log.error("[Dubbo Request error] {}", sb, e);
     }
 
     @Override
@@ -65,17 +74,6 @@ public class DubboRequestFilter implements Filter {
             logError(serviceName, methodName, jsonArgs, result.getException());
         }
         return result;
-    }
-
-    private static void logError(String serviceName, String methodName, String jsonArgs, Throwable e) {
-        String sb = ipHost +
-                LOG_DELIMITER +
-                serviceName +
-                LOG_DELIMITER +
-                methodName +
-                LOG_DELIMITER +
-                (jsonArgs.length() > MAX_ARGS_LENGTH ? jsonArgs.substring(0, MAX_ARGS_LENGTH) : jsonArgs);
-        log.error("[Dubbo Request error] {}", sb, e);
     }
 
     private String buildInvokeLog(String serviceName, String methodName, String jsonArgs, Long rt, String jsonResp) {

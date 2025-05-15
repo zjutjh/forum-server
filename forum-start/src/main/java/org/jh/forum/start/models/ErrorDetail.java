@@ -3,8 +3,6 @@ package org.jh.forum.start.models;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.Instant;
-
 /**
  * 错误详情类
  *

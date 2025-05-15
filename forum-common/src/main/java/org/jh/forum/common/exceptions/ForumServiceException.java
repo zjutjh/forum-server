@@ -2,8 +2,8 @@ package org.jh.forum.common.exceptions;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dubbo.rpc.RpcException;
 
 /**
  * @author Patrick_Star

@@ -1,5 +1,6 @@
 package org.jh.forum.server.aspect;
 
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -15,11 +16,11 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.Objects;
 
 /**
  * Redis 加锁切片
+ *
  * @author Patrick_Star
  * @date 2025/4/19
  */
@@ -46,13 +47,13 @@ public class RedisLockAspect {
             // 防止未来变更导致无穷循环，禁止 while(true) 语法
             int iter = 0;
             while (iter < 10) {
-                iter ++;
+                iter++;
                 getLock = redisUtil.tryLockWithReentrant(lockKey);
                 if (getLock) {
                     log.info("[RedisLockAspect] get lock success, lockKey: {}", lockKey);
                     break;
                 }
-                lockCount ++;
+                lockCount++;
                 int weight = iter + 1;
                 Thread.sleep(weight * ForumSwitchService.forumSwitch.redisLockRetryInterval);
                 if (lockCount > ForumSwitchService.forumSwitch.redisLockMaxRetryCount) {

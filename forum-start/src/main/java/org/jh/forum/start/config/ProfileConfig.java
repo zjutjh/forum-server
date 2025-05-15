@@ -12,16 +12,14 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class ProfileConfig {
 
-    private final ApplicationContext context;
-
     public static final String DEV = "dev";
-
     public static final String PROD = "prod";
-
     public static final String DEBUG = "debug";
+    private final ApplicationContext context;
 
     /**
      * 获取当前激活的 Profile
+     *
      * @return 当前激活的 Profile
      */
     public String getActiveProfile() {
@@ -30,6 +28,7 @@ public class ProfileConfig {
 
     /**
      * 判断当前是否为开发环境
+     *
      * @return 是否为开发环境
      */
     public boolean isDev() {

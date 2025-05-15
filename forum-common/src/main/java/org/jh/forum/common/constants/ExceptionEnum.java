@@ -1,10 +1,10 @@
 package org.jh.forum.common.constants;
 
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * 统一错误码枚举
+ *
  * @author Patrick_Star
  * @date 2025/4/6
  */

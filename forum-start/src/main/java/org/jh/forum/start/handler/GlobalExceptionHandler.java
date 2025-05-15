@@ -1,20 +1,17 @@
 package org.jh.forum.start.handler;
 
 import com.alibaba.fastjson.JSON;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.start.config.ProfileConfig;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.models.ErrorDetail;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 
 /**
