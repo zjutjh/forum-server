@@ -31,12 +31,13 @@ public class ValidateExceptionHandler {
 
     /**
      * 参数校验错误拦截处理
+     *
      * @param e 错误信息集合
      * @return 错误信息
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
-    public AjaxResult<Object> validationBodyException(MethodArgumentNotValidException e, HttpServletRequest request){
+    public AjaxResult<Object> validationBodyException(MethodArgumentNotValidException e, HttpServletRequest request) {
         ErrorDetail errorDetail = ErrorDetail.builder().code(ExceptionEnum.INVALID_PARAMETER.getErrorCode())
                 .message(ExceptionEnum.INVALID_PARAMETER.getErrorMsg()).build();
         log.error("[{}] | {} | request={}", Instant.now(), request.getRequestURI(),
@@ -46,13 +47,14 @@ public class ValidateExceptionHandler {
 
     /**
      * SQL执行失败错误（重复主键）拦截处理
+     *
      * @param e 错误信息集合
      * @return 错误信息
      */
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     @ResponseBody
-    public AjaxResult<Object> validationBodyException(SQLIntegrityConstraintViolationException e, HttpServletRequest request){
+    public AjaxResult<Object> validationBodyException(SQLIntegrityConstraintViolationException e, HttpServletRequest request) {
         ErrorDetail errorDetail = ErrorDetail.builder().code(ExceptionEnum.DATABASE_ERROR.getErrorCode())
                 .message(e.getMessage()).build();
         log.error("[{}] | {} | request={}", Instant.now(), request.getRequestURI(),
@@ -62,17 +64,18 @@ public class ValidateExceptionHandler {
 
     /**
      * Json解析失败错误（字段填写错误或漏填必选值）拦截处理
+     *
      * @param e 错误信息集合
      * @return 错误信息
      */
     @ExceptionHandler(JsonMappingException.class)
     @ResponseBody
-    public AjaxResult<Object> validationBodyException(JsonMappingException e, HttpServletRequest request){
+    public AjaxResult<Object> validationBodyException(JsonMappingException e, HttpServletRequest request) {
         ErrorDetail errorDetail = ErrorDetail.builder().code(ExceptionEnum.JSON_PARSE_ERROR.getErrorCode())
                 .message(e.getMessage()).build();
         log.error("[{}] | {} | request={}", Instant.now(), request.getRequestURI(),
                 JSON.toJSONString(request.getParameterMap()), e);
-        return AjaxResult.FAIL("Json解析失败，" , errorDetail);
+        return AjaxResult.FAIL("Json解析失败，", errorDetail);
     }
 
 }

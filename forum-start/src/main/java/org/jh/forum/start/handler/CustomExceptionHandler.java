@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.exceptions.ForumServiceException;
-import org.jh.forum.start.config.ProfileConfig;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.models.ErrorDetail;
 import org.springframework.core.annotation.Order;

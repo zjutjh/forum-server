@@ -13,8 +13,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableAspectJAutoProxy
 @DubboComponentScan(basePackages = "org.jh.forum.server.dubbo")
 @ComponentScan(basePackages = {"org.jh.forum.server",
-                                "org.jh.forum.start"})
-public class ForumStartApplication  {
+        "org.jh.forum.start"})
+public class ForumStartApplication {
 
     @NacosInjected
     private NamingService namingService;

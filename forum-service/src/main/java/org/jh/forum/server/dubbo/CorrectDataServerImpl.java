@@ -10,7 +10,6 @@ import org.jh.forum.api.dubbo.CorrectDataService;
 import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.api.dubbo.PublishPostResp;
 import org.jh.forum.api.dubbo.ServiceResult;
-import org.jh.forum.common.annotation.WithLock;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.config.service.NacosConfigAService;
 import org.jh.forum.server.manger.PostManager;
@@ -20,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Dubbo 接口的实现类，请手动对本类下所有方法进行弱依赖处理，确保异常不会影响下游服务
+ *
  * @author Patrick_Star
  * @version 1.0
  */

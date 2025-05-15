@@ -1,7 +1,7 @@
 package org.jh.forum.server.config;
 
-import jakarta.annotation.Resource;
-
+import com.alibaba.cloud.nacos.NacosConfigManager;
+import com.alibaba.nacos.api.config.listener.AbstractListener;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ForumConfigNameConstantEnum;
@@ -10,15 +10,14 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.alibaba.cloud.nacos.NacosConfigManager;
-import com.alibaba.nacos.api.config.listener.AbstractListener;
-
+import jakarta.annotation.Resource;
 import java.util.Map;
 import java.util.Objects;
 
 /**
  * Nacos 配置初始化和监听变化的Bean
  * 后续新增新的配置，请先到 ForumConfigNameConstantEnum 中添加配置名称，然后建好对应 config 的类，最后建立一个对应的 configService
+ *
  * @author Patrick_Star
  * @date 2025/04/02
  */
@@ -27,13 +26,12 @@ import java.util.Objects;
 public class NacosConfigConfiguration {
 
     public static final Map<String, BaseConfigService> CONFIG_SERVICE_MAP = Maps.newHashMap();
+    @Resource
+    private NacosConfigManager nacosConfigManager;
 
     public static void addConfigService(String dataId, BaseConfigService configService) {
         CONFIG_SERVICE_MAP.put(dataId, configService);
     }
-
-    @Resource
-    private NacosConfigManager nacosConfigManager;
 
     @Bean
     public ApplicationRunner runner() {

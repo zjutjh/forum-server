@@ -32,19 +32,6 @@ public class RedisUtil {
     public static final String LOCK_FAIL = "LOCK_FAIL";
 
     private JedisPool jedisPool;
-
-    @PostConstruct
-    public void init() {
-        // 配置连接池参数
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(10); // 最大连接数
-        poolConfig.setMaxIdle(5);   // 最大空闲连接数
-        poolConfig.setMinIdle(1);   // 最小空闲连接数
-
-        // 创建 JedisPool 实例
-        jedisPool = new JedisPool(poolConfig, "localhost", 6379); // 替换为你的 Redis 地址和端口
-    }
-
     private ThreadLocal<Map<String, LockInfo>> currentValue = ThreadLocal.withInitial(() -> new HashMap<>(8));
 
     static <V> V getOrElse(Callable<V> callable, V val) {
@@ -57,11 +44,34 @@ public class RedisUtil {
         return Objects.isNull(result) ? val : result;
     }
 
+    public static boolean isStatusOk(String result) {
+        return LOCK_SUCCESS.equalsIgnoreCase(result);
+    }
+
+    @PostConstruct
+    public void init() {
+        // 配置连接池参数
+        JedisPoolConfig poolConfig = new JedisPoolConfig();
+
+        // 最大连接数
+        poolConfig.setMaxTotal(10);
+
+        // 最大空闲连接数
+        poolConfig.setMaxIdle(5);
+
+        // 最小空闲连接数
+        poolConfig.setMinIdle(1);
+
+        // 创建 JedisPool 实例
+        jedisPool = new JedisPool(poolConfig, "localhost", 6379);
+    }
+
     /**
      * 加载缓存，如果缓存不存在，则调用 provider 获取数据，并设置缓存
-     * @param key 缓存 key
+     *
+     * @param key           缓存 key
      * @param expireSeconds 过期时间，单位秒
-     * @param provider 找回方法
+     * @param provider      找回方法
      * @return
      */
     public String load(String key, Long expireSeconds, Supplier<String> provider) {
@@ -78,12 +88,13 @@ public class RedisUtil {
 
     /**
      * 加载缓存，支持返回泛型数据
+     *
      * @param key
      * @param expireSeconds
      * @param provider
      * @param type
-     * @return
      * @param <T>
+     * @return
      */
     public <T> T smartLoad(String key, Long expireSeconds, Supplier<T> provider, Type type) {
         String val = get(key, null);
@@ -107,13 +118,14 @@ public class RedisUtil {
             }
             return newVal;
         } else {
-            return JSON.parseObject(val, new TypeReference<List<T>>(clazz) {});
+            return JSON.parseObject(val, new TypeReference<List<T>>(clazz) {
+            });
         }
     }
 
-
     /**
      * 删除缓存
+     *
      * @param key
      */
     public void del(String key) {
@@ -126,6 +138,7 @@ public class RedisUtil {
 
     /**
      * 批量删除缓存
+     *
      * @param keys
      */
     public void del(String... keys) {
@@ -138,6 +151,7 @@ public class RedisUtil {
 
     /**
      * 设置缓存，并设置过期时间
+     *
      * @param key
      * @param value
      * @param expireSeconds
@@ -161,6 +175,7 @@ public class RedisUtil {
 
     /**
      * 过期时间单位是毫秒
+     *
      * @param key
      * @param value
      * @param expireMilliseconds
@@ -181,6 +196,7 @@ public class RedisUtil {
 
     /**
      * 获取缓存，支持默认值
+     *
      * @param key
      * @param defaultValue
      * @return
@@ -221,6 +237,7 @@ public class RedisUtil {
 
     /**
      * 向队列左端写入数据，队列不存在则自动新建队列
+     *
      * @param key
      * @param value
      * @param expire
@@ -238,6 +255,7 @@ public class RedisUtil {
 
     /**
      * 向队列右端写入数据，队列不存在则自动新建队列
+     *
      * @param key
      * @param value
      * @param expire
@@ -275,12 +293,9 @@ public class RedisUtil {
         }
     }
 
-    public static boolean isStatusOk(String result) {
-        return LOCK_SUCCESS.equalsIgnoreCase(result);
-    }
-
     /**
      * 上锁，可重入，仅用于切片少量线程场景，切勿用于高并发的复用线程池中
+     *
      * @param key
      * @return
      */
@@ -310,6 +325,7 @@ public class RedisUtil {
 
     /**
      * 轻量级锁
+     *
      * @param key
      * @param expireTime
      * @return
@@ -332,6 +348,7 @@ public class RedisUtil {
 
     /**
      * 释放轻量级锁
+     *
      * @param key
      */
     public void releaseLock(String key) {

@@ -5,6 +5,7 @@ import lombok.Getter;
 
 /**
  * 项目内所有用 nacos 管理的配置名称常量集合
+ *
  * @author Patrick_Star
  * @date 2025/04/04
  */
