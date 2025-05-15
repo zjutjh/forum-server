@@ -3,7 +3,6 @@ package org.jh.forum.server.dubbo;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.fastjson2.JSON;
 import com.google.protobuf.Any;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.poi.util.StringUtil;
@@ -15,6 +14,7 @@ import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.config.service.NacosConfigAService;
 import org.jh.forum.server.manger.PostManager;
 
+import jakarta.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
 /**

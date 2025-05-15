@@ -16,7 +16,6 @@
 
 package org.jh.forum.start.demos.web;
 
-import jakarta.annotation.Resource;
 import org.jh.forum.api.dubbo.CorrectDataService;
 import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.server.config.service.NacosConfigAService;
@@ -24,6 +23,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.annotation.Resource;
 
 @RestController
 public class BasicController {

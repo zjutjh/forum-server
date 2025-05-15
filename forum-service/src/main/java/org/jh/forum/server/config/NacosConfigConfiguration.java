@@ -3,7 +3,6 @@ package org.jh.forum.server.config;
 import com.alibaba.cloud.nacos.NacosConfigManager;
 import com.alibaba.nacos.api.config.listener.AbstractListener;
 import com.google.common.collect.Maps;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ForumConfigNameConstantEnum;
 import org.jh.forum.server.config.service.BaseConfigService;
@@ -11,6 +10,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import jakarta.annotation.Resource;
 import java.util.Map;
 import java.util.Objects;
 
