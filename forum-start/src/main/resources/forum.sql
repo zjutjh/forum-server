@@ -11,24 +11,26 @@ create table announcement
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
 create table attachment
 (
-    id         int                                 not null comment '附件ID'
+    id          int                                 not null comment '附件ID'
         primary key,
-    user_id    int                                 not null comment '上传用户',
-    file_id    int                                 not null comment '对应的文件',
-    type       varchar(20)                         not null comment '附件类型（图像/视频/文档）',
-    filename   varchar(255)                        not null comment '原始文件名',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid int                                 not null comment '创建用户',
-    update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    user_id     int                                 not null comment '上传用户',
+    file_id     int                                 not null comment '对应的文件',
+    target_type varchar(20)                         not null comment '对象类型',
+    target_id   int                                 not null comment '对象ID',
+    type        varchar(20)                         not null comment '附件类型（图像/视频/文档）',
+    filename    varchar(255)                        not null comment '原始文件名',
+    created_at  timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at  timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid  int                                 not null comment '创建用户',
+    update_uid  int                                 not null comment '更新用户',
+    deleted     boolean                             not null comment '是否被删除',
+    attribute   text                                null comment '属性列（json string）'
 );
 
 create table college
@@ -40,7 +42,7 @@ create table college
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
@@ -53,30 +55,30 @@ create table comment
     parent_id  int                                 null comment '父评论ID',
     target_id  int                                 null comment '回复对象ID',
     content    varchar(500)                        not null comment '评论内容',
-    is_pinned  tinyint(1)                          not null comment '是否被置顶',
+    is_pinned  boolean                             not null comment '是否被置顶',
     created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
 create table faq
 (
-    id         int                                  not null comment '常见问题ID'
+    id         int                                 not null comment '常见问题ID'
         primary key,
-    category   varchar(20)                          not null comment '板块（账号/学院/帖子/其他）',
-    question   varchar(200)                         not null comment '问题描述',
-    answer     varchar(500)                         not null comment '问题解答',
-    view_count int        default 0                 not null comment '浏览量',
-    is_pinned  tinyint(1) default 0                 not null comment '是否添加到"猜你想问"',
-    created_at timestamp  default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                            not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid int                                  not null comment '创建用户',
-    update_uid int                                  not null comment '更新用户',
-    deleted    tinyint(1)                           not null comment '是否被删除',
-    attribute  text                                 null comment '属性列（json string）'
+    category   varchar(20)                         not null comment '板块（账号/学院/帖子/其他）',
+    question   varchar(200)                        not null comment '问题描述',
+    answer     varchar(500)                        not null comment '问题解答',
+    view_count int       default 0                 not null comment '浏览量',
+    is_pinned  boolean   default false             not null comment '是否添加到"猜你想问"',
+    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid int                                 not null comment '创建用户',
+    update_uid int                                 not null comment '更新用户',
+    deleted    boolean                             not null comment '是否被删除',
+    attribute  text                                null comment '属性列（json string）'
 );
 
 create table favorite
@@ -89,7 +91,7 @@ create table favorite
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
@@ -104,24 +106,22 @@ create table feedback
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
 create table file
 (
-    id          int                                 not null comment '文件ID'
+    id         int                                 not null comment '文件ID'
         primary key,
-    blake3      varchar(300)                        not null comment '文件哈希值（使用BLAKE3算法，长度为256）',
-    mimetype    varchar(255)                        not null comment '文件类型',
-    usage_count int       default 0                 not null comment '文件被使用次数',
-    object_key  varchar(255)                        not null comment '文件路径',
-    created_at  timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at  timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid  int                                 not null comment '创建用户',
-    update_uid  int                                 not null comment '更新用户',
-    deleted     tinyint(1)                          not null comment '是否被删除',
-    attribute   text                                null comment '属性列（json string）'
+    blake3     varchar(300)                        not null comment '文件哈希值（使用BLAKE3算法，长度为256）',
+    object_key varchar(255)                        not null comment '文件路径',
+    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid int                                 not null comment '创建用户',
+    update_uid int                                 not null comment '更新用户',
+    deleted    boolean                             not null comment '是否被删除',
+    attribute  text                                null comment '属性列（json string）'
 );
 
 create table follow
@@ -135,7 +135,7 @@ create table follow
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
@@ -153,7 +153,7 @@ create table notice
     updated_at    timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid    int                                 not null comment '创建用户',
     update_uid    int                                 not null comment '更新用户',
-    deleted       tinyint(1)                          not null comment '是否被删除',
+    deleted       boolean                             not null comment '是否被删除',
     attribute     text                                null comment '属性列（json string）'
 );
 
@@ -177,12 +177,12 @@ create table post
     title       varchar(100) default ''                not null comment '标题',
     content     text                                   not null comment '正文',
     category_id int                                    not null comment '板块归属',
-    is_pinned   tinyint(1)                             not null comment '是否置顶（个人主页）',
+    is_pinned   boolean                                not null comment '是否置顶（个人主页）',
     created_at  timestamp    default CURRENT_TIMESTAMP not null comment '创建时间',
     updated_at  timestamp                              not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid  int                                    not null comment '创建用户',
     update_uid  int                                    not null comment '更新用户',
-    deleted     tinyint(1)                             not null comment '是否被删除',
+    deleted     boolean                                not null comment '是否被删除',
     attribute   text                                   null comment '属性列（json string）'
 );
 
@@ -195,7 +195,7 @@ create table post_category
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
@@ -209,7 +209,7 @@ create table post_topic_relation
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
@@ -228,7 +228,7 @@ create table report
     updated_at  timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid  int                                 not null comment '创建用户',
     update_uid  int                                 not null comment '更新用户',
-    deleted     tinyint(1)                          not null comment '是否被删除',
+    deleted     boolean                             not null comment '是否被删除',
     attribute   text                                null comment '属性列（json string）'
 );
 
@@ -241,24 +241,24 @@ create table topic
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid int                                 not null comment '创建用户',
     update_uid int                                 not null comment '更新用户',
-    deleted    tinyint(1)                          not null comment '是否被删除',
+    deleted    boolean                             not null comment '是否被删除',
     attribute  text                                null comment '属性列（json string）'
 );
 
 create table upvote
 (
-    id         int                                  not null comment '点赞ID'
+    id         int                                 not null comment '点赞ID'
         primary key,
-    user_id    int                                  not null comment '用户ID',
-    post_id    int                                  null comment '帖子ID',
-    comment_id int                                  null comment '评论ID',
-    status     tinyint(1) default 1                 not null comment '点赞状态',
-    created_at timestamp  default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                            not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid int                                  not null comment '创建用户',
-    update_uid int                                  not null comment '更新用户',
-    deleted    tinyint(1)                           not null comment '是否被删除',
-    attribute  text                                 null comment '属性列（json string）'
+    user_id    int                                 not null comment '用户ID',
+    post_id    int                                 null comment '帖子ID',
+    comment_id int                                 null comment '评论ID',
+    status     boolean   default true              not null comment '点赞状态',
+    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid int                                 not null comment '创建用户',
+    update_uid int                                 not null comment '更新用户',
+    deleted    boolean                             not null comment '是否被删除',
+    attribute  text                                null comment '属性列（json string）'
 );
 
 create table user
@@ -273,14 +273,14 @@ create table user
     gender         varchar(20)                            not null comment '性别(男,女,保密)',
     phone          varchar(20)  default ''                not null comment '手机号',
     avatar         varchar(255) default ''                not null comment '头像地址',
-    upvote_notice  tinyint(1)   default 1                 not null comment '点赞消息开关',
-    comment_notice tinyint(1)   default 1                 not null comment '评论消息开关',
+    upvote_notice  boolean      default true              not null comment '点赞消息开关',
+    comment_notice boolean      default true              not null comment '评论消息开关',
     role           varchar(20)                            not null comment '用户角色',
     created_at     timestamp    default CURRENT_TIMESTAMP not null comment '注册时间',
     updated_at     timestamp                              not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid     int                                    not null comment '创建用户',
     update_uid     int                                    not null comment '更新用户',
-    deleted        tinyint(1)                             not null comment '是否被删除',
+    deleted        boolean                                not null comment '是否被删除',
     attribute      text                                   null comment '属性列（json string）',
     constraint uq_user
         unique (nickname, student_id, phone)
@@ -288,15 +288,15 @@ create table user
 
 create table user_detail
 (
-    user_id          int                    not null comment '用户ID'
+    user_id          int                      not null comment '用户ID'
         primary key,
-    signature        varchar(20) default '' not null comment '个性签名',
-    profile          varchar(50) default '' not null comment '个人简介',
-    email            varchar(50) default '' not null comment '个人邮箱',
-    birthday         date                   null comment '生日',
-    birthday_visible tinyint(1)  default 1  not null comment '生日可见性',
-    college_visible  tinyint(1)  default 1  not null comment '学院可见性',
-    realname_visible tinyint(1)  default 1  not null comment '实名可见性'
+    signature        varchar(20) default ''   not null comment '个性签名',
+    profile          varchar(50) default ''   not null comment '个人简介',
+    email            varchar(50) default ''   not null comment '个人邮箱',
+    birthday         date                     null comment '生日',
+    birthday_visible boolean     default true not null comment '生日可见性',
+    college_visible  boolean     default true not null comment '学院可见性',
+    realname_visible boolean     default true not null comment '实名可见性'
 );
 
 
