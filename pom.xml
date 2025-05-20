@@ -15,7 +15,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <java.version>17</java.version>
-        <arthas.version>3.6.7</arthas.version>
+        <arthas.version>3.7.3</arthas.version>
         <lombok.version>1.18.36</lombok.version>
         <dubbo.version>3.3.4</dubbo.version>
         <spring-boot.version>3.2.9</spring-boot.version>
