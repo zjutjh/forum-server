@@ -10,7 +10,7 @@ import org.jh.forum.api.dubbo.CorrectDataService;
 import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.api.dubbo.PublishPostResp;
 import org.jh.forum.api.dubbo.ServiceResult;
-import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.common.exceptions.ServiceException;
 import org.jh.forum.server.config.service.NacosConfigAService;
 import org.jh.forum.server.manger.PostManager;
 
@@ -36,17 +36,14 @@ public class CorrectDataServerImpl implements CorrectDataService {
         log.info(JSON.toJSONString(NacosConfigAService.nacosConfigA));
 
         if (StringUtil.isBlank(request.getContext())) {
-            throw new ForumServiceException("123", "context is null");
+            throw new ServiceException(123, "context is null");
         }
         if (StringUtil.isBlank(request.getTitle())) {
             throw new RuntimeException("123");
         }
         PublishPostResp resp = PublishPostResp.newBuilder().setPostId("11").build();
         Any any = Any.pack(resp);
-        return ServiceResult.newBuilder()
-                .setIsSuccess(true)
-                .setData(any)
-                .build();
+        return ServiceResult.newBuilder().setIsSuccess(true).setData(any).build();
     }
 
     @Override
@@ -64,10 +61,7 @@ public class CorrectDataServerImpl implements CorrectDataService {
             throw new RuntimeException(e);
         }
         Any any = Any.pack(resp);
-        return ServiceResult.newBuilder()
-                .setIsSuccess(true)
-                .setData(any)
-                .build();
+        return ServiceResult.newBuilder().setIsSuccess(true).setData(any).build();
     }
 
 

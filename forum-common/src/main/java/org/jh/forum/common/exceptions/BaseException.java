@@ -3,7 +3,6 @@ package org.jh.forum.common.exceptions;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.dubbo.rpc.RpcException;
 
 /**
  * @author Patrick_Star
@@ -11,14 +10,14 @@ import org.apache.dubbo.rpc.RpcException;
  */
 @Setter
 @Getter
-public class ForumServiceException extends RpcException {
-    private String errorCode;
+public class BaseException extends RuntimeException {
+    private Integer errorCode;
     private String errorMsg;
 
-    private ForumServiceException() {
+    private BaseException() {
     }
 
-    public ForumServiceException(String errorCode, String errorMsg) {
+    public BaseException(Integer errorCode, String errorMsg) {
         this.errorCode = errorCode;
         this.errorMsg = errorMsg;
     }
