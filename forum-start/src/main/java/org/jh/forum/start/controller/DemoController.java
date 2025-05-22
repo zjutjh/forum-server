@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
  * @author MangoGovo
  */
 @RestController
-@RequestMapping("/v1")
 @Tag(name = "样例接口", description = "接口描述")
 public class DemoController {
     @Resource
