@@ -1,6 +1,7 @@
 package org.jh.forum.common.constants;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 /**
  * 统一错误码枚举
@@ -10,17 +11,18 @@ import lombok.Getter;
  */
 @Getter
 public enum ExceptionEnum {
-    INVALID_PARAMETER("200000", "参数错误"),
-    DATABASE_ERROR("200001", "数据库异常"),
-    JSON_PARSE_ERROR("200002", "json解析失败"),
-    EXCEED_MAX_GET_LOCK_COUNT("200003", "获取锁超出限制"),
-    UNKNOWN_ERROR("200500", "未知错误"),
+    INVALID_PARAMETER(200000, "参数错误"),
+    DATABASE_ERROR(200001, "数据库异常"),
+    JSON_PARSE_ERROR(200002, "json解析失败"),
+    EXCEED_MAX_GET_LOCK_COUNT(200003, "获取锁超出限制"),
+    NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
+    UNKNOWN_ERROR(200500, "未知错误, 请稍后重试"),
     ;
 
-    private String errorCode;
-    private String errorMsg;
+    private final Integer errorCode;
+    private final String errorMsg;
 
-    ExceptionEnum(String errorCode, String errorMsg) {
+    ExceptionEnum(Integer errorCode, String errorMsg) {
         this.errorCode = errorCode;
         this.errorMsg = errorMsg;
     }

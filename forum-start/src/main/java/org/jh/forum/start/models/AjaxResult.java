@@ -1,8 +1,9 @@
 package org.jh.forum.start.models;
 
-import com.alibaba.nacos.api.remote.response.ResponseCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.jh.forum.common.constants.ExceptionEnum;
+import org.springframework.http.HttpStatus;
 
 /**
  * @author Patrick_Star
@@ -12,32 +13,32 @@ import lombok.Data;
 @AllArgsConstructor
 public class AjaxResult<T> {
     public static final String SUCCESS_MSG = "success";
-    public static final String FAIL_MSG = "fail";
     private Integer code;
     private String msg;
     private T data;
 
-    public static <N> AjaxResult<N> SUCCESS() {
-        return new AjaxResult<>(ResponseCode.SUCCESS.getCode(), SUCCESS_MSG, null);
+    public static <N> AjaxResult<N> success() {
+        return new AjaxResult<>(HttpStatus.OK.value(), SUCCESS_MSG, null);
     }
 
-    public static <N> AjaxResult<N> SUCCESS(N data) {
-        return new AjaxResult<>(ResponseCode.SUCCESS.getCode(), SUCCESS_MSG, data);
+    public static <N> AjaxResult<N> success(N data) {
+        return new AjaxResult<>(HttpStatus.OK.value(), SUCCESS_MSG, data);
     }
 
-    public static <N> AjaxResult<N> SUCCESS(String msg, N data) {
-        return new AjaxResult<>(ResponseCode.SUCCESS.getCode(), msg, data);
+    public static <N> AjaxResult<N> success(String msg, N data) {
+        return new AjaxResult<>(HttpStatus.OK.value(), msg, data);
     }
 
-    public static <N> AjaxResult<N> FAIL() {
-        return new AjaxResult<>(ResponseCode.FAIL.getCode(), FAIL_MSG, null);
+    public static <N> AjaxResult<N> fail(Integer code, String msg) {
+        return new AjaxResult<>(code, msg, null);
     }
 
-    public static <N> AjaxResult<N> FAIL(N data) {
-        return new AjaxResult<>(ResponseCode.FAIL.getCode(), FAIL_MSG, data);
+    public static <N> AjaxResult<N> fail(ExceptionEnum error) {
+        return new AjaxResult<>(error.getErrorCode(), error.getErrorMsg(), null);
     }
 
-    public static <N> AjaxResult<N> FAIL(String msg, N data) {
-        return new AjaxResult<>(ResponseCode.FAIL.getCode(), msg, data);
+    public static <N> AjaxResult<N> fail() {
+        ExceptionEnum exception = ExceptionEnum.UNKNOWN_ERROR;
+        return new AjaxResult<>(exception.getErrorCode(), exception.getErrorMsg(), null);
     }
 }

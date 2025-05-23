@@ -40,8 +40,7 @@ public class RedisLockAspect {
         try {
             if (StringUtils.isEmpty(lockKey)) {
                 log.error("[RedisLockAspect] cannot get lock key for point: {}", point);
-                throw new ForumServiceException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(),
-                        ExceptionEnum.INVALID_PARAMETER.getErrorMsg());
+                throw new ForumServiceException(ExceptionEnum.INVALID_PARAMETER);
             }
             int lockCount = 0;
             // 防止未来变更导致无穷循环，禁止 while(true) 语法
@@ -57,8 +56,7 @@ public class RedisLockAspect {
                 int weight = iter + 1;
                 Thread.sleep(weight * ForumSwitchService.forumSwitch.redisLockRetryInterval);
                 if (lockCount > ForumSwitchService.forumSwitch.redisLockMaxRetryCount) {
-                    throw new ForumServiceException(ExceptionEnum.EXCEED_MAX_GET_LOCK_COUNT.getErrorCode(),
-                            ExceptionEnum.EXCEED_MAX_GET_LOCK_COUNT.getErrorMsg());
+                    throw new ForumServiceException(ExceptionEnum.EXCEED_MAX_GET_LOCK_COUNT);
                 }
             }
             return point.proceed();
