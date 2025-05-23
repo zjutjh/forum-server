@@ -12,9 +12,9 @@ import lombok.Data;
 @Data
 public class BaseListRequest {
     @Schema(description = "页码")
-    private int page = 1;
+    private Integer page = 1;
     @Schema(description = "每页数量")
-    private int size = 20;
-    @Schema(description = "总数量")
-    private int total;
+    private Integer size = 20;
+    @Schema(description = "查询偏移")
+    private Long offset = 0L;
 }

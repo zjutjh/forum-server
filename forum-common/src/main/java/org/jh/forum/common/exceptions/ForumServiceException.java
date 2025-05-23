@@ -12,12 +12,12 @@ import org.jh.forum.common.constants.ExceptionEnum;
  */
 @Setter
 @Getter
-public class ServiceException extends BaseException {
-    public ServiceException(Integer errorCode, String errorMsg) {
+public class ForumServiceException extends BaseException {
+    public ForumServiceException(Integer errorCode, String errorMsg) {
         super(errorCode, errorMsg);
     }
 
-    public ServiceException(ExceptionEnum e) {
+    public ForumServiceException(ExceptionEnum e) {
         super(e.getErrorCode(), e.getErrorMsg());
     }
 }

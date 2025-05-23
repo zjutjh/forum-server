@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.annotation.Resource;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.CorrectDataService;
 import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.common.dto.request.DemoRequest;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author MangoGovo
  */
+@Slf4j
 @RestController
 @Tag(name = "样例接口", description = "接口描述")
 public class DemoController {

@@ -15,14 +15,17 @@ import java.util.List;
 @Data
 public class BaseListResponse<T> {
     @Schema(description = "页码")
-    private int page;
+    private Integer page;
 
     @Schema(description = "每页数量")
-    private int pageSize;
+    private Integer pageSize;
 
     @Schema(description = "总数量")
-    private int total;
+    private Integer total;
 
     @Schema(description = "列表")
     private List<T> list;
+
+    @Schema(description = "分页游标")
+    private Long nextCursor;
 }

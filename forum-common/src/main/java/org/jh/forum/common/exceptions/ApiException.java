@@ -43,7 +43,7 @@ public class ApiException extends BaseException {
      *
      * @param e RPC调用异常
      */
-    public ApiException(ServiceException e) {
+    public ApiException(ForumServiceException e) {
         super(e.getErrorCode(), e.getErrorMsg());
         this.statusCode = HttpStatus.OK.value();
     }
