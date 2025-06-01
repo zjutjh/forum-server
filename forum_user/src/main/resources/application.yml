@@ -1,41 +1,93 @@
+# 服务器配置 [[4.2.2]]
 server:
-  port: 8081  # 与forum-start不同的端口
+  port: 8080  # 服务启动端口，默认8080，可根据需求修改 [[5]]
 
+# Spring 核心配置
 spring:
+  application:
+    name: JH-forum-user  # 应用名称，用于注册到 Nacos
+  cloud:
+    nacos:
+      discovery:
+        username: nacos
+        password: nacos
+        server-addr: 127.0.0.1:8848  # Nacos 注册中心地址
+        namespace: public  # 命名空间
+      config:
+        username: nacos
+        password: nacos
+        context-path: /nacos  # Nacos 配置中心路径
+        server-addr: 127.0.0.1:8848  # 配置中心地址
+      sentinel:
+        transport:
+          port: 8719  # Sentinel 客户端端口
+          dashboard: localhost:9080  # Sentinel 控制台地址
+  config:
+    import: "nacos:nacos-config-example.properties?refresh=true"  # 导入 Nacos 配置文件
   datasource:
-    url: jdbc:mysql://localhost:3306/forum_user?useSSL=false&characterEncoding=utf8
-    username: forum_user
-    password: secure_password
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      connection-timeout: 30000
-      maximum-pool-size: 15
-
-  redis:
-    host: localhost
-    port: 6379
-    password: redis_password
-    database: 1  # 与forum-start使用不同数据库
-
+    url: jdbc:mysql://127.0.0.1:3306/forum_db?useSSL=false&autoReconnect=true&characterEncoding=utf8  # 数据库连接 URL
+    driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL 驱动类
+    username: root  # 数据库用户名
+    password: mysql_password  # 数据库密码（生产环境建议加密）
+    type: com.alibaba.druid.pool.DruidDataSource  # 使用 Druid 连接池
+    druid:
+      initial-size: 5  # 初始连接数
+      min-idle: 10  # 最小空闲连接
+      max-active: 20  # 最大连接数
+      max-wait: 60000  # 获取连接最大等待时间
+      min-evictable-idle-time-millis: 300000  # 连接最小生存时间
+      time-between-eviction-runs-millis: 60000  # 空闲连接检测间隔
+      filters: stat,wall  # 启用监控和防火墙插件
+      validation-query: SELECT 1  # 连接有效性检测 SQL
+      test-on-borrow: true  # 申请连接时检测有效性
+      test-on-return: false  # 归还连接时检测有效性
+      test-while-idle: true  # 空闲时检测有效性
+      stat-view-servlet:
+        enabled: true  # 启用 Druid 监控页面
+        allow: 127.0.0.1  # 监控页面访问白名单
+        login-username: admin  # 监控页面登录用户名
+        login-password: admin  # 监控页面登录密码
+      filter:
+        stat:
+          enabled: true  # 启用 Stat Filter
+          log-slow-sql: true  # 记录慢 SQL
+          slow-sql-millis: 5000  # 慢 SQL 时间阈值
+          merge-sql: false  # 不合并多个连接池数据
   jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
+    open-in-view: false  # 关闭 Open-in-View，避免延迟加载问题
+    generate-ddl: false  # 不自动生成 DDL
+    show-sql: false  # 不显示 SQL
     properties:
-      hibernate.format_sql: true
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect  # 使用 MySQL 8 方言
+        format_sql: true  # 格式化 SQL
+        use-new-id-generator-mappings: false  # 禁用新 ID 生成策略
 
-# 用户模块配置
-forum:
-  user:
-    profile:
-      cache-ttl: 30m  # 缓存时间
-      default-avatar: /avatars/default.png
+# Redis 配置
+spring.redis:
+  database: 3  # Redis 数据库编号
+  timeout: 3000  # 连接超时时间
+  password: redis_password  # Redis 密码
+  host: 127.0.0.1  # Redis 服务器地址
+  port: 6379  # Redis 服务器端口
 
+# Arthas 配置
+arthas:
+  enabled: true  # 启用 Arthas 诊断工具
+  ip: 127.0.0.1  # Arthas 监听 IP
+  port: 3658  # Arthas 监听端口
+
+# Dubbo 配置
 dubbo:
   application:
-    name: forum-user-service
+    name: JH-forum-user-dubbo  # Dubbo 服务名称
+    logger: slf4j  # 日志框架
   protocol:
-    name: dubbo
-    port: 20880
+    name: tri  # 协议类型（Triple）
+    port: 50052  # 协议端口
   registry:
-    address: nacos://localhost:8848 # 使用 Nacos 注册中心
+    address: nacos://127.0.0.1:8848  # 注册中心地址
+    username: nacos_name  # 注册中心用户名
+    password: nacos_password  # 注册中心密码
+  provider:
+    filter: dubboRequestFilter  # 自定义过滤器
