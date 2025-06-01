@@ -1,12 +1,14 @@
 package org.jh.forum.common.dto.request;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import lombok.Data;
 
 /**
@@ -49,9 +51,10 @@ public class EditAnnouncementRequest {
     @JsonProperty("updator_id") // 显式声明JSON字段名称
     private Integer updatorId;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Schema(description = "定时发布时间", example = "2025-05-30 09:00:00")
-    private LocalDateTime scheduled_at;
+    @JsonProperty("scheduled_at") // 显式声明JSON字段名称
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC+8")
+    @Schema(description = "定时发布时间", example = "1955-09-06T13:10:21.927Z")
+    private LocalDateTime scheduledAt;
 
     @Schema(
         description = "状态：0草稿、1已发布、2待发布",
@@ -62,4 +65,13 @@ public class EditAnnouncementRequest {
 
     @Schema(description = "附加属性", example = "{\"sticky\": true}")
     private String attribute;
+
+    // Getter 和 Setter 方法
+    public LocalDateTime getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(LocalDateTime scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
 }

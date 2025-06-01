@@ -1,5 +1,7 @@
 package org.jh.forum.start;
 
+import java.util.TimeZone;
+
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -15,8 +17,7 @@ import com.alibaba.nacos.api.naming.NamingService;
 @SpringBootApplication
 @EnableAspectJAutoProxy
 @DubboComponentScan(basePackages = "org.jh.forum.server.dubbo")
-@ComponentScan(basePackages = {"org.jh.forum.server",
-        "org.jh.forum.start"})
+@ComponentScan(basePackages = { "org.jh.forum.server", "org.jh.forum.start" })
 @EnableJpaRepositories(basePackages = "org.jh.forum.server.repository")
 @EntityScan(basePackages = "org.jh.forum.server.entity")
 public class ForumStartApplication {
@@ -31,7 +32,8 @@ public class ForumStartApplication {
     private Integer serverPort;
 
     public static void main(String[] args) {
+        // 设置全局默认时区为UTC+8
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
         SpringApplication.run(ForumStartApplication.class, args);
     }
-
 }

@@ -1,12 +1,14 @@
 package org.jh.forum.common.dto.request;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import lombok.Data;
 
 /**
@@ -42,16 +44,22 @@ public class CreateAnnouncementRequest {
         required = true,
         allowableValues = { "系统公告", "学校公告" }
     )
-    private String type;
-
-    @NotNull(message = "创建用户ID获取失败")
+    private String type;    @NotNull(message = "创建用户ID获取失败")
     @Schema(description = "创建用户ID", example = "123", required = true)
     @JsonProperty("creator_id") // 显式声明JSON字段名称
-    private Integer creatorId;
+    private Integer creatorId;    @JsonProperty("scheduled_at") // 显式声明JSON字段名称
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC+8")
+    @Schema(description = "定时发布时间", example = "1955-09-06T13:10:21.927Z")
+    private LocalDateTime scheduledAt; // ISO-8601格式的LocalDateTime
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Schema(description = "定时发布时间", example = "2025-05-30 09:00:00")
-    private LocalDateTime scheduled_at;
+    // Getter 和 Setter 方法
+    public LocalDateTime getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(LocalDateTime scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
 
     @Schema(
         description = "状态：0草稿、1已发布、2待发布",
@@ -62,4 +70,53 @@ public class CreateAnnouncementRequest {
 
     @Schema(description = "附加属性", example = "{\"sticky\": true}")
     private String attribute;
+
+    // Getter 和 Setter 方法
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Integer getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(Integer creatorId) {
+        this.creatorId = creatorId;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getAttribute() {
+        return attribute;
+    }
+
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
+    }
 }

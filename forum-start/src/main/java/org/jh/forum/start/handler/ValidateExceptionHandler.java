@@ -1,9 +1,7 @@
 package org.jh.forum.start.handler;
 
-import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.sql.SQLIntegrityConstraintViolationException;
+
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
@@ -13,9 +11,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import jakarta.servlet.http.HttpServletRequest;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.time.Instant;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 处理参数校验相关异常
@@ -35,9 +35,9 @@ public class ValidateExceptionHandler {
      * @param e 错误信息集合
      * @return 错误信息
      */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, IllegalArgumentException.class})
     @ResponseBody
-    public AjaxResult<Object> validationBodyException(MethodArgumentNotValidException e, HttpServletRequest request) {
+    public AjaxResult<Object> validationBodyException(Exception e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
         return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
     }

@@ -1,7 +1,6 @@
 package org.jh.forum.common.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
 import lombok.Data;
 
 /**
@@ -36,14 +35,14 @@ public class AnnouncementDetailsResponse {
     @Schema(description = "更新用户ID", example = "123")
     private Integer updatorId;
 
-    @Schema(description = "创建时间", example = "2025-05-30 09:00:00")
-    private LocalDateTime createdAt;
+    @Schema(description = "创建时间", example = "1955-09-06T13:10:21.927Z")
+    private String createdAt;
 
-    @Schema(description = "更新时间", example = "2025-05-30 09:00:00")
-    private LocalDateTime updatedAt;
+    @Schema(description = "更新时间", example = "1955-09-06T13:10:21.927Z")
+    private String updatedAt;
 
-    @Schema(description = "定时发布时间", example = "2025-05-30 09:00:00")
-    private LocalDateTime scheduledAt;
+    @Schema(description = "定时发布时间", example = "1955-09-06T13:10:21.927Z")
+    private String scheduledAt;
 
     @Schema(description = "是否删除", example = "false")
     private Boolean deleted;

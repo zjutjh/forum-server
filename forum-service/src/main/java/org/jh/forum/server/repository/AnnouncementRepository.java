@@ -32,6 +32,13 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Inte
     // 根据创建人 ID 查询公告（自动过滤软删除）
     List<Announcement> findByCreatorId(Integer creatorId);
 
+    // 根据标题检查是否存在公告（用于查重，自动过滤软删除）
+    boolean existsByTitle(String title);
+
+    // 根据标题检查是否存在公告，排除指定ID（用于编辑时查重）
+    @Query("SELECT COUNT(a) > 0 FROM Announcement a WHERE a.title = ?1 AND a.id != ?2 AND a.deleted = false")
+    boolean existsByTitleAndIdNot(String title, Integer excludeId);
+
     // 强制查询所有公告（包括软删除）
     @Query("SELECT a FROM Announcement a")
     List<Announcement> findAllIncludingDeleted();

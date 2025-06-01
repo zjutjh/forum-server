@@ -1,5 +1,7 @@
 package org.jh.forum.server.service;
 
+import java.time.LocalDateTime;
+
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.service.AnnouncementService;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
@@ -45,13 +47,19 @@ public AnnouncementOperationResponse createAnnouncement(CreateAnnouncementReques
 
 // DTO转Entity的私有方法 这里缺少一点特殊字段驼峰-蛇形转换，现在先这么写着
 private Announcement convertToEntity(CreateAnnouncementRequest request) {
+    // 直接使用LocalDateTime，无需时区转换
+    LocalDateTime scheduledAt = request.getScheduledAt();
+    if (scheduledAt != null) {
+        log.debug("使用定时发布时间: {}", scheduledAt);
+    }
+    
     return Announcement.builder()
         .title(request.getTitle())
         .content(request.getContent())
         .type(request.getType())
         .creatorId(request.getCreatorId())
         .updatorId(request.getCreatorId()) // 创建时设置更新人为创建人
-        .scheduledAt(request.getScheduled_at())
+        .scheduledAt(scheduledAt)
         .status(request.getStatus() != null ? request.getStatus() : 0)
         .deleted(false) // 新创建的公告默认未删除
         .attribute(request.getAttribute())
@@ -73,6 +81,8 @@ private Announcement convertToEntity(CreateAnnouncementRequest request) {
     @Override
     public AnnouncementOperationResponse editAnnouncement(Integer id, EditAnnouncementRequest request) {
         log.info("Service层编辑公告，ID：{}，标题：{}", id, request.getTitle());
+        // 处理时间转换
+        processEditRequestTime(request);
         return announcementManager.editAnnouncement(id, request);
     }
 
@@ -87,5 +97,13 @@ private Announcement convertToEntity(CreateAnnouncementRequest request) {
      * 
      * @param request 创建公告请求
      * @return 创建的公告操作响应
+     */    /**
+     * 处理EditAnnouncementRequest中的时间转换（用于编辑功能）
      */
+    private void processEditRequestTime(EditAnnouncementRequest request) {
+        // 如果有定时发布时间，直接使用LocalDateTime，无需转换
+        if (request.getScheduledAt() != null) {
+            log.debug("编辑请求包含定时发布时间: {}", request.getScheduledAt());
+        }
+    }
 }

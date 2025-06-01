@@ -48,10 +48,10 @@ public class ListAnnouncementResponse {
         @Schema(description = "创建用户ID", example = "123")
         private Integer creatorId;
 
-        @Schema(description = "创建时间", example = "2025-05-30 09:00:00")
+        @Schema(description = "创建时间", example = "1955-09-06T13:10:21.927Z")
         private String createdAt;
 
-        @Schema(description = "更新时间", example = "2025-05-30 09:00:00")
+        @Schema(description = "更新时间", example = "1955-09-06T13:10:21.927Z")
         private String updatedAt;
     }
 }

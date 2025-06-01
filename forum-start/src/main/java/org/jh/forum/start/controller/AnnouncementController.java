@@ -57,14 +57,14 @@ public class AnnouncementController {
     @Operation(summary = "创建公告", description = "创建一个公告，支持多种类型")
     @PostMapping("/create")
     public AjaxResult<AnnouncementOperationResponse> createAnnouncement(
-            @Valid @RequestBody CreateAnnouncementRequest request) {
-        try {
+            @Valid @RequestBody CreateAnnouncementRequest request) {        try {
             // 第1步：记录请求日志
             log.info(
-                "收到创建草稿公告请求，标题: {}, 类型: {}, 创建用户: {}",
+                "收到创建草稿公告请求，标题: {}, 类型: {}, 创建用户: {}, 预计时间：{}",
                 request.getTitle(),
                 request.getType(),
-                request.getCreatorId() // 修复：使用驼峰命名的getter方法
+                request.getCreatorId(), // 修复：使用驼峰命名的getter方法
+                request.getScheduledAt()
             );
 
             AnnouncementOperationResponse response = announcementService.createAnnouncement(request);
