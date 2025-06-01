@@ -52,4 +52,13 @@ public interface AnnouncementService {
      * @return 删除结果
      */
     AnnouncementOperationResponse deleteAnnouncement(Integer id);
+
+    /**
+     * 置顶/取消置顶公告
+     * 
+     * @param id 公告ID
+     * @param isSticky true表示置顶，false表示取消置顶
+     * @return 操作结果
+     */
+    AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky);
 }

@@ -4,17 +4,18 @@ import org.jh.forum.api.service.AnnouncementService;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
 import org.jh.forum.common.dto.request.ListAnnouncementRequest;
+import org.jh.forum.common.dto.request.StickyAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementDetailsResponse;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementResponse;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,22 +43,21 @@ import lombok.extern.slf4j.Slf4j;
 public class AnnouncementController {
 
     @Resource
-    private AnnouncementService announcementService;
-
-    /**
+    private AnnouncementService announcementService;    /**
      * 创建公告草稿接口
      *
      * HTTP方法：POST
-     * 请求路径：/announcement/create
+     * 请求路径：/announcement
      * 请求体：JSON格式的CreateAnnouncementRequest
      *
      * @param request 创建公告的请求参数
      * @return 创建结果，包含公告基本信息
      */
     @Operation(summary = "创建公告", description = "创建一个公告，支持多种类型")
-    @PostMapping("/create")
+    @PostMapping
     public AjaxResult<AnnouncementOperationResponse> createAnnouncement(
-            @Valid @RequestBody CreateAnnouncementRequest request) {        try {
+            @Valid @RequestBody CreateAnnouncementRequest request) {
+        try {
             // 第1步：记录请求日志
             log.info(
                 "收到创建草稿公告请求，标题: {}, 类型: {}, 创建用户: {}, 预计时间：{}",
@@ -87,26 +87,38 @@ public class AnnouncementController {
             );
             return AjaxResult.fail(500, "创建公告失败：" + e.getMessage());
         }
+    }    /**
+     * 查询公告接口 - 支持列表查询和详情查询
+     *
+     * HTTP方法：GET
+     * 请求路径：/announcement?page=xxx&size=xxx (列表查询)
+     * 请求路径：/announcement?id=xxx (详情查询)
+     *
+     * @param id 公告ID（可选，用于详情查询）
+     * @param request 列表查询参数（可选，用于列表查询）
+     * @return 公告详情或列表
+     */
+    @Operation(
+        summary = "查询公告",
+        description = "根据参数查询公告详情或列表"
+    )
+    @GetMapping
+    public AjaxResult<?> getAnnouncement(
+        @RequestParam(required = false) Integer id,
+        @Valid ListAnnouncementRequest request
+    ) {
+        // 如果提供了id参数，则查询详情
+        if (id != null) {
+            return getAnnouncementDetail(id);
+        }
+        // 否则查询列表
+        return listAnnouncements(request);
     }
 
     /**
-     * 根据ID查询公告详情接口
-     *
-     * HTTP方法：GET
-     * 请求路径：/announcement/detail/{id}
-     * 路径参数：id（公告ID）
-     *
-     * @param id 公告ID
-     * @return 公告详情
+     * 查询公告详情的内部方法
      */
-    @Operation(
-        summary = "查询公告详情",
-        description = "根据公告ID查询公告详细信息"
-    )
-    @GetMapping("/detail/{id}")
-    public AjaxResult<AnnouncementDetailsResponse> getAnnouncementDetail(
-        @PathVariable Integer id
-    ) {
+    private AjaxResult<AnnouncementDetailsResponse> getAnnouncementDetail(Integer id) {
         try {
             // 第1步：记录请求日志
             log.info("收到查询公告详情请求，ID: {}", id);
@@ -141,25 +153,11 @@ public class AnnouncementController {
             );
             return AjaxResult.fail(500, "查询公告失败：" + e.getMessage());
         }
-    }
-
-    /**
-     * 查询公告列表接口
-     *
-     * HTTP方法：GET
-     * 请求路径：/announcement/list
-     * 查询参数：page（页码）、status（状态筛选）、type（类型筛选）
-     *
-     * @param request 查询请求参数
-     * @return 分页的公告列表
+    }    /**
+     * 查询公告列表的内部方法
      */
-    @Operation(
-        summary = "查询公告列表",
-        description = "分页查询公告列表，每页固定8条记录"
-    )
-    @GetMapping("/list")
-    public AjaxResult<ListAnnouncementResponse> listAnnouncements(
-        @Valid ListAnnouncementRequest request
+    private AjaxResult<ListAnnouncementResponse> listAnnouncements(
+        ListAnnouncementRequest request
     ) {
         try {
             log.info(
@@ -184,46 +182,42 @@ public class AnnouncementController {
         } catch (Exception e) {
             log.error("查询公告列表失败，错误信息: {}", e.getMessage(), e);
             return AjaxResult.fail(500, "查询公告列表失败：" + e.getMessage());
-        }
-    }
+        }    }
 
     /**
      * 编辑公告接口
      *
      * HTTP方法：PUT
-     * 请求路径：/announcement/edit/{id}
-     * 路径参数：id（公告ID）
-     * 请求体：JSON格式的EditAnnouncementRequest
+     * 请求路径：/announcement
+     * 请求体：JSON格式的EditAnnouncementRequest（包含id字段）
      *
-     * @param id 公告ID
      * @param request 编辑公告的请求参数
      * @return 编辑结果
      */
     @Operation(summary = "编辑公告", description = "编辑指定ID的公告信息")
-    @PutMapping("/edit/{id}")
+    @PutMapping
     public AjaxResult<AnnouncementOperationResponse> editAnnouncement(
-            @PathVariable Integer id,
             @Valid @RequestBody EditAnnouncementRequest request) {
         try {
             // 第1步：记录请求日志
             log.info(
                 "收到编辑公告请求，ID: {}, 标题: {}, 类型: {}, 修改用户: {}",
-                id,
+                request.getId(),
                 request.getTitle(),
                 request.getType(),
                 request.getUpdatorId()
             );
 
             // 第2步：参数校验
-            if (id == null || id <= 0) {
-                log.warn("公告ID无效: {}", id);
+            if (request.getId() == null || request.getId() <= 0) {
+                log.warn("公告ID无效: {}", request.getId());
                 return AjaxResult.fail(400, "公告ID无效");
             }
 
-            AnnouncementOperationResponse response = announcementService.editAnnouncement(id, request);
+            AnnouncementOperationResponse response = announcementService.editAnnouncement(request.getId(), request);
 
             if (response == null) {
-                log.warn("编辑公告失败，公告可能不存在，ID: {}", id);
+                log.warn("编辑公告失败，公告可能不存在，ID: {}", request.getId());
                 return AjaxResult.fail(404, "公告不存在或编辑失败");
             }
 
@@ -239,21 +233,26 @@ public class AnnouncementController {
             // 异常处理：记录错误日志并返回失败结果
             log.error(
                 "编辑公告失败，ID: {}, 标题: {}, 错误信息: {}",
-                id,
+                request.getId(),
                 request.getTitle(),
                 e.getMessage(),
                 e
             );
             return AjaxResult.fail(500, "编辑公告失败：" + e.getMessage());
         }
-    }
-
-    /**
-     * 删除公告
+    }    /**
+     * 删除公告接口
+     *
+     * HTTP方法：DELETE
+     * 请求路径：/announcement?id=xxx
+     * 查询参数：id（公告ID）
+     *
+     * @param id 公告ID
+     * @return 删除结果
      */
     @Operation(summary = "删除公告", description = "软删除指定公告")
-    @DeleteMapping("/delete/{id}")
-    public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@PathVariable Integer id) {
+    @DeleteMapping
+    public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@RequestParam Integer id) {
         try {
             log.info("收到删除公告请求，ID: {}", id);
 
@@ -275,15 +274,58 @@ public class AnnouncementController {
             );
             return AjaxResult.fail(500, "删除公告失败：" + e.getMessage());
         }
-    }
-
-    /**
-     * 健康检查
+    }    /**
+     * 置顶/取消置顶公告接口
+     *
+     * HTTP方法：PUT
+     * 请求路径：/announcement/sticky?id=xxx
+     * 查询参数：id（公告ID）
+     * 请求体：JSON格式的StickyAnnouncementRequest
+     *
+     * @param id 公告ID
+     * @param request 置顶/取消置顶请求参数
+     * @return 操作结果
      */
-    @Operation(summary = "健康检查", description = "检查服务是否正常运行")
-    @GetMapping("/health")
-    public AjaxResult<String> healthCheck() {
-        log.debug("收到健康检查请求");
-        return AjaxResult.success("公告服务运行正常"); // ← 修改此处字符串即可配置响应内容
+    @Operation(summary = "置顶/取消置顶公告", description = "设置或取消公告的置顶状态")
+    @PutMapping("/sticky")
+    public AjaxResult<AnnouncementOperationResponse> stickyAnnouncement(
+            @RequestParam Integer id,
+            @Valid @RequestBody StickyAnnouncementRequest request) {        try {
+            log.info("收到置顶/取消置顶公告请求，ID: {}, 置顶状态: {}", id, request.getIsSticky());
+
+            if (id == null || id <= 0) {
+                log.warn("公告ID无效: {}", id);
+                return AjaxResult.fail(400, "公告ID无效");
+            }
+
+            // 将URL参数中的id设置到request对象中，保持与现有service接口的兼容性
+            request.setId(id);
+
+            AnnouncementOperationResponse response = announcementService.stickyAnnouncement(
+                request.getId(), 
+                request.getIsSticky()
+            );
+
+            if (response == null) {
+                log.warn("置顶/取消置顶公告失败，公告可能不存在，ID: {}", id);
+                return AjaxResult.fail(404, "公告不存在或操作失败");
+            }
+
+            log.info(
+                "公告{}成功，ID: {}",
+                request.getIsSticky() ? "置顶" : "取消置顶",
+                response.getAnnounceId()
+            );
+
+            return AjaxResult.success(request.getIsSticky() ? "stickied" : "unstickied", response);
+        } catch (Exception e) {
+            log.error(
+                "置顶/取消置顶公告失败，ID: {}, 错误信息: {}",
+                id,
+                e.getMessage(),
+                e
+            );
+            return AjaxResult.fail(500, "置顶/取消置顶公告失败：" + e.getMessage());
+        }
     }
 }

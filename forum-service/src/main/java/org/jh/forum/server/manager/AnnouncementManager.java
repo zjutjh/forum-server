@@ -370,9 +370,32 @@ public class AnnouncementManager {
 
         if (id == null || id <= 0) {
             return null;
+        }        // TODO: 实际实现中这里会调用Mapper层软删除数据库记录
+        // 现在先返回Mock结果
+
+        AnnouncementOperationResponse response =
+            new AnnouncementOperationResponse();
+        response.setAnnounceId(id);
+
+        return response;
+    }
+
+    /**
+     * 置顶/取消置顶公告
+     */
+    public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky) {
+        log.info("Manager层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, isSticky);
+
+        if (id == null || id <= 0) {
+            return null;
         }
 
-        // TODO: 实际实现中这里会调用Mapper层软删除数据库记录
+        if (isSticky == null) {
+            return null;
+        }
+
+        // TODO: 实际实现中这里会调用Mapper层更新数据库记录的attribute字段
+        // 将置顶状态存储在attribute字段的JSON中，例如：{"sticky": true}
         // 现在先返回Mock结果
 
         AnnouncementOperationResponse response =

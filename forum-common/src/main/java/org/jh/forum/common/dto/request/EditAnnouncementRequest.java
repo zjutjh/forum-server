@@ -12,12 +12,16 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 /**
- * 创建公告请求DTO
+ * 编辑公告请求DTO
  * @author SituChengxiang
  */
 @Data
 @Schema(description = "修改公告")
 public class EditAnnouncementRequest {
+
+    @NotNull(message = "公告ID不能为空")
+    @Schema(description = "公告ID", example = "1", required = true)
+    private Integer id;
 
     @NotBlank(message = "公告标题不能为空")
     @Size(min = 2, max = 100, message = "公告标题必须在2~50个字符之间")

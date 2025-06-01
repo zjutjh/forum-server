@@ -92,6 +92,12 @@ private Announcement convertToEntity(CreateAnnouncementRequest request) {
         return announcementManager.deleteAnnouncement(id);
     }
 
+    @Override
+    public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky) {
+        log.info("Service层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, isSticky);
+        return announcementManager.stickyAnnouncement(id, isSticky);
+    }
+
     /**
      * 直接使用数据库创建公告（用于测试Repository功能）
      * 
