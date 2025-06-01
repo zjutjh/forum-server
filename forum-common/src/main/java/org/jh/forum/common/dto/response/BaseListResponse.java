@@ -1,7 +1,7 @@
 package org.jh.forum.common.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import lombok.Data;
 
 import java.util.List;
@@ -18,14 +18,12 @@ public class BaseListResponse<T> {
     private Integer page;
 
     @Schema(description = "每页数量")
+    @JsonProperty("page_size")
     private Integer pageSize;
 
-    @Schema(description = "总数量")
+    @Schema(description = "总数")
     private Integer total;
 
     @Schema(description = "列表")
     private List<T> list;
-
-    @Schema(description = "分页游标")
-    private Long nextCursor;
 }
