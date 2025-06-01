@@ -1,5 +1,6 @@
 package org.jh.forum.common.dto.request;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
@@ -11,10 +12,10 @@ import lombok.Data;
  */
 @Data
 public class BaseListRequest {
-    @Schema(description = "页码")
+    @Parameter(description = "页码")
     private Integer page = 1;
-    @Schema(description = "每页数量")
+    @Parameter(description = "每页数量")
     private Integer size = 20;
-    @Schema(description = "查询偏移")
+    @Parameter(description = "查询偏移")
     private Long offset = 0L;
 }
