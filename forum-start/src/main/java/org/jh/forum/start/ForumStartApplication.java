@@ -16,8 +16,9 @@ import com.alibaba.nacos.api.naming.NamingService;
 @SpringBootApplication
 @EnableAspectJAutoProxy
 @DubboComponentScan(basePackages = "org.jh.forum.server.dubbo")
+@ComponentScan(basePackages = {"org.jh.forum.server",
+        "org.jh.forum.start", "org.jh.forum.common"})
 @MapperScan(basePackages = "org.jh.forum.common.entity.mapper")
-@ComponentScan(basePackages = { "org.jh.forum.server", "org.jh.forum.start" })
 public class ForumStartApplication {
 
     @NacosInjected

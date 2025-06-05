@@ -17,16 +17,17 @@ public class BaseEntity implements Serializable {
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    @TableField(value = "updated_at", fill = FieldFill.UPDATE)
+    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
     @TableField(value = "create_uid", fill = FieldFill.INSERT)
     private Long createUid;
 
-    @TableField(value = "update_uid", fill = FieldFill.UPDATE)
+    @TableField(value = "update_uid", fill = FieldFill.INSERT_UPDATE)
     private Long updateUid;
 
     @TableLogic
+    @TableField(fill = FieldFill.INSERT)
     private Boolean deleted;
 
     private String attribute;
