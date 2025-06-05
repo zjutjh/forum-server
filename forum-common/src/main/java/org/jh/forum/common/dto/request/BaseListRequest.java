@@ -1,8 +1,7 @@
 package org.jh.forum.common.dto.request;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import lombok.Data;
 
 /**
@@ -12,10 +11,10 @@ import lombok.Data;
  */
 @Data
 public class BaseListRequest {
-    @Parameter(description = "页码")
-    private Integer page = 1;
-    @Parameter(description = "每页数量")
-    private Integer size = 20;
-    @Parameter(description = "查询偏移")
-    private Long offset = 0L;
+    @Schema(description = "页码")
+    private Integer page;
+
+    @Schema(description = "每页数量")
+    @JsonProperty("page_size")
+    private Integer pageSize;
 }
