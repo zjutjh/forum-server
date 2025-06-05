@@ -19,7 +19,7 @@ import com.alibaba.nacos.api.naming.NamingService;
 @DubboComponentScan(basePackages = "org.jh.forum.server.dubbo")
 @ComponentScan(basePackages = { "org.jh.forum.server", "org.jh.forum.start" })
 @EnableJpaRepositories(basePackages = "org.jh.forum.server.repository")
-@EntityScan(basePackages = "org.jh.forum.server.entity")
+@EntityScan(basePackages = { "org.jh.forum.server.entity", "org.jh.forum.common.entity" })
 public class ForumStartApplication {
 
     @NacosInjected

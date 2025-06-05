@@ -1,4 +1,4 @@
-package org.jh.forum.server.mapper;
+package org.jh.forum.common.entity.mapper;
 
 public interface AnnouncementMapper {
     

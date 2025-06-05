@@ -1,4 +1,4 @@
-package org.jh.forum.server.entity;
+package org.jh.forum.common.entity;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 公告实体类（JPA Entity）
+ * 公告实体类（JPA & MyBatis-Plus Entity）
  *
  * @author SituChengxiang
  */
@@ -52,7 +52,7 @@ public class Announcement {
      * 公告类型 - 必填，系统公告/学校公告
      */
     @Column(name = "type", nullable = false, length = 20)
-    private String type;
+    private int type;
 
     /**
      * 创建时间 - 自动填充（仅插入时生效）
@@ -102,7 +102,7 @@ public class Announcement {
      * 属性列 - 可空，JSON字符串
      */
     @Column(name = "attribute", columnDefinition = "TEXT")
-    private String attribute;
+    private Object attribute;
 
 
 }

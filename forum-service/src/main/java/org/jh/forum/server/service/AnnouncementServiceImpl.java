@@ -4,13 +4,14 @@ import java.time.LocalDateTime;
 
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.service.AnnouncementService;
+import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
 import org.jh.forum.common.dto.request.ListAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementDetailsResponse;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementResponse;
-import org.jh.forum.server.entity.Announcement;
+import org.jh.forum.common.entity.Announcement;
 import org.jh.forum.server.manager.AnnouncementManager;
 import org.jh.forum.server.repository.AnnouncementRepository;
 import org.springframework.stereotype.Service;
@@ -57,8 +58,8 @@ private Announcement convertToEntity(CreateAnnouncementRequest request) {
         .title(request.getTitle())
         .content(request.getContent())
         .type(request.getType())
-        .creatorId(request.getCreatorId())
-        .updatorId(request.getCreatorId()) // 创建时设置更新人为创建人
+        .creatorId(123) // Mock创建人ID
+        .updatorId(123) // 创建时设置更新人为创建人
         .scheduledAt(scheduledAt)
         .status(request.getStatus() != null ? request.getStatus() : 0)
         .deleted(false) // 新创建的公告默认未删除
@@ -96,6 +97,13 @@ private Announcement convertToEntity(CreateAnnouncementRequest request) {
     public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky) {
         log.info("Service层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, isSticky);
         return announcementManager.stickyAnnouncement(id, isSticky);
+    }
+
+    @Override
+    public ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request) {
+        // log.info("Service层管理员查询公告列表，页码：{}，筛选条件：{}", request.getPage(), request.getFilters());
+        // TODO: 这里先返回mock数据，后续实现真正的管理员查询逻辑
+        return announcementManager.adminQueryAnnouncements(request);
     }
 
     /**

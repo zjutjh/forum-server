@@ -12,6 +12,7 @@ create table announcement (
     updator_id  int not                             null comment '更新用户ID',
     deleted     boolean                             not null comment '是否被删除',
     attribute   text                                null comment '属性列（json string）'
+    sticky      boolean default false               not null comment '是否置顶',
 );
 
 create table attachment
