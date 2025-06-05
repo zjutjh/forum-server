@@ -1,5 +1,6 @@
 package org.jh.forum.api.service;
 
+import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
 import org.jh.forum.common.dto.request.ListAnnouncementRequest;
@@ -51,14 +52,19 @@ public interface AnnouncementService {
      * @param id 公告ID
      * @return 删除结果
      */
-    AnnouncementOperationResponse deleteAnnouncement(Integer id);
-
-    /**
+    AnnouncementOperationResponse deleteAnnouncement(Integer id);    /**
      * 置顶/取消置顶公告
      * 
      * @param id 公告ID
      * @param isSticky true表示置顶，false表示取消置顶
      * @return 操作结果
      */
-    AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky);
+    AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky);    /**
+     * 管理员查询公告列表
+     * 支持复杂筛选和排序
+     * 
+     * @param request 管理员查询请求
+     * @return 分页结果
+     */
+    ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request);
 }

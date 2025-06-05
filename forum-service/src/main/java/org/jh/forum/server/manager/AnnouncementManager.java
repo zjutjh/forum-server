@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
 import org.jh.forum.common.dto.request.ListAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementDetailsResponse;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementResponse;
-import org.jh.forum.server.entity.Announcement;
-import org.jh.forum.server.repository.AnnouncementRepository;
+import org.jh.forum.common.entity.Announcement;
+import org.jh.forum.common.entity.mapper.AnnouncementMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,25 +26,30 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 公告业务管理层
  * 负责处理公告相关的业务逻辑
+ * 
  * @author SituChengxiang
  */
 @Slf4j
 @Component
 public class AnnouncementManager {
-
     @Resource
-    private AnnouncementRepository announcementRepository;    @PostConstruct
+    private AnnouncementMapper announcementMapper;
+
+    @PostConstruct
     public void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
         log.info("公告管理器时区已设置为 Asia/Shanghai (UTC+8)");
-    }    /**
+    }
+
+    /**
      * 格式化为ISO-8601字符串（用于响应）
      */
     public String formatToIso8601(LocalDateTime dateTime) {
-        if (dateTime == null) return null;
+        if (dateTime == null)
+            return null;
         return dateTime
-            .atZone(ZoneId.of("Asia/Shanghai"))
-            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+                .atZone(ZoneId.of("Asia/Shanghai"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
     }
 
     /**
@@ -59,9 +65,7 @@ public class AnnouncementManager {
         // 标题查重校验（使用trim后的标题）
         String trimmedTitle = StrUtil.trim(entity.getTitle());
         if (checkTitleDuplicate(trimmedTitle)) {
-            throw new IllegalArgumentException(
-                "公告标题已存在，请使用其他标题"
-            );
+            throw new IllegalArgumentException("公告标题已存在，请使用其他标题");
         }
 
         // 校验公告类型
@@ -69,14 +73,15 @@ public class AnnouncementManager {
 
         // 校验定时发布和状态逻辑
         validateCreateScheduleAndStatus(
-            entity.getScheduledAt(),
-            entity.getStatus()
-        );
-
-        Announcement saved = announcementRepository.save(entity);
-        log.info("created, announcement_id: {}", saved.getId());
-
-        return saved;
+                entity.getScheduledAt(),
+                entity.getStatus());
+        int result = announcementMapper.insert(entity);
+        if (result > 0) {
+            log.info("created, announcement_id: {}", entity.getId());
+            return entity;
+        } else {
+            throw new RuntimeException("Failed to insert announcement");
+        }
     }
 
     /**
@@ -85,67 +90,58 @@ public class AnnouncementManager {
     private void validateTitleAndContent(String title, String content) {
         // 校验标题长度（2-50字符，空字符串长度为0，自动覆盖非空校验）
         String trimmedTitle = StrUtil.trim(title);
-        if (
-            trimmedTitle == null ||
-            trimmedTitle.length() < 2 ||
-            trimmedTitle.length() > 50
-        ) {
+        if (trimmedTitle == null ||
+                trimmedTitle.length() < 2 ||
+                trimmedTitle.length() > 50) {
             throw new IllegalArgumentException(
-                "公告标题长度必须在2-50字符之间"
-            );
-        } //PS: 标题这里空字符的手动校验是用来保底的，这边基本上只会处理掉50字符以上的情况
+                    "公告标题长度必须在2-50字符之间");
+        } // PS: 标题这里空字符的手动校验是用来保底的，这边基本上只会处理掉50字符以上的情况
 
         // 校验内容长度（2-500字符，空字符串长度为0，自动覆盖非空校验）
         String trimmedContent = StrUtil.trim(content);
-        if (
-            trimmedContent == null ||
-            trimmedContent.length() < 2 ||
-            trimmedContent.length() > 500
-        ) {
+        if (trimmedContent == null ||
+                trimmedContent.length() < 2 ||
+                trimmedContent.length() > 500) {
             throw new IllegalArgumentException(
-                "公告内容长度必须在2-500字符之间"
-            );
+                    "公告内容长度必须在2-500字符之间");
         }
     }
 
     /**
      * 校验公告类型
      */
-    private void validateAnnouncementType(String type) {
-        String trimmedType = StrUtil.trim(type);
-        if (!StrUtil.equalsAny(trimmedType, "系统公告", "学校公告")) {
+    private void validateAnnouncementType(int type) {
+        if (type != 0 && type != 1) {
             throw new IllegalArgumentException("公告类型无效");
         }
     }
 
     /**
      * 校验创建时的定时发布和状态逻辑
-     */    private void validateCreateScheduleAndStatus(
-        LocalDateTime scheduledAt,
-        Integer status
-    ) {        if (scheduledAt != null) {
+     */
+    private void validateCreateScheduleAndStatus(
+            LocalDateTime scheduledAt,
+            Integer status) {
+        if (scheduledAt != null) {
             // scheduled_at非空时，必须是未来时间（+30秒保底）
             LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Shanghai"));
             LocalDateTime minAllowedTime = now.plusSeconds(30);
 
             if (scheduledAt.isBefore(minAllowedTime)) {
                 throw new IllegalArgumentException(
-                    "定时发布时间必须必须至少在当前时间30秒之后"
-                );
+                        "定时发布时间必须必须至少在当前时间30秒之后");
             }
 
             // scheduled_at非空时，status只能为2
             if (status == null || status != 2) {
                 throw new IllegalArgumentException(
-                    "已设置定时发布，状态已锁定"
-                );
+                        "已设置定时发布，状态已锁定");
             }
         } else {
             // scheduled_at为空时，status可以为0或1
             if (status != null && status != 0 && status != 1) {
                 throw new IllegalArgumentException(
-                    "未设置定时发布时，状态只能为草稿或已发布"
-                );
+                        "未设置定时发布时，状态只能为草稿或已发布");
             }
         }
     }
@@ -154,28 +150,27 @@ public class AnnouncementManager {
      * 校验编辑时的权限和逻辑
      */
     private void validateEditPermissions(
-        Integer currentStatus,
-        EditAnnouncementRequest request
-    ) {
+            Integer currentStatus,
+            EditAnnouncementRequest request) {
         if (currentStatus == null) {
             throw new IllegalArgumentException("无法获取公告当前状态");
-        }        if (currentStatus == 1) {
+        }
+        if (currentStatus == 1) {
             // status为1（已发布）的公告，只允许编辑title、content、attribute
             // 不允许修改scheduled_at和status
 
             if (request.getScheduledAt() != null) {
                 throw new IllegalArgumentException(
-                    "已发布的公告不允许修改定时发布时间"
-                );
+                        "已发布的公告不允许修改定时发布时间");
             }
 
             if (request.getStatus() != null && request.getStatus() != 1) {
                 throw new IllegalArgumentException(
-                    "已发布的公告不允许修改发布状态"
-                );
+                        "已发布的公告不允许修改发布状态");
             }
         } else if (currentStatus == 0 || currentStatus == 2) {
-            // status为0（草稿）或2（待发布）的公告，可以编辑所有字段，包括scheduled_at            // 如果修改了scheduled_at或status，需要校验时间和状态逻辑
+            // status为0（草稿）或2（待发布）的公告，可以编辑所有字段，包括scheduled_at //
+            // 如果修改了scheduled_at或status，需要校验时间和状态逻辑
 
             // 直接使用LocalDateTime进行验证
             LocalDateTime scheduledAt = request.getScheduledAt();
@@ -189,15 +184,13 @@ public class AnnouncementManager {
                 // 如果只设置status但不设置scheduled_at，验证status的合法性
                 if (newStatus != 0 && newStatus != 1 && newStatus != 2) {
                     throw new IllegalArgumentException(
-                        "状态值无效，只能为草稿、已发布或待发布"
-                    );
+                            "状态值无效，只能为草稿、已发布或待发布");
                 }
 
                 // 如果设置status为2但没有scheduled_at，这是不合法的
                 if (newStatus == 2) {
                     throw new IllegalArgumentException(
-                        "设置状态为待发布时必须指定定时发布时间"
-                    );
+                            "设置状态为待发布时必须指定定时发布时间");
                 }
             }
         } else {
@@ -209,14 +202,14 @@ public class AnnouncementManager {
      * 检查标题是否重复（创建时使用）
      */
     private boolean checkTitleDuplicate(String title) {
-        return announcementRepository.existsByTitle(title);
+        return announcementMapper.existsByTitle(title);
     }
 
     /**
      * 检查标题是否重复（编辑时使用，排除当前公告ID）
      */
     private boolean checkTitleDuplicate(String title, Integer excludeId) {
-        return announcementRepository.existsByTitleAndIdNot(title, excludeId);
+        return announcementMapper.existsByTitleAndIdNot(title, excludeId);
     }
 
     /**
@@ -232,23 +225,19 @@ public class AnnouncementManager {
         // TODO: 实际实现中这里会调用Mapper层从数据库查询
         // 现在先返回Mock数据
 
-        AnnouncementDetailsResponse response =
-            new AnnouncementDetailsResponse();
+        AnnouncementDetailsResponse response = new AnnouncementDetailsResponse();
         response.setId(id);
         response.setTitle("Mock公告标题 - " + id);
         response.setContent("这是一个Mock公告内容，用于测试业务逻辑...");
-        response.setType("系统公告");
+        response.setType(0);
         response.setStatus(1);
-        response.setStatusName("已发布");
-        response.setCreatorId(123);
-        response.setUpdatorId(123);        response.setCreatedAt(
-            formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusDays(1))
-        );
+        response.setCreator("admin");
+        response.setUpdator("admin");
+        response.setCreatedAt(
+                formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusDays(1)));
         response.setUpdatedAt(
-            formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(2))
-        );
+                formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(2)));
         response.setScheduledAt(null);
-        response.setDeleted(false);
         response.setAttribute("{\"sticky\": true}");
 
         return response;
@@ -258,45 +247,43 @@ public class AnnouncementManager {
      * 分页查询公告列表
      */
     public ListAnnouncementResponse listAnnouncements(
-        ListAnnouncementRequest request
-    ) {
+            ListAnnouncementRequest request) {
         log.info(
-            "Manager层查询公告列表，页码：{}，状态：{}",
-            request.getPage(),
-            request.getStatus()
-        );
-
-        // TODO: 实际实现中这里会调用Mapper层分页查询数据库
+                "Manager层查询公告列表，页码：{}，状态：{}，类型：{}",
+                request.getPage(),
+                request.getStatus(),
+                request.getType()); // TODO: 实际实现中这里会调用Mapper层分页查询数据库
         // 现在先返回Mock数据
 
-        List<ListAnnouncementResponse.AnnouncementItemResponse> list =
-            new ArrayList<>();
+        List<ListAnnouncementResponse.AnnouncementItemResponse> list = new ArrayList<>();
 
         for (int i = 1; i <= Math.min(request.getSize(), 8); i++) {
-            ListAnnouncementResponse.AnnouncementItemResponse item =
-                new ListAnnouncementResponse.AnnouncementItemResponse();
+            ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
             item.setId(i + (request.getPage() - 1) * request.getSize());
             item.setTitle("Manager Mock公告 - " + item.getId());
-            item.setType(i % 2 == 0 ? "系统公告" : "学校公告");
-            Integer status = request.getStatus() != null
-                ? request.getStatus()
-                : 1;
-            item.setStatus(status);
-            item.setStatusName(getStatusName(status));
-            item.setCreatorId(123);            item.setCreatedAt(
-                formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusDays(i))
-            );
-            item.setUpdatedAt(
-                formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(i))
-            );
+
+            // 设置类型（0=系统公告，1=学校公告）
+            if ("系统公告".equals(request.getType())) {
+                item.setType(0); // 系统公告
+            } else if ("学校公告".equals(request.getType())) {
+                item.setType(1); // 学校公告
+            } else {
+                item.setType(0); // 默认为系统公告
+            }
+
+            // 设置状态（已发布=1）
+            item.setStatus(1);
+            item.setCreator("admin");
+            item.setUpdator("admin");
+            item.setCreatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusDays(i)));
+            item.setUpdatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(i)));
             list.add(item);
         }
 
         ListAnnouncementResponse response = new ListAnnouncementResponse();
-        response.setTotal(88L); // Mock总数
+        response.setTotal(88); // Mock总数
         response.setPage(request.getPage());
-        response.setSize(request.getSize());
-        response.setPages((int) Math.ceil(88.0 / request.getSize()));
+        response.setPageSize(request.getSize());
         response.setList(list);
 
         return response;
@@ -306,9 +293,8 @@ public class AnnouncementManager {
      * 编辑公告
      */
     public AnnouncementOperationResponse editAnnouncement(
-        Integer id,
-        EditAnnouncementRequest request
-    ) {
+            Integer id,
+            EditAnnouncementRequest request) {
         log.info("Manager层编辑公告，ID：{}，标题：{}", id, request.getTitle());
 
         if (id == null || id <= 0) {
@@ -326,8 +312,7 @@ public class AnnouncementManager {
         String trimmedTitle = StrUtil.trim(request.getTitle());
         if (checkTitleDuplicate(trimmedTitle, id)) {
             throw new IllegalArgumentException(
-                "公告标题已存在，请使用其他标题"
-            );
+                    "公告标题已存在，请使用其他标题");
         }
 
         // 获取当前公告状态并校验编辑权限
@@ -340,8 +325,7 @@ public class AnnouncementManager {
 
         log.info("公告编辑成功，ID: {}", id);
 
-        AnnouncementOperationResponse response =
-            new AnnouncementOperationResponse();
+        AnnouncementOperationResponse response = new AnnouncementOperationResponse();
         response.setAnnounceId(id);
 
         return response;
@@ -370,11 +354,10 @@ public class AnnouncementManager {
 
         if (id == null || id <= 0) {
             return null;
-        }        // TODO: 实际实现中这里会调用Mapper层软删除数据库记录
-        // 现在先返回Mock结果
+        } // TODO: 实际实现中这里会调用Mapper层软删除数据库记录
+          // 现在先返回Mock结果
 
-        AnnouncementOperationResponse response =
-            new AnnouncementOperationResponse();
+        AnnouncementOperationResponse response = new AnnouncementOperationResponse();
         response.setAnnounceId(id);
 
         return response;
@@ -398,29 +381,46 @@ public class AnnouncementManager {
         // 将置顶状态存储在attribute字段的JSON中，例如：{"sticky": true}
         // 现在先返回Mock结果
 
-        AnnouncementOperationResponse response =
-            new AnnouncementOperationResponse();
+        AnnouncementOperationResponse response = new AnnouncementOperationResponse();
         response.setAnnounceId(id);
 
         return response;
     }
 
     /**
-     * 获取状态名称
+     * 管理员查询公告列表
+     * 支持复杂的筛选条件和排序
      */
-    private String getStatusName(Integer status) {
-        if (status == null) {
-            return "未知";
+    public ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request) {
+        log.info(
+                "Manager层管理员查询公告列表，页码：{}，排序字段：{}", request.getPage(), request.orderField()); // TODO:
+                                                                                             // 实际实现中这里会调用Mapper层进行复杂查询
+        // 现在先返回Mock数据，模拟管理员查询功能
+
+        List<ListAnnouncementResponse.AnnouncementItemResponse> list = new ArrayList<>(); // 模拟根据筛选条件生成不同的数据
+
+        // 构建模拟数据
+        for (int i = 1; i <= Math.min(request.getSize(), 10); i++) {
+            ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
+            item.setId(i + (request.getPage() - 1) * request.getSize());
+            item.setTitle("Admin Mock公告 - " + item.getId());
+            item.setType(0);
+            item.setStatus(1);
+            item.setCreator("admin");
+            item.setUpdator("suadmin");
+            item.setCreatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusDays(i)));
+            item.setUpdatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(i)));
+            list.add(item);
         }
-        switch (status) {
-            case 0:
-                return "草稿";
-            case 1:
-                return "已发布";
-            case 2:
-                return "待发布";
-            default:
-                return "未知";
-        }
+
+        // 构建响应
+        ListAnnouncementResponse response = new ListAnnouncementResponse();
+        response.setList(list);
+        response.setTotal(35); // Mock总数
+        response.setPage(request.getPage());
+        response.setPageSize(request.getSize());
+
+        log.info("管理员查询公告列表完成，返回{}条记录", list.size());
+        return response;
     }
 }

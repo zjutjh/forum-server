@@ -1,5 +1,44 @@
 # 公告管理功能个人纪要
 
+## 2025年6月1日 会议纪要
+
+### 鉴权方式
+
+jwt
+
+### 分页方式
+
+基于游标和基于页号的
+走base list
+
+### token预置
+
+还没留呢
+
+## 通知统一用rpc
+
+## 筛选项
+
+### 置顶
+
+sticky字段单开还是塞attribute里头？
+如果塞attributes里头我要去研究
+
+好了直接新开一个字段吧
+
+- [ ] 公告类型（改一下integrate）
+- [ ] createUid和updateUid记得改jwt（AntoFillHandler）
+- [ ] 调用BaseEntity
+- [x] 调用BaseList
+- [x] 分接口管理（管理员和用户端）
+- [ ] Respond的枚举管理（status和type）
+- [x] 接口命名
+- [x] 返回相应里面显示creator_name和updator_name（目前先拿字符填上）
+- [ ] 完成MyBatis-Plus迁移
+- [ ] 实现Edit和Delete接口
+- [ ] 实现差异化查询（暂缓，只保留用户部分）
+- [ ] 看看能不能复用TinyRespond
+
 ```mermaid
 graph TD
     A[Controller] -->|传递DTO| B(Service层)
@@ -23,7 +62,6 @@ sequenceDiagram
     S->>S: build responseDTO
     S-->>C: responseDTO
 ```
-
 
 ## 1. 功能概述
 
@@ -58,17 +96,18 @@ create table announcement (
     updated_at timestamp not null on update CURRENT_TIMESTAMP comment '更新时间',
     scheduled_publish_time timestamp null comment '预定发布时间',
     status int not null comment '状态（0草稿、1已发布、2待发布、3已删除）',
-    creator_id int not null comment '创建用户',
-    updator_id int not null comment '更新用户',
+    createUid int not null comment '创建用户',
+    updateUid int not null comment '更新用户',
     deleted boolean not null comment '是否被删除',
     attribute text null comment '属性列（json string，包含stick等扩展属性）',
 );
 ```
 
 主要修改：
+
 - 移除了 target_id 字段
 - 移除了 sender 字段
-- create_uid和update_uid重命名为creator_id和updator_id
+- create_uid和update_uid重命名为createUid和updateUid
 
 ### 2.2 数据库内字段说明
 
@@ -82,8 +121,8 @@ create table announcement (
 | updated_at             | timestamp    | 更新时间     | 自动填充，更新公告时记录当前时间     |
 | scheduled_at           | timestamp    | 预定发布时间 | 可选，为空则立即发布               |
 | status                 | int          | 状态         | 必填，0草稿、1已发布、2待发布 |
-| creator_id             | bigint       | 创建用户ID   | 必填，创建公告的用户ID              |
-| updator_id             | bigint       | 更新用户ID   | 必填，更新公告的用户ID              |
+| createUid             | bigint       | 创建用户ID   | 必填，创建公告的用户ID              |
+| updateUid             | bigint       | 更新用户ID   | 必填，更新公告的用户ID              |
 | deleted                | boolean      | 是否被删除   | 必填，true表示被删除，false表示未删除 |
 | attribute              | text         | 属性列       | 可选，json string，包含stick等扩展属性 |
 
@@ -139,8 +178,8 @@ Content-Type: application/json
     "update_at": "2024-01-01 09:00:00",
     "scheduled_publish_time": null,
     "status": 1,
-    "creator_id": 123,
-    "updator_id": 123,
+    "createUid": 123,
+    "updateUid": 123,
     "deleted": false,
     "attribute": "sticky:1"
   }
@@ -453,7 +492,7 @@ public PageResult<AnnouncementResponse> listAnnouncements(
 
 ### 7.1 数据库优化
 
-- 在status、creator_id、create_time、publish_time字段上建立索引
+- 在status、createUid、create_time、publish_time字段上建立索引
 - 对于列表查询，只返回必要字段，避免查询大文本内容
 - 使用分页查询，避免一次性加载大量数据
 
