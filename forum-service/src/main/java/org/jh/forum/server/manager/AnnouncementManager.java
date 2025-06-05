@@ -241,9 +241,7 @@ public class AnnouncementManager {
         response.setAttribute("{\"sticky\": true}");
 
         return response;
-    }
-
-    /**
+    }    /**
      * 分页查询公告列表
      */
     public ListAnnouncementResponse listAnnouncements(
@@ -261,7 +259,6 @@ public class AnnouncementManager {
             ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
             item.setId(i + (request.getPage() - 1) * request.getSize());
             item.setTitle("Manager Mock公告 - " + item.getId());
-
             // 设置类型（0=系统公告，1=学校公告）
             if ("系统公告".equals(request.getType())) {
                 item.setType(0); // 系统公告
@@ -412,14 +409,12 @@ public class AnnouncementManager {
             item.setUpdatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(i)));
             list.add(item);
         }
-
         // 构建响应
         ListAnnouncementResponse response = new ListAnnouncementResponse();
         response.setList(list);
         response.setTotal(35); // Mock总数
         response.setPage(request.getPage());
         response.setPageSize(request.getSize());
-
         log.info("管理员查询公告列表完成，返回{}条记录", list.size());
         return response;
     }
