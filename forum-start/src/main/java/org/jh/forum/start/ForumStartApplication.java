@@ -3,6 +3,7 @@ package org.jh.forum.start;
 import com.alibaba.nacos.api.annotation.NacosInjected;
 import com.alibaba.nacos.api.naming.NamingService;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +14,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableAspectJAutoProxy
 @DubboComponentScan(basePackages = "org.jh.forum.server.dubbo")
 @ComponentScan(basePackages = {"org.jh.forum.server",
-        "org.jh.forum.start"})
+        "org.jh.forum.start", "org.jh.forum.common"})
+@MapperScan(basePackages = "org.jh.forum.common.entity.mapper")
 public class ForumStartApplication {
 
     @NacosInjected
