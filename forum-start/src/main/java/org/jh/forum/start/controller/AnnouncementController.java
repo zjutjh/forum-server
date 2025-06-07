@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 公告管理控制器
- ·*
+ * ·*
  * 功能概述：
  * - 创建公告：POST /announcements
  * - 更新公告：PUT /announcements
@@ -156,8 +156,6 @@ public class AnnouncementController {
         try {
             log.info("收到置顶/取消置顶公告请求，ID: {}, 置顶状态: {}", request.getId(), request.getSticky());
 
-            // TODO: 数据库层面验证ID是否存在且未删除，暂时mock放过
-
             AnnouncementOperationResponse response = announcementService.stickyAnnouncement(
                     request.getId(), request.getSticky());
 
@@ -169,6 +167,12 @@ public class AnnouncementController {
             log.info("公告{}成功，ID: {}", request.getSticky() ? "置顶" : "取消置顶", response.getAnnounceId());
             return AjaxResult.success(request.getSticky() ? "stickied" : "unstickied", response);
         } catch (Exception e) {
+            // 优先处理 ApiException（Service层包装的异常）
+            if (e instanceof org.jh.forum.common.exceptions.ApiException) {
+                org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
+                log.error("置顶公告业务异常", apiEx);
+                return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
+            }
             log.error("置顶/取消置顶公告失败，ID: {}, 错误信息: {}", request.getId(), e.getMessage(), e);
             return AjaxResult.fail(500, "置顶/取消置顶公告失败：" + e.getMessage());
         }
@@ -377,5 +381,3 @@ public class AnnouncementController {
         }
     }
 }
-
-

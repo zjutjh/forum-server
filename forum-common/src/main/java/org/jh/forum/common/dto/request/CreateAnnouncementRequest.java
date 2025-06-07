@@ -41,6 +41,6 @@ public class CreateAnnouncementRequest {
     @Schema(description = "附加属性", example = "{\"test\": \"test\"}")
     private Object attribute;
 
-    // @Schema(description = "是否置顶", example = "false", allowableValues = { "true", "false" })
-    // private Boolean sticky;
+    @Schema(description = "是否置顶", example = "false", allowableValues = { "true", "false" })
+    private Boolean sticky;
 }

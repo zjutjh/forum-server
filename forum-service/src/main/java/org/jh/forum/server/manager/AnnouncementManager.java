@@ -71,7 +71,7 @@ public class AnnouncementManager {
      */
     public AnnouncementOperationResponse editAnnouncement(Integer id, EditAnnouncementRequest request) {
         log.info("Manager层执行数据库更新操作，ID：{}，标题：{}", id, request.getTitle());
-        
+
         // 构建要更新的实体对象
         Announcement updateEntity = Announcement.builder()
                 .id(id)
@@ -82,14 +82,14 @@ public class AnnouncementManager {
                 .status(request.getStatus())
                 .attribute(convertAttributeToString(request.getAttribute()))
                 .build();
-        
+
         // 使用MyBatis-Plus的updateById方法，会自动触发AutoFillHandler
         int result = announcementMapper.updateById(updateEntity);
-        
+
         if (result <= 0) {
             throw new RuntimeException("数据库更新失败，可能公告不存在或已被删除");
         }
-        
+
         log.info("数据库更新成功，ID: {}", id);
 
         AnnouncementOperationResponse response = new AnnouncementOperationResponse();
@@ -106,7 +106,7 @@ public class AnnouncementManager {
     @Transactional
     public AnnouncementOperationResponse editBasicFields(Integer id, EditAnnouncementRequest request) {
         log.info("Manager层执行基础字段更新操作，ID：{}，标题：{}", id, request.getTitle());
-        
+
         // 使用 MyBatis-Plus 的 updateById 方法，会自动触发 AutoFillHandler
         Announcement updateEntity = Announcement.builder()
                 .id(id)
@@ -116,13 +116,13 @@ public class AnnouncementManager {
                 .attribute(convertAttributeToString(request.getAttribute()))
                 .sticky(request.getSticky())
                 .build();
-        
+
         int result = announcementMapper.updateById(updateEntity);
-        
+
         if (result <= 0) {
             throw new RuntimeException("数据库更新失败，可能公告不存在或已被删除");
         }
-        
+
         log.info("基础字段更新成功，ID: {}", id);
 
         AnnouncementOperationResponse response = new AnnouncementOperationResponse();
@@ -139,7 +139,7 @@ public class AnnouncementManager {
     @Transactional
     public AnnouncementOperationResponse editAllFields(Integer id, EditAnnouncementRequest request) {
         log.info("Manager层执行所有字段更新操作，ID：{}，标题：{}", id, request.getTitle());
-        
+
         // 使用 MyBatis-Plus 的 updateById 方法，会自动触发 AutoFillHandler
         Announcement updateEntity = Announcement.builder()
                 .id(id)
@@ -151,13 +151,13 @@ public class AnnouncementManager {
                 .attribute(convertAttributeToString(request.getAttribute()))
                 .sticky(request.getSticky())
                 .build();
-        
+
         int result = announcementMapper.updateById(updateEntity);
-        
+
         if (result <= 0) {
             throw new RuntimeException("数据库更新失败，可能公告不存在或已被删除");
         }
-        
+
         log.info("所有字段更新成功，ID: {}", id);
 
         AnnouncementOperationResponse response = new AnnouncementOperationResponse();
@@ -171,7 +171,9 @@ public class AnnouncementManager {
      */
     public boolean checkTitleDuplicate(String title) {
         return announcementMapper.checkExistsByTitle(title);
-    }    /**
+    }
+
+    /**
      * 检查标题是否重复（编辑时使用，排除当前公告ID，已排除软删除，后如无特殊情况不再注明）
      */
     public boolean checkTitleDuplicate(String title, Integer excludeId) {
@@ -192,7 +194,9 @@ public class AnnouncementManager {
         // 对于其他类型，可以转换为JSON字符串
         // 这里先简单返回toString()，如果需要完整的JSON序列化可以使用Jackson
         return attribute.toString();
-    }    /**
+    }
+
+    /**
      * 根据ID检查公告是否存在
      */
     public boolean checkExist(Integer id) {
@@ -256,16 +260,6 @@ public class AnnouncementManager {
             ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
             item.setId(i + (request.getPage() - 1) * request.getSize());
             item.setTitle("Manager Mock公告 - " + item.getId());
-            // 设置类型（0=系统公告，1=学校公告）
-            if ("系统公告".equals(request.getType())) {
-                item.setType(0); // 系统公告
-            } else if ("学校公告".equals(request.getType())) {
-                item.setType(1); // 学校公告
-            } else {
-                item.setType(0); // 默认为系统公告
-            }
-
-            // 设置状态（已发布=1）
             item.setStatus(1);
             item.setCreator("admin");
             item.setUpdator("admin");
@@ -291,8 +285,10 @@ public class AnnouncementManager {
 
         if (id == null || id <= 0) {
             return null;
-        } // TODO: 实际实现中这里会调用Mapper层软删除数据库记录
-          // 现在先返回Mock结果
+        }
+
+        // TODO: 实际实现中这里会调用Mapper层软删除数据库记录
+        // 现在先返回Mock结果
 
         AnnouncementOperationResponse response = new AnnouncementOperationResponse();
         response.setAnnounceId(id);
@@ -301,21 +297,44 @@ public class AnnouncementManager {
     }
 
     /**
-     * 置顶/取消置顶公告
+     * 检查是否可以置顶公告（检查置顶数量限制）
+     * 
+     * @param excludeId 排除的公告ID（用于编辑时检查）
+     * @return true表示可以置顶，false表示已达上限
      */
+    public boolean canStickyAnnouncement(Integer excludeId) {
+        int count = announcementMapper.countStickyAnnouncementsExcludeId(excludeId);
+        return count < 3; // 最多允许3个置顶公告
+    }
+
+    /**
+     * 检查是否可以置顶公告（新增公告时使用）
+     * 
+     * @return true表示可以置顶，false表示已达上限，方法重载
+     */
+    public boolean canStickyAnnouncement() {
+        int count = announcementMapper.countStickyAnnouncements();
+        return count < 3; // 最多允许3个置顶公告
+    }
+
+    @Transactional
     public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky) {
         log.info("Manager层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, isSticky);
 
-        if (id == null || id <= 0) {
-            return null;
+        // 构建要更新的实体对象（只更新sticky字段）
+        Announcement updateEntity = Announcement.builder()
+                .id(id)
+                .sticky(isSticky)
+                .build();
+
+        // 使用MyBatis-Plus的updateById方法，会自动触发AutoFillHandler更新update_uid和updated_at
+        int result = announcementMapper.updateById(updateEntity);
+
+        if (result <= 0) {
+            throw new RuntimeException("数据库更新失败，可能公告不存在或已被删除");
         }
 
-        if (isSticky == null) {
-            return null;
-        }
-
-        // TODO: 实际实现中这里会调用Mapper层更新数据库sticky字段
-        // 现在先返回Mock结果
+        log.info("置顶状态更新成功，ID: {}, sticky: {}", id, isSticky);
 
         AnnouncementOperationResponse response = new AnnouncementOperationResponse();
         response.setAnnounceId(id);

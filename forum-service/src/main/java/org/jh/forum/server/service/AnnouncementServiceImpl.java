@@ -37,22 +37,25 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     public AnnouncementOperationResponse createAnnouncement(CreateAnnouncementRequest request) {
         try {
 
-            // Service层处理业务校验
+            // Service层处理校验
             validateTitleAndContent(request.getTitle(), request.getContent());
 
             // 标题查重校验（使用trim后的标题）
             String trimmedTitle = request.getTitle().trim();
             if (announcementManager.checkTitleDuplicate(trimmedTitle)) {
                 throw new IllegalArgumentException("公告标题已存在，请使用其他标题");
-            }
-
-            // 校验公告类型
+            } // 校验公告类型
             validateAnnouncementType(request.getType());
 
             // 校验定时发布和状态逻辑
             validateScheduledAndStatus(request.getScheduledAt(), request.getStatus());
 
-            // Service层负责DTO->Entity转换
+            // 如果设置为置顶，检查置顶公告数量限制（最多3个）
+            if (request.getSticky() && !announcementManager.canStickyAnnouncement()) {
+                throw new IllegalArgumentException("置顶公告数量已达上限");
+            }
+
+            // Service层DTO->Entity转换
             Announcement entity = convertToEntity(request);
 
             // Manager层执行原子数据库操作
@@ -63,7 +66,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return response;
         } catch (IllegalArgumentException e) {
             // 包装参数错误
-            log.warn("创建公告业务校验失败: {}", e.getMessage());
+            log.warn("创建公告校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             // 包装数据库异常
@@ -85,15 +88,18 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         if (scheduledAt != null) {
             log.debug("使用定时发布时间: {}", scheduledAt);
         }
+
+        // TODO: 更好的autofill和sticky
         return Announcement.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
                 .type(request.getType())
-                .createUid(123l) // Mock创建人ID
+                .createUid(123l) // Mock创建人ID TODO: 替换为实际获取的用户ID
                 .updateUid(123L) // 创建时设置更新人为创建人
                 .scheduledAt(scheduledAt).status(request.getStatus() != null ? request.getStatus() : 0)
                 .deleted(false) // 新创建的公告默认未删除
                 .attribute(convertAttributeToString(request.getAttribute()))
+                .sticky(request.getSticky())
                 .build();
     }
 
@@ -101,10 +107,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public AnnouncementOperationResponse editAnnouncement(Integer id, EditAnnouncementRequest request) {
         try {
-            log.info("Service层编辑公告，ID：{}，标题：{}", id, request.getTitle());            
-            
+            log.info("Service层编辑公告，ID：{}，标题：{}", id, request.getTitle());
+
             // 校验ID
-            announcementManager.checkExist(id);
+            if (!announcementManager.checkExist(id)) {
+                throw new IllegalArgumentException("公告不存在或已被删除");
+            }
 
             // 校验标题和内容
             validateTitleAndContent(request.getTitle(), request.getContent());
@@ -119,19 +127,28 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             validateAnnouncementType(request.getType());
 
             // 校验定时发布和状态逻辑
-            validateScheduledAndStatus(request.getScheduledAt(), request.getStatus());            
-            
+            validateScheduledAndStatus(request.getScheduledAt(), request.getStatus());
+
             Announcement originAnnouncement = announcementManager.getAnnouncementEntityById(id);
+
+            // 如果设置为置顶，检查置顶公告数量限制（最多3个）
+            if (request.getSticky() != null && request.getSticky()) {
+                // 只有在希望置顶且当前公告未置顶时，才检查数量限制
+                if (!announcementManager.canStickyAnnouncement(id)) {
+                    throw new IllegalArgumentException("置顶公告数量已达上限");
+                }
+            }
 
             // TODO 编辑权限校验（等着CurrentUid上线）
             // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
-            //     throw new IllegalArgumentException("您没有编辑该公告的权限");
+            // throw new IllegalArgumentException("您没有编辑该公告的权限");
             // }
 
             // 内联权限状态检验
             if (originAnnouncement.getStatus() == 1) {
                 // 如果当前公告为已发布状态，则不允许编辑定时发布和状态
-                if (request.getScheduledAt() != null || request.getScheduledAt() != originAnnouncement.getScheduledAt() || request.getStatus() != 1) {
+                if (request.getScheduledAt() != null || request.getScheduledAt() != originAnnouncement.getScheduledAt()
+                        || request.getStatus() != 1) {
                     throw new IllegalArgumentException("已发布的公告不允许编辑定时发布和状态");
                 }
                 if (request.getStatus() != null && request.getStatus() != 1) {
@@ -145,8 +162,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
         } catch (IllegalArgumentException e) {
-            // 包装业务校验异常为参数错误
-            log.warn("编辑公告业务校验失败: {}", e.getMessage());
+            // 包装校验异常为参数错误
+            log.warn("编辑公告校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             // 包装数据库异常
@@ -161,12 +178,51 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
-    // 置顶/取消置顶公告
-    @Override
-    public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky) {
-        log.info("Service层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, isSticky);
-        return announcementManager.stickyAnnouncement(id, isSticky);
+ // 置顶/取消置顶公告
+@Override
+public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean sticky) {
+    try {
+        log.info("Service层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, sticky);
+        
+        // 校验sticky参数（防御性编程）
+        if (sticky == null) {
+            throw new IllegalArgumentException("置顶状态不能为空，必须为true或false");
+        }
+
+        // 校验ID并检查公告是否存在且未被删除
+        if (!announcementManager.checkExist(id)) {
+            throw new IllegalArgumentException("公告不存在或已被删除");
+        }
+
+        // TODO 编辑权限校验（等着CurrentUid上线）
+        // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
+        // throw new IllegalArgumentException("您没有编辑该公告的权限");
+        // }
+
+        // 如果置顶，检查置顶公告数量限制（最多3个）
+        if (sticky && !announcementManager.canStickyAnnouncement(id)) {
+            throw new IllegalArgumentException("置顶公告数量已达上限");
+        }
+
+        return announcementManager.stickyAnnouncement(id, sticky);
+
+    } catch (IllegalArgumentException e) {
+        // 直接使用异常消息，不添加前缀
+        String errorMsg = e.getMessage() != null ? e.getMessage() : "参数错误";
+        log.warn("置顶公告业务校验失败: {}", errorMsg);
+        throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), errorMsg);
+    } catch (Exception e) {
+        // 包装数据库异常
+        if (e instanceof java.sql.SQLException ||
+                (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
+            log.error("数据库操作异常", e);
+            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+        }
+        // 重新抛出其他异常时也要包装
+        log.error("置顶公告系统异常", e);
+        throw e;
     }
+}
 
     // 查询公告详情
     @Override
