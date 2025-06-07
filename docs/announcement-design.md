@@ -36,10 +36,10 @@ sticky字段单开还是塞attribute里头？
 - [x] 返回相应里面显示creator_name和updator_name（目前先拿字符填上）
 - [x] 完成MyBatis-Plus迁移
 - [x] 实现Edit
-- [ ] 实现Sticky
-- [ ] 实现Delete接口
-- [ ] GETList（用户）
-- [ ] GETDetail（管理员）
+- [x] 实现Sticky
+- [x] 实现Delete接口
+- [x] GETList（用户）
+- [X] GETDetail（管理员）
 - [ ] GETList（管理员）
 - [ ] 看看能不能复用TinyRespond
 

@@ -6,6 +6,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
@@ -173,8 +176,7 @@ public class AnnouncementManager {
     public AnnouncementOperationResponse deleteAnnouncement(Integer id) {
         log.info("Manager层执行数据库软删除操作，ID：{}", id);
 
-
-        // 使用MyBatis-Plus的updateById方法进行软删除，会自动触发AutoFillHandler更新update_uid和updated_at
+        // 直接执行删除操作，移除重复的checkExist校验
         int result = announcementMapper.deleteById(id);
 
         if (result <= 0) {
@@ -223,6 +225,7 @@ public class AnnouncementManager {
      * 根据ID检查公告是否存在
      */
     public boolean checkExist(Integer id) {
+        // 保留实际数据访问逻辑
         return announcementMapper.checkExist(id);
     }
 
@@ -231,6 +234,7 @@ public class AnnouncementManager {
      */
     public Announcement getAnnouncementEntityById(Integer id) {
         log.info("Manager层查询公告实体，ID：{}", id);
+        // 直接调用mapper查询，移除重复校验
         return announcementMapper.selectById(id);
     }
 
@@ -240,32 +244,61 @@ public class AnnouncementManager {
     public AnnouncementDetailsResponse getAnnouncementById(Integer id) {
         log.info("Manager层查询公告详情，ID：{}", id);
 
-        if (id == null || id <= 0) {
-            return null;
-        }
+        // 查询公告实体
+        Announcement raw = announcementMapper.findByID(id);
 
-        // TODO: 实际实现中这里会调用Mapper层从数据库查询
-        // 现在先返回Mock数据
+        if (raw == null) {
+            throw new RuntimeException("公告不存在或已被删除");
+        }
 
         AnnouncementDetailsResponse response = new AnnouncementDetailsResponse();
         response.setId(id);
-        response.setTitle("Mock公告标题 - " + id);
-        response.setContent("这是一个Mock公告内容，用于测试业务逻辑...");
-        response.setType(0);
-        response.setStatus(1);
-        response.setCreator("admin");
-        response.setUpdator("admin");
-        response.setCreatedAt(
-                formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusDays(1)));
-        response.setUpdatedAt(
-                formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(2)));
-        response.setScheduledAt(null);
-        response.setAttribute("{\"sticky\": true}");
+        response.setTitle(raw.getTitle());
+        response.setContent(raw.getContent());
+        response.setType(raw.getType());
+        response.setStatus(raw.getStatus());
+
+        response.setCreator(getUsernameById(raw.getCreateUid()));
+        response.setUpdator(getUsernameById(raw.getUpdateUid()));
+
+        // 使用实际的时间数据和时间数据
+        response.setCreatedAt(formatToIso8601(raw.getCreatedAt()));
+        response.setUpdatedAt(formatToIso8601(raw.getUpdatedAt()));
+        response.setScheduledAt(formatToIso8601(raw.getScheduledAt()));
+        response.setAttribute(raw.getAttribute());
+        response.setSticky(raw.getSticky());
 
         return response;
     }
 
     /**
+     * TODO: 更好的对应
+     * 辅助方法 暂时的id-username
+     */
+    
+    public String getUsernameById(Long userId) {
+        if (userId == null) {
+            return "unknown";
+        }
+
+        // 临时映射表，便于测试
+        Map<Long, String> tempMapping = Map.of(
+                123L, "admin",
+                -1L, "testuser",
+                999L, "superadmin");
+
+        return tempMapping.getOrDefault(userId, "user_" + userId);
+    }
+
+    /**
+    * 批量获取用户名（性能优化，一次查询多个）
+    */
+    public Map<Long, String> getUsernamesByIds(Set<Long> userIds) {
+        return userIds.stream()
+                .collect(Collectors.toMap(
+                        id -> id,
+                        this::getUsernameById));
+    }    /**
      * 分页查询公告列表
      */
     public ListAnnouncementResponse listAnnouncements(
@@ -274,30 +307,61 @@ public class AnnouncementManager {
                 "Manager层查询公告列表，页码：{}，状态：{}，类型：{}",
                 request.getPage(),
                 request.getStatus(),
-                request.getType()); // TODO: 实际实现中这里会调用Mapper层分页查询数据库
-        // 现在先返回Mock数据
+                request.getType());
 
-        List<ListAnnouncementResponse.AnnouncementItemResponse> list = new ArrayList<>();
+        // 计算分页参数
+        int page = request.getPage() != null ? request.getPage() : 1;
+        int size = request.getSize() != null ? request.getSize() : 8;
+        int offset = (page - 1) * size;
 
-        for (int i = 1; i <= Math.min(request.getSize(), 8); i++) {
-            ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
-            item.setId(i + (request.getPage() - 1) * request.getSize());
-            item.setTitle("Manager Mock公告 - " + item.getId());
-            item.setStatus(1);
-            item.setCreator("admin");
-            item.setUpdator("admin");
-            item.setCreatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusDays(i)));
-            item.setUpdatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(i)));
-            list.add(item);
-        }
+        // 查询公告列表
+        List<Announcement> announcements = announcementMapper.findAnnouncementsByPage(
+                request.getStatus(),
+                request.getType(),
+                offset,
+                size
+        );
 
-        ListAnnouncementResponse response = new ListAnnouncementResponse();
-        response.setTotal(88); // Mock总数
-        response.setPage(request.getPage());
-        response.setPageSize(request.getSize());
-        response.setList(list);
+        // 查询总数
+        Long totalCount = announcementMapper.countAnnouncements(
+                request.getStatus(),
+                request.getType()
+        );
 
+        // 转换为响应对象
+        List<ListAnnouncementResponse.AnnouncementItemResponse> itemList = announcements.stream()
+                .map(this::convertToAnnouncementItem)
+                .toList();        ListAnnouncementResponse response = new ListAnnouncementResponse();
+        response.setTotal(totalCount.intValue());
+        response.setPage(page);
+        response.setPageSize(size);
+        response.setList(itemList);
+
+        log.info("查询公告列表成功，总数: {}, 当前页数据: {}", totalCount, itemList.size());
         return response;
+    }
+
+    /**
+     * 将 Announcement 实体转换为 AnnouncementItemResponse
+     */
+    private ListAnnouncementResponse.AnnouncementItemResponse convertToAnnouncementItem(Announcement announcement) {
+        ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
+        
+        item.setId(announcement.getId());
+        item.setTitle(announcement.getTitle());
+        item.setType(announcement.getType());
+        item.setStatus(announcement.getStatus());
+        item.setSticky(announcement.getSticky());
+        
+        // 设置用户名
+        item.setCreator(getUsernameById(announcement.getCreateUid()));
+        item.setUpdator(getUsernameById(announcement.getUpdateUid()));
+        
+        // 格式化时间
+        item.setCreatedAt(formatToIso8601(announcement.getCreatedAt()));
+        item.setUpdatedAt(formatToIso8601(announcement.getUpdatedAt()));
+        
+        return item;
     }
 
     /**

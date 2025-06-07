@@ -89,7 +89,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             log.debug("使用定时发布时间: {}", scheduledAt);
         }
 
-        // TODO: 更好的autofill和sticky
+        // TODO: 更好的autofill
         return Announcement.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -109,7 +109,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         try {
             log.info("Service层编辑公告，ID：{}，标题：{}", id, request.getTitle());
 
-            // 校验ID
+            // 统一存在性校验
             if (!announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
@@ -209,7 +209,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         } catch (IllegalArgumentException e) {
             // 直接使用异常消息，不添加前缀
             String errorMsg = e.getMessage() != null ? e.getMessage() : "参数错误";
-            log.warn("置顶公告业务校验失败: {}", errorMsg);
+            log.warn("置顶公告校验失败: {}", errorMsg);
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), errorMsg);
         } catch (Exception e) {
             // 包装数据库异常
@@ -227,32 +227,104 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     // 删除公告
     @Override
     public AnnouncementOperationResponse deleteAnnouncement(Integer id) {
-        log.info("Service层删除公告，ID：{}", id);
-        // 校验ID
-        if (!announcementManager.checkExist(id)) {
-            throw new IllegalArgumentException("公告不存在或已被删除");
-        }
-        // TODO 删除权限校验（等着CurrentUid上线)
-        // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
-        // throw new IllegalArgumentException("您没有删除该公告的权限");
-        // }
+        try{
+            log.info("Service层删除公告，ID：{}", id);
+            // 校验ID
+            if (!announcementManager.checkExist(id)) {
+                throw new IllegalArgumentException("公告不存在或已被删除");
+            }
+            // TODO 删除权限校验（等着CurrentUid上线)
+            // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
+            // throw new IllegalArgumentException("您没有删除该公告的权限");
+            // }
 
-        // 执行删除操作
-        return announcementManager.deleteAnnouncement(id);
+            // 执行删除操作
+            return announcementManager.deleteAnnouncement(id);
+        } catch (IllegalArgumentException e) {
+            // 直接使用异常消息，不添加前缀
+            String errorMsg = e.getMessage() != null ? e.getMessage() : "参数错误";
+            log.warn("删除公告校验失败:");
+            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), errorMsg);
+        } catch (Exception e) {
+            // 包装数据库异常
+            if (e instanceof java.sql.SQLException ||
+                    (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
+                log.error("数据库操作异常", e);
+                throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+            }
+            // 重新抛出其他异常时也要包装
+            log.error("删除公告系统异常", e);
+            throw e;
+        }
     }
 
     // 查询公告详情
     @Override
     public AnnouncementDetailsResponse getAnnouncementById(Integer id) {
-        log.info("Service层查询公告详情，ID：{}", id);
-        return announcementManager.getAnnouncementById(id);
+        try {
+            log.info("Service层查询公告详情，ID：{}", id);
+
+            // 校验ID
+            if (!announcementManager.checkExist(id)) {
+                throw new IllegalArgumentException("公告不存在或已被删除");
+            }
+
+            // TODO 查询权限校验（仅管理可以查看所有参数）
+
+            // 具体查询操作
+            return announcementManager.getAnnouncementById(id);
+        } catch (IllegalArgumentException e) {
+            // 包装校验异常为参数错误
+            log.warn("查询公告详情校验失败: {}", e.getMessage());
+            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (Exception e) {
+            // 包装数据库异常
+            if (e instanceof java.sql.SQLException ||
+                    (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
+                log.error("数据库操作异常", e);
+                throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+            }
+            // 重新抛出其他异常
+            log.error("查询公告详情未知异常", e);
+            throw new ApiException(500, 50000, "查询公告详情失败：系统内部错误");
+        }
     }
 
-    // 查询公告列表
     @Override
     public ListAnnouncementResponse listAnnouncements(ListAnnouncementRequest request) {
-        log.info("Service层查询公告列表，页码：{}，状态：{}", request.getPage(), request.getStatus());
-        return announcementManager.listAnnouncements(request);
+        try {
+            log.info("Service层查询公告列表，页码：{}，状态：{}", request.getPage(), request.getStatus());
+
+            // 参数校验
+            if (request.getPage() != null && request.getPage() < 1) {
+                throw new IllegalArgumentException("页码必须大于0");
+            }
+            if (request.getSize() != null && (request.getSize() < 1 || request.getSize() > 50)) {
+                throw new IllegalArgumentException("每页大小必须在1-50之间");
+            }
+
+            // 设置默认值
+            if (request.getPage() == null) request.setPage(1);
+            if (request.getSize() == null) request.setSize(8);
+            if (request.getStatus() == null) request.setStatus(1); // 默认查询已发布的公告
+
+            return announcementManager.listAnnouncements(request);
+            
+        } catch (IllegalArgumentException e) {
+            // 包装业务校验异常为参数错误
+            log.warn("查询公告列表校验失败: {}", e.getMessage());
+            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (Exception e) {
+            // 包装数据库异常
+            if (e instanceof java.sql.SQLException ||
+                    (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
+                log.error("数据库操作异常", e);
+                throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+            }
+            // 重新抛出其他异常
+            log.error("查询公告列表未知异常", e);
+            throw new ApiException(500, 50000, "查询公告列表失败：系统内部错误");
+        }
     }
 
     @Override
@@ -328,10 +400,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 throw new IllegalArgumentException("未设置定时发布时，状态只能为草稿或已发布");
             }
         }
-    }
-
-    /**
-     * 校验编辑时的权限和逻辑
+    }    /**
+     * 校验逻辑
+     * TODO: 实现权限校验逻辑
      */
-
+    @SuppressWarnings("unused")
+    private void checkPermission(Integer id, Long currentUid) {
+        // TODO: 检验当前用户id和公告创建者id是否一致
+    }
 }

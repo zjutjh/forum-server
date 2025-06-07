@@ -1,6 +1,7 @@
 package org.jh.forum.start.controller;
 
 import org.jh.forum.api.service.AnnouncementService;
+import org.jh.forum.server.manager.AnnouncementManager;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
@@ -54,9 +55,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/announcements")
 @Tag(name = "公告管理接口", description = "公告的创建、发布、查询等功能")
 public class AnnouncementController {
-
     @Resource
     private AnnouncementService announcementService;
+
+    @Resource
+    private AnnouncementManager announcementManager;
 
     /**
      * 创建公告接口
@@ -227,16 +230,9 @@ public class AnnouncementController {
      */
     @Operation(summary = "查看公告详情", description = "根据ID查询公告详情（用户/管理员）")
     @GetMapping
-    public AjaxResult<AnnouncementDetailsResponse> getAnnouncementDetail(@RequestParam Integer id) {
+    public AjaxResult<AnnouncementDetailsResponse> getAnnouncementDetail(@RequestParam("id") Integer id) {
         try {
             log.info("收到查询公告详情请求，ID: {}", id);
-
-            // TODO: 数据库层面验证ID是否存在且未删除，暂时mock放过
-            if (id == null || id <= 0) {
-                log.warn("公告ID无效: {}", id);
-                return AjaxResult.fail(400, "公告ID无效");
-            }
-
             AnnouncementDetailsResponse response = announcementService.getAnnouncementById(id);
 
             if (response == null) {
@@ -246,8 +242,14 @@ public class AnnouncementController {
 
             return AjaxResult.success(response);
         } catch (Exception e) {
-            log.error("查询公告详情失败，ID: {}, 错误信息: {}", id, e.getMessage(), e);
-            return AjaxResult.fail(500, "查询公告失败：" + e.getMessage());
+            // 优先处理 ApiException（Service层包装的异常）
+            if (e instanceof org.jh.forum.common.exceptions.ApiException) {
+                org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
+                log.error("获取公告异常", apiEx);
+                return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
+            }
+            log.error("获取公告失败，ID: {}, 错误信息: {}", id, e.getMessage(), e);
+            return AjaxResult.fail(500, "获取公告失败：" + e.getMessage());
         }
     }
 
@@ -272,19 +274,17 @@ public class AnnouncementController {
             // 创建请求对象
             ListAnnouncementRequest serviceRequest = new ListAnnouncementRequest();
             serviceRequest.setPage(request.getPage());
-            serviceRequest.setSize(request.getSize());
-
-            // 设置类型筛选
+            serviceRequest.setSize(request.getSize()); // 设置类型筛选
             if (request.getType() != null) {
-                // 根据枚举值设置类型
-                if (request.getType().getValue() == 1) {
-                    // 1=系统公告
+                // 根据类型值设置筛选条件（前端1,2,3 映射到数据库0,1,不限制）
+                if (request.getType() == 1) {
+                    // 1=系统公告 → 数据库type=0
+                    serviceRequest.setType(0);
+                } else if (request.getType() == 2) {
+                    // 2=学校公告 → 数据库type=1
                     serviceRequest.setType(1);
-                } else if (request.getType().getValue() == 2) {
-                    // 2=学校公告
-                    serviceRequest.setType(2);
                 }
-                // 如果是3(全部)，则不设置type筛选条件
+                // 如果是3(全部)或其他值，则不设置type筛选条件
             }
 
             // 只查询已发布的公告
@@ -297,6 +297,12 @@ public class AnnouncementController {
             log.info("查询公告列表成功，总数: {}", response.getTotal());
             return AjaxResult.success(response);
         } catch (Exception e) {
+            // 优先处理 ApiException（Service层包装的异常）
+            if (e instanceof org.jh.forum.common.exceptions.ApiException) {
+                org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
+                log.error("查询公告列表异常", apiEx);
+                return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
+            }
             log.error("查询公告列表失败，错误信息: {}", e.getMessage(), e);
             return AjaxResult.fail(500, "查询公告列表失败：" + e.getMessage());
         }
