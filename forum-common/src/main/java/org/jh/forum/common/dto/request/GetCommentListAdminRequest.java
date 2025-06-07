@@ -1,24 +1,24 @@
 package org.jh.forum.common.dto.request;
 
-import io.swagger.v3.oas.annotations.Parameter;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author qianqianzyk
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class GetCommentListAdminRequest extends BaseListRequest{
-    @Parameter(description = "帖子ID")
+@EqualsAndHashCode(callSuper = true)
+public class GetCommentListAdminRequest extends BaseListRequest {
+    @Schema(description = "帖子ID")
     @NotNull
-    private Integer postId;
+    @JsonProperty("post_id")
+    private Long postId;
 
-    @Parameter(description = "评论状态（全部，已删，未删）")
-    @NotBlank
-    private String status;
+    @Schema(description = "评论状态，1: 全部，2: 已删，3: 未删")
+    @NotNull
+    private Integer status;
 }

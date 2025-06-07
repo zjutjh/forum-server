@@ -1,22 +1,23 @@
 package org.jh.forum.common.dto.request;
 
-import io.swagger.v3.oas.annotations.Parameter;
-
-import jakarta.validation.constraints.NotNull;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author qianqianzyk
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class GetReplyListRequest extends BaseListRequest{
-    @Parameter(description = "回复ID")
+@EqualsAndHashCode(callSuper = true)
+public class GetReplyListRequest extends BaseListRequest {
+    @Schema(description = "回复ID")
     @NotNull
-    private Integer commentId;
+    @JsonProperty("comment_id")
+    private Long commentId;
 
-    @Parameter(description = "排序方式")
-    private String sort;
+    @Schema(description = "排序方式，1: 按最热，2: 按时间")
+    private Integer sort;
 }

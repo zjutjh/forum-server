@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
  * @author qianqianzyk
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public class GetPersonaCommentRequest extends BaseListRequest {
-
 }

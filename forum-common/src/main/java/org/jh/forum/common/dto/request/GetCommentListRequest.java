@@ -1,25 +1,27 @@
 package org.jh.forum.common.dto.request;
 
-import io.swagger.v3.oas.annotations.Parameter;
-
-import jakarta.validation.constraints.NotNull;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author qianqianzyk
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public class GetCommentListRequest extends BaseListRequest {
-    @Parameter(description = "帖子ID")
+    @Schema(description = "帖子ID")
     @NotNull
-    private Integer postId;
+    @JsonProperty("post_id")
+    private Long postId;
 
-    @Parameter(description = "排序方式")
-    private String sort;
+    @Schema(description = "排序方式，1: 按最热，2: 按时间")
+    private Integer sort;
 
-    @Parameter(description = "高亮评论ID")
-    private Integer highlightCommentId;
+    @Schema(description = "高亮评论ID")
+    @JsonProperty("highlight_comment_id")
+    private Long highlightCommentId;
 }
