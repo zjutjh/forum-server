@@ -19,6 +19,11 @@ public class AutoFillHandler implements MetaObjectHandler {
     public void insertFill(MetaObject metaObject) {
         this.strictInsertFill(metaObject, "createUid", Long.class, getCurrentUserId());
         this.strictInsertFill(metaObject, "createdAt", LocalDateTime.class, LocalDateTime.now());
+
+        this.strictInsertFill(metaObject, "updateUid", Long.class, getCurrentUserId());
+        this.strictInsertFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
+
+        this.strictInsertFill(metaObject, "deleted", Boolean.class, false);
     }
 
     /**
