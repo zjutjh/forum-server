@@ -178,51 +178,68 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
- // 置顶/取消置顶公告
-@Override
-public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean sticky) {
-    try {
-        log.info("Service层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, sticky);
-        
-        // 校验sticky参数（防御性编程）
-        if (sticky == null) {
-            throw new IllegalArgumentException("置顶状态不能为空，必须为true或false");
-        }
+    // 置顶/取消置顶公告
+    @Override
+    public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean sticky) {
+        try {
+            log.info("Service层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, sticky);
 
-        // 校验ID并检查公告是否存在且未被删除
+            // 校验sticky参数（防御性编程）
+            if (sticky == null) {
+                throw new IllegalArgumentException("置顶状态不能为空，必须为true或false");
+            }
+
+            // 校验ID并检查公告是否存在且未被删除
+            if (!announcementManager.checkExist(id)) {
+                throw new IllegalArgumentException("公告不存在或已被删除");
+            }
+
+            // TODO 编辑权限校验（等着CurrentUid上线）
+            // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
+            // throw new IllegalArgumentException("您没有编辑该公告的权限");
+            // }
+
+            // 如果置顶，检查置顶公告数量限制（最多3个）
+            if (sticky && !announcementManager.canStickyAnnouncement(id)) {
+                throw new IllegalArgumentException("置顶公告数量已达上限");
+            }
+
+            return announcementManager.stickyAnnouncement(id, sticky);
+
+        } catch (IllegalArgumentException e) {
+            // 直接使用异常消息，不添加前缀
+            String errorMsg = e.getMessage() != null ? e.getMessage() : "参数错误";
+            log.warn("置顶公告业务校验失败: {}", errorMsg);
+            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), errorMsg);
+        } catch (Exception e) {
+            // 包装数据库异常
+            if (e instanceof java.sql.SQLException ||
+                    (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
+                log.error("数据库操作异常", e);
+                throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+            }
+            // 重新抛出其他异常时也要包装
+            log.error("置顶公告系统异常", e);
+            throw e;
+        }
+    }
+
+    // 删除公告
+    @Override
+    public AnnouncementOperationResponse deleteAnnouncement(Integer id) {
+        log.info("Service层删除公告，ID：{}", id);
+        // 校验ID
         if (!announcementManager.checkExist(id)) {
             throw new IllegalArgumentException("公告不存在或已被删除");
         }
-
-        // TODO 编辑权限校验（等着CurrentUid上线）
+        // TODO 删除权限校验（等着CurrentUid上线)
         // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
-        // throw new IllegalArgumentException("您没有编辑该公告的权限");
+        // throw new IllegalArgumentException("您没有删除该公告的权限");
         // }
 
-        // 如果置顶，检查置顶公告数量限制（最多3个）
-        if (sticky && !announcementManager.canStickyAnnouncement(id)) {
-            throw new IllegalArgumentException("置顶公告数量已达上限");
-        }
-
-        return announcementManager.stickyAnnouncement(id, sticky);
-
-    } catch (IllegalArgumentException e) {
-        // 直接使用异常消息，不添加前缀
-        String errorMsg = e.getMessage() != null ? e.getMessage() : "参数错误";
-        log.warn("置顶公告业务校验失败: {}", errorMsg);
-        throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), errorMsg);
-    } catch (Exception e) {
-        // 包装数据库异常
-        if (e instanceof java.sql.SQLException ||
-                (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
-            log.error("数据库操作异常", e);
-            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
-        }
-        // 重新抛出其他异常时也要包装
-        log.error("置顶公告系统异常", e);
-        throw e;
+        // 执行删除操作
+        return announcementManager.deleteAnnouncement(id);
     }
-}
 
     // 查询公告详情
     @Override
@@ -236,13 +253,6 @@ public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean stic
     public ListAnnouncementResponse listAnnouncements(ListAnnouncementRequest request) {
         log.info("Service层查询公告列表，页码：{}，状态：{}", request.getPage(), request.getStatus());
         return announcementManager.listAnnouncements(request);
-    }
-
-    // 删除公告
-    @Override
-    public AnnouncementOperationResponse deleteAnnouncement(Integer id) {
-        log.info("Service层删除公告，ID：{}", id);
-        return announcementManager.deleteAnnouncement(id);
     }
 
     @Override

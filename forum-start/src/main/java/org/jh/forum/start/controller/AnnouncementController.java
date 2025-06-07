@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
  * 开发链路说明：
  * 1. Controller 接收HTTP请求
  * 2. 调用 Service(RPC) 处理请求
- * 3. Service 调用 Manager 处理业务逻辑
+ * 3. Service 调用 Manager 处理逻辑
  * 4. Manager 调用 Mapper 操作数据库
  * 5. 返回结果给前端
  *
@@ -85,7 +85,7 @@ public class AnnouncementController {
             // 优先处理 ApiException（Service层包装的异常）
             if (e instanceof org.jh.forum.common.exceptions.ApiException) {
                 org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
-                log.error("创建公告业务异常", apiEx); // 记录完整的ApiException堆栈
+                log.error("创建公告异常", apiEx); // 记录完整的ApiException堆栈
                 return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
             }
             // 兼容原有的数据库异常处理
@@ -130,7 +130,7 @@ public class AnnouncementController {
             // 优先处理 ApiException（Service层包装的异常）
             if (e instanceof org.jh.forum.common.exceptions.ApiException) {
                 org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
-                log.error("更新公告业务异常", apiEx); // 记录完整的ApiException堆栈
+                log.error("更新公告异常", apiEx); // 记录完整的ApiException堆栈
                 return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
             }
             log.error("更新公告失败，ID: {}, 标题: {}", request.getId(), request.getTitle(), e); // 记录完整的异常堆栈
@@ -170,7 +170,7 @@ public class AnnouncementController {
             // 优先处理 ApiException（Service层包装的异常）
             if (e instanceof org.jh.forum.common.exceptions.ApiException) {
                 org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
-                log.error("置顶公告业务异常", apiEx);
+                log.error("置顶公告异常", apiEx);
                 return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
             }
             log.error("置顶/取消置顶公告失败，ID: {}, 错误信息: {}", request.getId(), e.getMessage(), e);
@@ -191,26 +191,25 @@ public class AnnouncementController {
      */
     @Operation(summary = "软删除公告", description = "软删除指定公告（管理员权限）")
     @DeleteMapping
-    public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@RequestParam Integer id) {
+    public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@RequestParam("id") Integer id) {
         try {
             log.info("收到删除公告请求，ID: {}", id);
-
-            // TODO: 数据库层面验证ID是否存在且未删除，暂时mock放过
-            if (id == null || id <= 0) {
-                log.warn("公告ID无效: {}", id);
-                return AjaxResult.fail(400, "公告ID无效");
-            }
-
             AnnouncementOperationResponse result = announcementService.deleteAnnouncement(id);
 
             if (result == null) {
                 log.warn("删除公告失败，公告可能不存在，ID: {}", id);
-                return AjaxResult.fail(404, "公告不存在或删除失败");
+                return AjaxResult.fail(404, "公告不存在或已被删除");
             }
 
             log.info("删除公告成功，ID: {}", id);
             return AjaxResult.success("deleted", result);
         } catch (Exception e) {
+            // 优先处理 ApiException（Service层包装的异常）
+            if (e instanceof org.jh.forum.common.exceptions.ApiException) {
+                org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
+                log.error("删除公告异常", apiEx);
+                return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
+            }
             log.error("删除公告失败，ID: {}, 错误信息: {}", id, e.getMessage(), e);
             return AjaxResult.fail(500, "删除公告失败：" + e.getMessage());
         }

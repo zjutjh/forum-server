@@ -87,7 +87,7 @@ public class AnnouncementManager {
         int result = announcementMapper.updateById(updateEntity);
 
         if (result <= 0) {
-            throw new RuntimeException("数据库更新失败，可能公告不存在或已被删除");
+            throw new RuntimeException("数据库更新失败，数据库或公告状态异常");
         }
 
         log.info("数据库更新成功，ID: {}", id);
@@ -120,7 +120,7 @@ public class AnnouncementManager {
         int result = announcementMapper.updateById(updateEntity);
 
         if (result <= 0) {
-            throw new RuntimeException("数据库更新失败，可能公告不存在或已被删除");
+            throw new RuntimeException("数据库更新失败，数据库或公告状态异常");
         }
 
         log.info("基础字段更新成功，ID: {}", id);
@@ -155,10 +155,33 @@ public class AnnouncementManager {
         int result = announcementMapper.updateById(updateEntity);
 
         if (result <= 0) {
-            throw new RuntimeException("数据库更新失败，可能公告不存在或已被删除");
+            throw new RuntimeException("数据库更新失败，数据库或公告状态异常");
         }
 
         log.info("所有字段更新成功，ID: {}", id);
+
+        AnnouncementOperationResponse response = new AnnouncementOperationResponse();
+        response.setAnnounceId(id);
+
+        return response;
+    }
+
+    /**
+     * 删除公告 - 原子数据库操作（软删除）
+     */
+    @Transactional
+    public AnnouncementOperationResponse deleteAnnouncement(Integer id) {
+        log.info("Manager层执行数据库软删除操作，ID：{}", id);
+
+
+        // 使用MyBatis-Plus的updateById方法进行软删除，会自动触发AutoFillHandler更新update_uid和updated_at
+        int result = announcementMapper.deleteById(id);
+
+        if (result <= 0) {
+            throw new RuntimeException("数据库删除失败，数据库或公告状态异常");
+        }
+
+        log.info("数据库软删除成功，ID: {}", id);
 
         AnnouncementOperationResponse response = new AnnouncementOperationResponse();
         response.setAnnounceId(id);
@@ -278,25 +301,6 @@ public class AnnouncementManager {
     }
 
     /**
-     * 删除公告 - 原子数据库操作
-     */
-    public AnnouncementOperationResponse deleteAnnouncement(Integer id) {
-        log.info("Manager层删除公告，ID：{}", id);
-
-        if (id == null || id <= 0) {
-            return null;
-        }
-
-        // TODO: 实际实现中这里会调用Mapper层软删除数据库记录
-        // 现在先返回Mock结果
-
-        AnnouncementOperationResponse response = new AnnouncementOperationResponse();
-        response.setAnnounceId(id);
-
-        return response;
-    }
-
-    /**
      * 检查是否可以置顶公告（检查置顶数量限制）
      * 
      * @param excludeId 排除的公告ID（用于编辑时检查）
@@ -331,7 +335,7 @@ public class AnnouncementManager {
         int result = announcementMapper.updateById(updateEntity);
 
         if (result <= 0) {
-            throw new RuntimeException("数据库更新失败，可能公告不存在或已被删除");
+            throw new RuntimeException("数据库更新失败，数据库或公告状态异常");
         }
 
         log.info("置顶状态更新成功，ID: {}, sticky: {}", id, isSticky);
