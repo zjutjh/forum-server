@@ -4,15 +4,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.CommentService;
-import org.jh.forum.api.dubbo.PublishCommentReq;
-import org.jh.forum.api.dubbo.PublishCommentResp;
+import org.jh.forum.api.dubbo.*;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.request.*;
-import org.jh.forum.common.dto.response.GetCommentListResponse;
-import org.jh.forum.common.dto.response.GetPersonaCommentResponse;
-import org.jh.forum.common.dto.response.GetReplyListResponse;
-import org.jh.forum.common.dto.response.PublishCommentResponse;
+import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.start.models.AjaxResult;
@@ -73,8 +68,25 @@ public class CommentController {
 
     @Operation(summary = "点赞评论/回复")
     @PostMapping("/upvote")
-    public AjaxResult<String> upvoteComment(@RequestBody UpvoteCommentRequest request) {
-        return AjaxResult.success(null);
+    public AjaxResult<UpvoteCommentResponse> upvoteComment(@RequestBody UpvoteCommentRequest request) {
+        UpvoteCommentReq upvoteCommentReq = UpvoteCommentReq.newBuilder()
+                .setCommentId(request.getCommentId())
+                .build();
+
+        try {
+            UpvoteCommentResp resp = commentService.upvoteComment(upvoteCommentReq)
+                    .getData()
+                    .unpack(UpvoteCommentResp.class);
+
+            UpvoteCommentResponse response = new UpvoteCommentResponse();
+            response.setStatus(resp.getStatus());
+
+            return AjaxResult.success(response);
+        } catch (ForumServiceException e) {
+            throw new ApiException(e);
+        } catch (InvalidProtocolBufferException e) {
+            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+        }
     }
 
     @Operation(summary = "置顶评论/回复", description = "仅帖主设置")

@@ -24,6 +24,20 @@ message PublishCommentResp {
 }
 
 /**
+ * 点赞评论请求参数
+ */
+message UpvoteCommentReq {
+  int64 commentId = 1;
+}
+
+/**
+ * 点赞评论响应参数
+ */
+message UpvoteCommentResp {
+  bool status = 1;
+}
+
+/**
  * 评论服务接口
  */
 service CommentService {
@@ -31,4 +45,9 @@ service CommentService {
    * 发表评论方法定义
    */
   rpc publishComment(PublishCommentReq) returns (ServiceResult);
+
+  /**
+   * 点赞评论方法定义
+   */
+  rpc upvoteComment(UpvoteCommentReq) returns (ServiceResult);
 }

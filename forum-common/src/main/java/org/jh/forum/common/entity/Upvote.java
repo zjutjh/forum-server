@@ -7,22 +7,18 @@ import lombok.EqualsAndHashCode;
 
 /**
  * @author qianqianzyk
- * @TableName comment
+ * @TableName upvote
  */
 @Data
 @Builder
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "comment")
-public class Comment extends BaseEntity {
+@TableName(value = "upvote")
+public class Upvote extends BaseEntity {
     private Long userId;
 
     private Long postId;
 
-    private Long parentId;
+    private Long commentId;
 
-    private Long targetId;
-
-    private String content;
-
-    private Boolean isPinned;
+    private Boolean status;
 }
