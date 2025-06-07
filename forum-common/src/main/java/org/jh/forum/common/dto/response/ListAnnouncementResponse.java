@@ -42,10 +42,10 @@ public class ListAnnouncementResponse extends BaseListResponse<ListAnnouncementR
         @Schema(description = "更新时间", example = "2025-06-07T09:00:00.000Z")
         private String updatedAt;
 
-        @Schema(description = "预定发布时间", example= "2025-06-07T09:00:00.000Z")
+        @Schema(description = "预定发布时间", example = "2025-06-07T09:00:00.000Z")
         private String scheduledAt;
 
-        @Schema (description = "是否置顶", example = "false")
+        @Schema(description = "是否置顶", example = "false")
         private boolean sticky;
     }
 }

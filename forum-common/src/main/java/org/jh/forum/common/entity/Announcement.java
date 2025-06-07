@@ -48,12 +48,10 @@ public class Announcement {
      * 创建时间 - 自动填充（仅插入时生效）
      */
     @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
-
-    /**
+    private LocalDateTime createdAt;    /**
      * 更新时间 - 自动填充（插入和更新时均生效）
      */
-    @TableField(value = "updated_at", fill = FieldFill.UPDATE)
+    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
     /**
@@ -69,6 +67,12 @@ public class Announcement {
     private Integer status;
 
     /**
+     * 是否置顶 - 默认false
+     */
+    @TableField("sticky")
+    private Boolean sticky;
+
+    /**
      * 创建人ID - 必填
      */
     @TableField(value = "create_uid", fill = FieldFill.INSERT)
@@ -77,7 +81,7 @@ public class Announcement {
     /**
      * 更新人ID - 必填
      */
-    @TableField(value = "update_uid", fill = FieldFill.UPDATE)
+    @TableField(value = "update_uid", fill = FieldFill.INSERT_UPDATE)
     private Long updateUid;
 
     /**

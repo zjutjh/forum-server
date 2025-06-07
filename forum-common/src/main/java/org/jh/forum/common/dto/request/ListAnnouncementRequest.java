@@ -23,6 +23,6 @@ public class ListAnnouncementRequest {
     @Schema(description = "状态筛选：0草稿、1已发布、2待发布", example = "1", allowableValues = { "0", "1", "2" })
     private Integer status;
 
-    @Schema(description = "公告类型筛选", example = "系统公告", allowableValues = { "系统公告", "学校公告" })
-    private String type;
+    @Schema(description = "公告类型筛选", example = "3", allowableValues = { "1", "2", "3" })
+    private Integer type;
 }

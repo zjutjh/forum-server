@@ -31,18 +31,16 @@ public class CreateAnnouncementRequest {
 
     @Schema(description = "公告类型, 0系统1学校", example = "1", allowableValues = { "0", "1" })
     private int type;
-
     @JsonProperty("scheduled_at") // 显式声明JSON字段名称
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC+8")
-    @Schema(description = "定时发布时间", example = "2025-06-07T09:00:00.000Z")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") // 移除timezone配置，让Spring Boot自动处理
+    @Schema(description = "定时发布时间(ISO8601格式，前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00.000Z")
     private LocalDateTime scheduledAt;
 
     @Schema(description = "状态：0草稿、1已发布、2待发布", example = "0", allowableValues = { "0", "1", "2" })
     private Integer status;
-
-    @Schema(description = "附加属性", example = "{\"sticky\": true}")
+    @Schema(description = "附加属性", example = "{\"test\": \"test\"}")
     private Object attribute;
 
-    @Schema(description = "是否置顶", example = "false", allowableValues = { "true", "false" })
-    private Boolean sticky;
+    // @Schema(description = "是否置顶", example = "false", allowableValues = { "true", "false" })
+    // private Boolean sticky;
 }

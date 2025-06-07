@@ -31,30 +31,54 @@ import lombok.extern.slf4j.Slf4j;
 public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Resource
-    private AnnouncementManager announcementManager;
+    private AnnouncementManager announcementManager; // 创建公告
 
     @Override
     public AnnouncementOperationResponse createAnnouncement(CreateAnnouncementRequest request) {
         try {
+
+            // Service层处理业务校验
+            validateTitleAndContent(request.getTitle(), request.getContent());
+
+            // 标题查重校验（使用trim后的标题）
+            String trimmedTitle = request.getTitle().trim();
+            if (announcementManager.checkTitleDuplicate(trimmedTitle)) {
+                throw new IllegalArgumentException("公告标题已存在，请使用其他标题");
+            }
+
+            // 校验公告类型
+            validateAnnouncementType(request.getType());
+
+            // 校验定时发布和状态逻辑
+            validateScheduledAndStatus(request.getScheduledAt(), request.getStatus());
+
             // Service层负责DTO->Entity转换
             Announcement entity = convertToEntity(request);
 
+            // Manager层执行原子数据库操作
             Announcement saved = announcementManager.createAnnouncement(entity);
 
             AnnouncementOperationResponse response = new AnnouncementOperationResponse();
             response.setAnnounceId(saved.getId());
             return response;
+        } catch (IllegalArgumentException e) {
+            // 包装参数错误
+            log.warn("创建公告业务校验失败: {}", e.getMessage());
+            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             // 包装数据库异常
-            if (e.getCause() instanceof java.sql.SQLSyntaxErrorException) {
+            if (e instanceof java.sql.SQLException ||
+                    (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
+                log.error("数据库操作异常", e); // 记录完整的SQLException堆栈信息
                 throw new ApiException(ExceptionEnum.DATABASE_ERROR);
             }
             // 重新抛出其他异常
+            log.error("未知异常", e); // 记录未处理的异常堆栈信息
             throw e;
         }
     }
 
-    // DTO转Entity的私有方法 这里缺少一点特殊字段驼峰-蛇形转换，现在先这么写着
+    // DTO转Entity 这里缺少一点特殊字段驼峰-蛇形转换，现在先这么写着
     private Announcement convertToEntity(CreateAnnouncementRequest request) {
         // 直接使用LocalDateTime，无需时区转换
         LocalDateTime scheduledAt = request.getScheduledAt();
@@ -73,36 +97,96 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .build();
     }
 
+    // 编辑公告
+    @Override
+    public AnnouncementOperationResponse editAnnouncement(Integer id, EditAnnouncementRequest request) {
+        try {
+            log.info("Service层编辑公告，ID：{}，标题：{}", id, request.getTitle());            
+            
+            // 校验ID
+            announcementManager.checkExist(id);
+
+            // 校验标题和内容
+            validateTitleAndContent(request.getTitle(), request.getContent());
+
+            // 标题查重校验（编辑时排除当前公告ID）
+            String trimmedTitle = request.getTitle().trim();
+            if (announcementManager.checkTitleDuplicate(trimmedTitle, id)) {
+                throw new IllegalArgumentException("公告标题已存在，请使用其他标题");
+            }
+
+            // 校验公告类型
+            validateAnnouncementType(request.getType());
+
+            // 校验定时发布和状态逻辑
+            validateScheduledAndStatus(request.getScheduledAt(), request.getStatus());            
+            
+            Announcement originAnnouncement = announcementManager.getAnnouncementEntityById(id);
+
+            // TODO 编辑权限校验（等着CurrentUid上线）
+            // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
+            //     throw new IllegalArgumentException("您没有编辑该公告的权限");
+            // }
+
+            // 内联权限状态检验
+            if (originAnnouncement.getStatus() == 1) {
+                // 如果当前公告为已发布状态，则不允许编辑定时发布和状态
+                if (request.getScheduledAt() != null || request.getScheduledAt() != originAnnouncement.getScheduledAt() || request.getStatus() != 1) {
+                    throw new IllegalArgumentException("已发布的公告不允许编辑定时发布和状态");
+                }
+                if (request.getStatus() != null && request.getStatus() != 1) {
+                    throw new IllegalArgumentException("已发布的公告不允许修改发布状态");
+                }
+                // 执行基础字段更新（只能编辑标题、内容、类型、属性、置顶）
+                return announcementManager.editBasicFields(id, request);
+            } else {
+                // 草稿(0)和待发布(2)状态的公告可以编辑所有字段
+                return announcementManager.editAllFields(id, request);
+            }
+
+        } catch (IllegalArgumentException e) {
+            // 包装业务校验异常为参数错误
+            log.warn("编辑公告业务校验失败: {}", e.getMessage());
+            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (Exception e) {
+            // 包装数据库异常
+            if (e instanceof java.sql.SQLException ||
+                    (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
+                log.error("数据库操作异常", e); // 添加详细日志
+                throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+            }
+            // 重新抛出其他异常
+            log.error("未知异常", e); // 添加详细日志
+            throw e;
+        }
+    }
+
+    // 置顶/取消置顶公告
+    @Override
+    public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky) {
+        log.info("Service层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, isSticky);
+        return announcementManager.stickyAnnouncement(id, isSticky);
+    }
+
+    // 查询公告详情
     @Override
     public AnnouncementDetailsResponse getAnnouncementById(Integer id) {
         log.info("Service层查询公告详情，ID：{}", id);
         return announcementManager.getAnnouncementById(id);
     }
 
+    // 查询公告列表
     @Override
     public ListAnnouncementResponse listAnnouncements(ListAnnouncementRequest request) {
         log.info("Service层查询公告列表，页码：{}，状态：{}", request.getPage(), request.getStatus());
         return announcementManager.listAnnouncements(request);
     }
 
-    @Override
-    public AnnouncementOperationResponse editAnnouncement(Integer id, EditAnnouncementRequest request) {
-        log.info("Service层编辑公告，ID：{}，标题：{}", id, request.getTitle());
-        // 处理时间转换
-        processEditRequestTime(request);
-        return announcementManager.editAnnouncement(id, request);
-    }
-
+    // 删除公告
     @Override
     public AnnouncementOperationResponse deleteAnnouncement(Integer id) {
         log.info("Service层删除公告，ID：{}", id);
         return announcementManager.deleteAnnouncement(id);
-    }
-
-    @Override
-    public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky) {
-        log.info("Service层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, isSticky);
-        return announcementManager.stickyAnnouncement(id, isSticky);
     }
 
     @Override
@@ -111,22 +195,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         // request.getFilters());
         // TODO: 这里先返回mock数据，后续实现真正的管理员查询逻辑
         return announcementManager.adminQueryAnnouncements(request);
-    }
-
-    /**
-     * 直接使用数据库创建公告（用于测试Repository功能）
-     * 
-     * @param request 创建公告请求
-     * @return 创建的公告操作响应
-     */
-    /**
-     * 处理EditAnnouncementRequest中的时间转换（用于编辑功能）
-     */
-    private void processEditRequestTime(EditAnnouncementRequest request) {
-        // 如果有定时发布时间，直接使用LocalDateTime，无需转换
-        if (request.getScheduledAt() != null) {
-            log.debug("编辑请求包含定时发布时间: {}", request.getScheduledAt());
-        }
     }
 
     /**
@@ -144,4 +212,60 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         // 这里先简单返回toString()，如果需要完整的JSON序列化可以使用Jackson
         return attribute.toString();
     }
+
+    /**
+     * 校验标题和内容长度（作为防御性编程，虽然DTO层已有校验，但Service层保留以确保数据安全）
+     */
+    private void validateTitleAndContent(String title, String content) {
+        // 校验标题长度（2-50字符）
+        String trimmedTitle = title != null ? title.trim() : null;
+        if (trimmedTitle == null || trimmedTitle.length() < 2 || trimmedTitle.length() > 50) {
+            throw new IllegalArgumentException("公告标题长度必须在2-50字符之间");
+        }
+
+        // 校验内容长度（2-500字符）
+        String trimmedContent = content != null ? content.trim() : null;
+        if (trimmedContent == null || trimmedContent.length() < 2 || trimmedContent.length() > 500) {
+            throw new IllegalArgumentException("公告内容长度必须在2-500字符之间");
+        }
+    }
+
+    /**
+     * 校验公告类型（作为防御性编程，虽然DTO层已有校验，但Service层保留以确保数据安全）
+     */
+    private void validateAnnouncementType(int type) {
+        if (type != 0 && type != 1) {
+            throw new IllegalArgumentException("公告类型无效，仅支持系统公告(0)和学校公告(1)");
+        }
+    }
+
+    /**
+     * 校验创建时的定时发布和状态逻辑
+     */
+    private void validateScheduledAndStatus(LocalDateTime scheduledAt, Integer status) {
+        if (scheduledAt != null) {
+            // scheduled_at非空时，必须是未来时间（+30秒保底）
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime minAllowedTime = now.plusSeconds(30);
+
+            if (scheduledAt.isBefore(minAllowedTime)) {
+                throw new IllegalArgumentException("定时发布时间必须至少在当前时间30秒之后");
+            }
+
+            // scheduled_at非空时，status只能为2
+            if (status == null || status != 2) {
+                throw new IllegalArgumentException("已设置定时发布，状态已锁定");
+            }
+        } else {
+            // scheduled_at为空时，status可以为0或1
+            if (status != null && status != 0 && status != 1) {
+                throw new IllegalArgumentException("未设置定时发布时，状态只能为草稿或已发布");
+            }
+        }
+    }
+
+    /**
+     * 校验编辑时的权限和逻辑
+     */
+
 }

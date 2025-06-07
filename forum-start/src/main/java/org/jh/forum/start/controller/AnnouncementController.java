@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 公告管理控制器
- * 
+ ·*
  * 功能概述：
  * - 创建公告：POST /announcements
  * - 更新公告：PUT /announcements
@@ -82,11 +82,18 @@ public class AnnouncementController {
             log.info("公告创建成功，ID: {}", response.getAnnounceId());
             return AjaxResult.success("created", response);
         } catch (Exception e) {
+            // 优先处理 ApiException（Service层包装的异常）
+            if (e instanceof org.jh.forum.common.exceptions.ApiException) {
+                org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
+                log.error("创建公告业务异常", apiEx); // 记录完整的ApiException堆栈
+                return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
+            }
+            // 兼容原有的数据库异常处理
             if (e.getCause() instanceof java.sql.SQLSyntaxErrorException) {
-                log.error("数据库结构异常，错误信息: {}", e.getMessage(), e);
+                log.error("数据库异常", e); // 记录完整的SQLSyntaxErrorException堆栈
                 return AjaxResult.fail(ExceptionEnum.DATABASE_ERROR);
             }
-            log.error("创建公告失败，标题: {}, 错误信息: {}", request.getTitle(), e.getMessage(), e);
+            log.error("创建公告失败，标题: {}", request.getTitle(), e); // 记录完整的异常堆栈
             return AjaxResult.fail(500, "创建公告失败：" + e.getMessage());
         }
     }
@@ -99,7 +106,6 @@ public class AnnouncementController {
      * 请求体：JSON格式 { id, title, content, type, scheduledAt, status }
      * 权限：管理员
      *
-     * @param id      公告ID（查询参数）
      * @param request 编辑公告的请求参数
      * @return 编辑结果
      */
@@ -111,8 +117,6 @@ public class AnnouncementController {
             log.info("收到更新公告请求，ID: {}, 标题: {}, 类型: {}",
                     request.getId(), request.getTitle(), request.getType());
 
-            // TODO: 数据库层面验证ID是否存在且未删除，暂时mock放过
-
             AnnouncementOperationResponse response = announcementService.editAnnouncement(request.getId(), request);
 
             if (response == null) {
@@ -123,8 +127,13 @@ public class AnnouncementController {
             log.info("公告更新成功，ID: {}", response.getAnnounceId());
             return AjaxResult.success("updated", response);
         } catch (Exception e) {
-            log.error("更新公告失败，ID: {}, 标题: {}, 错误信息: {}",
-                    request.getId(), request.getTitle(), e.getMessage(), e);
+            // 优先处理 ApiException（Service层包装的异常）
+            if (e instanceof org.jh.forum.common.exceptions.ApiException) {
+                org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
+                log.error("更新公告业务异常", apiEx); // 记录完整的ApiException堆栈
+                return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
+            }
+            log.error("更新公告失败，ID: {}, 标题: {}", request.getId(), request.getTitle(), e); // 记录完整的异常堆栈
             return AjaxResult.fail(500, "更新公告失败：" + e.getMessage());
         }
     }
@@ -137,11 +146,9 @@ public class AnnouncementController {
      * 请求体：JSON格式 { "id":12, "sticky": true }
      * 权限：管理员
      *
-     * @param id      公告ID
      * @param request 置顶状态请求参数
      * @return 操作结果
      */
-
     @Operation(summary = "设置/取消置顶公告", description = "设置或取消公告的置顶状态（管理员权限）")
     @PutMapping("/sticky")
     public AjaxResult<AnnouncementOperationResponse> stickyAnnouncement(
@@ -245,27 +252,16 @@ public class AnnouncementController {
      * 用户公告列表接口
      *
      * HTTP方法：GET
-     * 请求路径：/announcements/list     * 支持参数：page, size, type
+     * 请求路径：/announcements/list * 支持参数：page, size, type
      * 默认排序：按 updated_at 升序（最后发布的在最下面）
      * 权限：用户
+     * 
      * @param request 用户查询请求参数
      * @return 公告列表（简化版）
      */
-    @Operation(
-        summary = "用户公告列表", 
-        description = "查询用户可见的公告列表，按 updated_at 升序（最后发布的在最下面）",
-        responses = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                description = "简化版公告列表，只包含必要字段",
-                content = @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema = @io.swagger.v3.oas.annotations.media.Schema(
-                        implementation = ListAnnoucementTinyResponse.class
-                    )
-                )
-            )
-        }
-    )
+    @Operation(summary = "用户公告列表", description = "查询用户可见的公告列表，按 updated_at 升序（最后发布的在最下面）", responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "简化版公告列表，只包含必要字段", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ListAnnoucementTinyResponse.class)))
+    })
     @GetMapping("/list")
     public AjaxResult<ListAnnoucementTinyResponse> listAnnouncements(@Valid UserQueryAnnouncementRequest request) {
         try {
@@ -280,25 +276,26 @@ public class AnnouncementController {
                 // 根据枚举值设置类型
                 if (request.getType().getValue() == 1) {
                     // 1=系统公告
-                    serviceRequest.setType("系统公告");
+                    serviceRequest.setType(1);
                 } else if (request.getType().getValue() == 2) {
                     // 2=学校公告
-                    serviceRequest.setType("学校公告");
+                    serviceRequest.setType(2);
                 }
                 // 如果是3(全部)，则不设置type筛选条件
             }
 
             // 只查询已发布的公告
-            serviceRequest.setStatus(1);            // 调用服务获取列表
+            serviceRequest.setStatus(1); // 调用服务获取列表
             ListAnnouncementResponse serviceResponse = announcementService.listAnnouncements(serviceRequest);
-            
+
             // 将 ListAnnouncementResponse 转换为 ListAnnoucementTinyResponse
             ListAnnoucementTinyResponse response = convertToTinyResponse(serviceResponse);
 
             log.info("查询公告列表成功，总数: {}", response.getTotal());
             return AjaxResult.success(response);
         } catch (Exception e) {
-            log.error("查询公告列表失败，错误信息: {}", e.getMessage(), e);            return AjaxResult.fail(500, "查询公告列表失败：" + e.getMessage());
+            log.error("查询公告列表失败，错误信息: {}", e.getMessage(), e);
+            return AjaxResult.fail(500, "查询公告列表失败：" + e.getMessage());
         }
     }
 
@@ -312,22 +309,22 @@ public class AnnouncementController {
         if (source == null) {
             return null;
         }
-        
-        ListAnnoucementTinyResponse target = new ListAnnoucementTinyResponse();        // 设置分页信息
+
+        ListAnnoucementTinyResponse target = new ListAnnoucementTinyResponse(); // 设置分页信息
         target.setTotal(source.getTotal());
         target.setPage(source.getPage());
         target.setPageSize(source.getPageSize());
-        
+
         // 转换列表项
         if (source.getList() != null && !source.getList().isEmpty()) {
             target.setList(source.getList().stream()
-                .map(this::convertToTinyItem)
-                .toList());
+                    .map(this::convertToTinyItem)
+                    .toList());
         }
-        
+
         return target;
     }
-    
+
     /**
      * 将公告列表项转换为简化版本
      * 
@@ -336,10 +333,9 @@ public class AnnouncementController {
      */
     private ListAnnoucementTinyResponse.AnnouncementItemResponse convertToTinyItem(
             ListAnnouncementResponse.AnnouncementItemResponse source) {
-        
-        ListAnnoucementTinyResponse.AnnouncementItemResponse target = 
-            new ListAnnoucementTinyResponse.AnnouncementItemResponse();
-            
+
+        ListAnnoucementTinyResponse.AnnouncementItemResponse target = new ListAnnoucementTinyResponse.AnnouncementItemResponse();
+
         target.setId(source.getId());
         target.setTitle(source.getTitle());
         target.setType(source.getType());
@@ -347,7 +343,7 @@ public class AnnouncementController {
         target.setUpdator(source.getUpdator());
         target.setUpdatedAt(source.getUpdatedAt());
         target.setSticky(source.isSticky());
-        
+
         return target;
     }
 
@@ -381,6 +377,5 @@ public class AnnouncementController {
         }
     }
 }
-
 
 

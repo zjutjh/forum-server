@@ -12,8 +12,9 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "查询公告列表响应")
-public class ListAnnoucementTinyResponse extends BaseListResponse<ListAnnoucementTinyResponse.AnnouncementItemResponse>{
-    
+public class ListAnnoucementTinyResponse
+        extends BaseListResponse<ListAnnoucementTinyResponse.AnnouncementItemResponse> {
+
     @Data
     @Schema(description = "公告列表项")
     public static class AnnouncementItemResponse {
@@ -36,7 +37,7 @@ public class ListAnnoucementTinyResponse extends BaseListResponse<ListAnnoucemen
         @Schema(description = "更新时间", example = "2025-06-07T09:00:00.000Z")
         private String updatedAt;
 
-        @Schema (description = "是否置顶", example = "false")
+        @Schema(description = "是否置顶", example = "false")
         private boolean sticky;
     }
 }

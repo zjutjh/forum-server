@@ -26,15 +26,15 @@ sticky字段单开还是塞attribute里头？
 
 好了直接新开一个字段吧
 
-- [ ] 公告类型（改一下integrate）
-- [ ] createUid和updateUid记得改jwt（AntoFillHandler）
+- [x] 公告类型（改一下integrate）
+- [ ] createUid和updateUid记得改jwt（AntoFillHandler），目前Mock值还留着
 - [ ] 调用BaseEntity
 - [x] 调用BaseList
 - [x] 分接口管理（管理员和用户端）
 - [ ] Respond的枚举管理（status和type）
 - [x] 接口命名
 - [x] 返回相应里面显示creator_name和updator_name（目前先拿字符填上）
-- [ ] 完成MyBatis-Plus迁移
+- [x] 完成MyBatis-Plus迁移
 - [ ] 实现Edit和Delete接口
 - [ ] 实现差异化查询（暂缓，只保留用户部分）
 - [ ] 看看能不能复用TinyRespond
@@ -174,8 +174,8 @@ Content-Type: application/json
     "content": "公告内容",
     "type": "系统公告",
     "sender": "管理员",
-    "create_at": "2024-01-01 09:00:00",
-    "update_at": "2024-01-01 09:00:00",
+    "created_at": "2024-01-01 09:00:00",
+    "updated_at": "2024-01-01 09:00:00",
     "scheduled_publish_time": null,
     "status": 1,
     "createUid": 123,
@@ -209,7 +209,7 @@ PUT /announcement/publish/{id}
     "title": "公告标题",
     "content": "公告内容",
     "status": 1,
-    "creatorId": 123,
+    "createUid": 123,
     "creatorName": "管理员",
     "createTime": "2024-01-01 09:00:00",
     "updateTime": "2024-01-01 10:00:00",
@@ -252,7 +252,7 @@ GET /announcement/list?page=1&size=10&status=1
         "title": "公告标题",
         "content": "公告内容摘要...",
         "status": 1,
-        "creatorId": 123,
+        "createUid": 123,
         "creatorName": "管理员",
         "createTime": "2024-01-01 09:00:00",
         "updateTime": "2024-01-01 10:00:00",
@@ -286,7 +286,7 @@ GET /announcement/detail/{id}
     "title": "公告标题",
     "content": "公告完整内容...",
     "status": 1,
-    "creatorId": 123,
+    "createUid": 123,
     "creatorName": "管理员",
     "createTime": "2024-01-01 09:00:00",
     "updateTime": "2024-01-01 10:00:00",
@@ -369,7 +369,7 @@ public class AnnouncementDO {
     private String title;
     private String content;
     private Integer status;
-    private Long creatorId;
+    private Long createUid;
     private String creatorName;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
@@ -391,7 +391,7 @@ public class CreateAnnouncementRequest {
     private String content;
 
     @NotNull(message = "创建者ID不能为空")
-    private Long creatorId;
+    private Long createUid;
 
     @NotBlank(message = "创建者姓名不能为空")
     private String creatorName;
@@ -410,7 +410,7 @@ public class AnnouncementResponse {
     private String content;
     private Integer status;
     private String statusName;
-    private Long creatorId;
+    private Long createUid;
     private String creatorName;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

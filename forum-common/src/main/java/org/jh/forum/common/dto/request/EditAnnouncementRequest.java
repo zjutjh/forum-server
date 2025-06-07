@@ -37,11 +37,9 @@ public class EditAnnouncementRequest {
     private String content;
 
     @Schema(description = "公告类型, 0系统1学校", example = "1", required = true, allowableValues = { "0", "1" })
-    private int type;
-
-    @JsonProperty("scheduled_at") // 显式声明JSON字段名称
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC+8")
-    @Schema(description = "定时发布时间", example = "2025-06-07T09:00:00.000Z")
+    private int type;    @JsonProperty("scheduled_at") // 显式声明JSON字段名称
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")  // 移除timezone配置，让Spring Boot自动处理
+    @Schema(description = "定时发布时间(ISO8601格式，前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00.000Z")
     private LocalDateTime scheduledAt;
 
     @NotNull(message = "必须指定公告状态")
@@ -51,4 +49,8 @@ public class EditAnnouncementRequest {
     @NotNull(message = "附加属性不能为空")
     @Schema(description = "附加属性", example = "{\"sticky\": true}")
     private Object attribute;
+
+    @NotNull(message = "必须指定置顶状态")
+    @Schema(description = "是否置顶", example = "false", required = true, allowableValues = { "true", "false" })
+    private Boolean sticky;
 }
