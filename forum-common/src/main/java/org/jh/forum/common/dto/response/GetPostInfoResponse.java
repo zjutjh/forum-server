@@ -23,8 +23,8 @@ public class GetPostInfoResponse {
     @JsonProperty("category_id")
     private Long categoryId;
 
-    @Schema(description = "帖子话题ID列表")
-    private Long[] topics;
+    @Schema(description = "帖子话题列表")
+    private String[] topics;
 
     @Schema(description = "帖子标题")
     private String title;

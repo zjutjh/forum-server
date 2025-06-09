@@ -7,14 +7,12 @@ import lombok.EqualsAndHashCode;
 
 /**
  * @author SugarMGP
- * @TableName post_topic_relation
+ * @TableName topic
  */
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "post_topic_relation")
+@TableName(value = "topic")
 @Data
 @Builder
-public class PostTopicRelation extends BaseEntity {
-    private Long postId;
-
-    private Long topicId;
+public class Topic extends BaseEntity {
+    private String name;
 }
