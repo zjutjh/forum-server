@@ -32,6 +32,18 @@ public class GetPostInfoResponse {
     @Schema(description = "帖子内容")
     private String content;
 
+    @Schema(description = "帖子点赞数")
+    @JsonProperty("like_count")
+    private Integer likeCount;
+
+    @Schema(description = "帖子评论数")
+    @JsonProperty("comment_count")
+    private Integer commentCount;
+
+    @Schema(description = "帖子浏览数")
+    @JsonProperty("view_count")
+    private Integer viewCount;
+
     @Schema(description = "发帖时间")
     @JsonProperty("created_at")
     private String createdAt;

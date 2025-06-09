@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -12,9 +11,8 @@ import lombok.Data;
 @Data
 public class BaseListRequest {
     @Schema(description = "页码")
-    private Integer page;
+    private Integer page = 1;
 
     @Schema(description = "每页数量")
-    @JsonProperty("page_size")
-    private Integer pageSize;
+    private Integer pageSize = 10;
 }

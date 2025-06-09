@@ -3,8 +3,10 @@ package org.jh.forum.server.manger;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.entity.Topic;
 import org.jh.forum.common.entity.mapper.TopicMapper;
+import org.jh.forum.common.exceptions.ForumServiceException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -25,5 +27,13 @@ public class TopicManager {
             topicMapper.insert(topic);
         }
         return topic.getId();
+    }
+
+    public String getTopicName(Long id) {
+        Topic topic = topicMapper.selectById(id);
+        if (topic == null) {
+            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        return topic.getName();
     }
 }

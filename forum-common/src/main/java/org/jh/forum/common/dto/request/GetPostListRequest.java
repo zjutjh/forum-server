@@ -1,12 +1,12 @@
 package org.jh.forum.common.dto.request;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.baomidou.mybatisplus.annotation.IEnum;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author SugarMGP
@@ -15,10 +15,12 @@ import lombok.Getter;
 @Data
 public class GetPostListRequest extends BaseListRequest {
     @Schema(description = "帖子板块ID（为0则全部帖子）")
-    @JsonProperty("category_id")
+    @NotNull
     private Long categoryId;
 
     @Schema(description = "排序类型（1为最新，2为最热）")
-    @JsonProperty("sort_type")
+    @NotNull
+    @Min(1)
+    @Max(2)
     private Integer sortType;
 }
