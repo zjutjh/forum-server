@@ -1,5 +1,6 @@
 package org.jh.forum.server.manger;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,8 +8,8 @@ import org.jh.forum.api.dubbo.PostListElement;
 import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.PostTopicRelation;
-import org.jh.forum.common.entity.mapper.PostMapper;
-import org.jh.forum.common.entity.mapper.PostTopicRelationMapper;
+import org.jh.forum.server.mapper.PostMapper;
+import org.jh.forum.server.mapper.PostTopicRelationMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class PostManager {
 
     public void publishPost(PublishPostReq req) {
         Post post = Post.builder()
-                .userId(req.getUserId())
+                .userId(StpUtil.getLoginIdAsLong())
                 .title(req.getTitle())
                 .content(req.getContent())
                 .categoryId(req.getCategoryId())

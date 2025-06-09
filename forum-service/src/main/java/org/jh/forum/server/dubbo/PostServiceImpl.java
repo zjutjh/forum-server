@@ -1,5 +1,6 @@
 package org.jh.forum.server.dubbo;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.google.protobuf.Any;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -39,7 +40,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ServiceResult getMyPostList(GetMyPostListReq request) {
-        List<PostListElement> postList = postManager.getMyPostList(request.getUserId());
+        List<PostListElement> postList = postManager.getMyPostList(StpUtil.getLoginIdAsLong());
         GetPostListResp resp = GetPostListResp.newBuilder().addAllPosts(postList).build();
         return ServiceResult.newBuilder().setIsSuccess(true).setData(Any.pack(resp)).build();
     }

@@ -1,6 +1,7 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 /**
  * @author SugarMGP
  */
+@Data
 public class BaseEntity implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;

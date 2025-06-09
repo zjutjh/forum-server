@@ -2,9 +2,9 @@ package org.jh.forum.start.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.util.ClassUtils;
 
 /**
  * @author MangoGovo

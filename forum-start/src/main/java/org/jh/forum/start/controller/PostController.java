@@ -4,7 +4,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.*;
+import org.jh.forum.api.dubbo.GetPostListReq;
+import org.jh.forum.api.dubbo.GetPostListResp;
+import org.jh.forum.api.dubbo.PostService;
+import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.request.BaseListRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
@@ -46,7 +49,6 @@ public class PostController {
         PublishPostReq req = PublishPostReq.newBuilder()
                 .setTitle(request.getTitle())
                 .setContent(request.getContent())
-                .setUserId(1L)
                 .setCategoryId(request.getCategoryId())
                 .addAllTopics(List.of(request.getTopics()))
                 .build();
@@ -96,12 +98,9 @@ public class PostController {
     @Operation(summary = "获取我的帖子列表")
     @GetMapping("/post/my_list")
     public AjaxResult<BaseListResponse<GetMyPostListElement>> getMyPostList(BaseListRequest request) {
-        GetMyPostListReq req = GetMyPostListReq.newBuilder()
-                .setUserId(1)
-                .build();
         try {
             List<GetMyPostListElement> list = new ArrayList<>();
-            GetPostListResp result = postService.getMyPostList(req).getData().unpack(GetPostListResp.class);
+            GetPostListResp result = postService.getMyPostList(null).getData().unpack(GetPostListResp.class);
             result.getPostsList().forEach(post -> {
                 list.add(GetMyPostListElement.builder()
                         .id(post.getId())

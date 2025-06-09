@@ -15,7 +15,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @DubboComponentScan(basePackages = "org.jh.forum.server.dubbo")
 @ComponentScan(basePackages = {"org.jh.forum.server",
         "org.jh.forum.start", "org.jh.forum.common"})
-@MapperScan(basePackages = "org.jh.forum.common.entity.mapper")
+@MapperScan(basePackages = "org.jh.forum.server.mapper")
 public class ForumStartApplication {
 
     @NacosInjected

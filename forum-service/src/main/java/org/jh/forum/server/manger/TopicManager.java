@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.entity.Topic;
-import org.jh.forum.common.entity.mapper.TopicMapper;
 import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.server.mapper.TopicMapper;
 import org.springframework.stereotype.Service;
 
 /**
