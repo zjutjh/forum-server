@@ -1,4 +1,4 @@
-package org.jh.forum.common.entity.mapper;
+package org.jh.forum.server.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.jh.forum.common.entity.PostCategory;
