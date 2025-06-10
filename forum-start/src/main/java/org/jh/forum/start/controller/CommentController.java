@@ -9,13 +9,11 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * @author qianqianzyk
@@ -32,16 +30,12 @@ public class CommentController {
     @PostMapping("/publish")
     public AjaxResult<PublishCommentResponse> publishComment(@RequestBody PublishCommentRequest request) {
         PublishCommentReq publishCommentReq = PublishCommentReq.newBuilder()
-                .setPostId(request.getPostId() == null ? 0 : request.getPostId())
-                .setParentId(request.getParentId() == null ? 0 : request.getParentId())
-                .setTargetId(request.getTargetId() == null ? 0 : request.getTargetId())
-                .setContent(request.getContent() == null ? "" : request.getContent())
-                .setAttachmentUrl(request.getAttachmentUrl() == null ? "" : request.getAttachmentUrl())
-                .addAllAtList(
-                        request.getAtList() != null ?
-                                Arrays.asList(request.getAtList()) :
-                                Collections.emptyList()
-                )
+                .setPostId(request.getPostId())
+                .setParentId(request.getParentId())
+                .setTargetId(request.getTargetId())
+                .setContent(request.getContent())
+                .setAttachmentUrl(request.getAttachmentUrl())
+                .addAllAtList(Arrays.asList(request.getAtList()))
                 .build();
 
         try {
@@ -53,8 +47,6 @@ public class CommentController {
             response.setCommentId(resp.getCommentId());
 
             return AjaxResult.success(response);
-        } catch (ForumServiceException e) {
-            throw new ApiException(e);
         } catch (InvalidProtocolBufferException e) {
             throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
         }
@@ -82,8 +74,6 @@ public class CommentController {
             response.setStatus(resp.getStatus());
 
             return AjaxResult.success(response);
-        } catch (ForumServiceException e) {
-            throw new ApiException(e);
         } catch (InvalidProtocolBufferException e) {
             throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
         }
@@ -91,8 +81,23 @@ public class CommentController {
 
     @Operation(summary = "置顶评论/回复", description = "仅帖主设置")
     @PostMapping("/pin")
-    public AjaxResult<String> pinComment(@RequestBody PinCommentRequest request) {
-        return AjaxResult.success(null);
+    public AjaxResult<PinCommentResponse> pinComment(@RequestBody PinCommentRequest request) {
+        PinCommentReq pinCommentReq = PinCommentReq.newBuilder()
+                .setCommentId(request.getCommentId())
+                .build();
+
+        try {
+            PinCommentResp resp = commentService.pinComment(pinCommentReq)
+                    .getData()
+                    .unpack(PinCommentResp.class);
+
+            PinCommentResponse response = new PinCommentResponse();
+            response.setStatus(resp.getStatus());
+
+            return AjaxResult.success(response);
+        } catch (InvalidProtocolBufferException e) {
+            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+        }
     }
 
     @Operation(summary = "获取评论", description = """

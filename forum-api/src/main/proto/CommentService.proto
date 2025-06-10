@@ -38,6 +38,20 @@ message UpvoteCommentResp {
 }
 
 /**
+ * 置顶评论请求参数
+ */
+message PinCommentReq {
+  int64 commentId = 1;
+}
+
+/**
+ * 置顶评论响应参数
+ */
+message PinCommentResp {
+  bool status = 1;
+}
+
+/**
  * 评论服务接口
  */
 service CommentService {
@@ -50,4 +64,9 @@ service CommentService {
    * 点赞评论方法定义
    */
   rpc upvoteComment(UpvoteCommentReq) returns (ServiceResult);
+
+  /**
+   * 置顶评论方法定义
+   */
+  rpc pinComment(PinCommentReq) returns (ServiceResult);
 }

@@ -1,18 +1,18 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 /**
  * @author qianqianzyk
  * @TableName upvote
  */
-@Data
-@Builder
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "upvote")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Upvote extends BaseEntity {
     private Long userId;
 

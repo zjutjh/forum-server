@@ -16,6 +16,7 @@ public enum ExceptionEnum {
     JSON_PARSE_ERROR(200002, "json解析失败"),
     EXCEED_MAX_GET_LOCK_COUNT(200003, "获取锁超出限制"),
     RESOURCE_NOT_FOUND(200004, "资源不存在"),
+    PERMISSION_DENIED(2000005, "权限不足"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     UNKNOWN_ERROR(200500, "未知错误, 请稍后重试"),

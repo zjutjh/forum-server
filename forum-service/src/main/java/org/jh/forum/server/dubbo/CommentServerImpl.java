@@ -4,7 +4,6 @@ import com.google.protobuf.Any;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.*;
-import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.manger.CommentManager;
 
 import jakarta.annotation.Resource;
@@ -22,77 +21,52 @@ public class CommentServerImpl implements CommentService {
 
     @Override
     public ServiceResult publishComment(PublishCommentReq request) {
-        // TODO user_id获取
-        Long userId = 1L;
+        // TODO 评论内容审查
 
-        // TODO 检查当前用户状态
+        // TODO 评论附件审查
 
-        try {
-            // TODO 评论内容审查
+        Long commentId = commentManager.publishComment(request);
 
-            // TODO 评论附件审查
+        // TODO 发送评论消息
 
-            // 创建评论记录
-            Long commentId = commentManager.publishComment(request, userId);
-            if (commentId == null || commentId == 0L) {
-                return ServiceResult.newBuilder()
-                        .setIsSuccess(false)
-                        .setErrorCode("COMMENT_FAILED")
-                        .setErrorMsg("评论发布失败")
-                        .build();
-            }
+        PublishCommentResp resp = PublishCommentResp.newBuilder()
+                .setCommentId(commentId)
+                .build();
 
-            // 创建返回结果
-            PublishCommentResp resp = PublishCommentResp.newBuilder()
-                    .setCommentId(commentId)
-                    .build();
-
-            return ServiceResult.newBuilder()
-                    .setIsSuccess(true)
-                    .setData(Any.pack(resp))
-                    .build();
-        } catch (ForumServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            return ServiceResult.newBuilder()
-                    .setIsSuccess(false)
-                    .setErrorCode("EXCEPTION")
-                    .setErrorMsg("系统异常: " + e.getMessage())
-                    .build();
-        }
+        return ServiceResult.newBuilder()
+                .setIsSuccess(true)
+                .setData(Any.pack(resp))
+                .build();
     }
 
     @Override
     public ServiceResult upvoteComment(UpvoteCommentReq request) {
-        // TODO user_id获取
-        Long userId = 1L;
+        Boolean status = commentManager.upvoteComment(request.getCommentId());
 
-        // TODO 检查当前用户状态
+        // TODO 发送点赞消息
 
-        try {
-            // 点赞评论
-            Boolean status = commentManager.upvoteComment(request.getCommentId(), userId);
+        UpvoteCommentResp resp = UpvoteCommentResp.newBuilder()
+                .setStatus(status)
+                .build();
 
-            // TODO 发送点赞消息
+        return ServiceResult.newBuilder()
+                .setIsSuccess(true)
+                .setData(Any.pack(resp))
+                .build();
+    }
 
-            // 创建返回结果
-            UpvoteCommentResp resp = UpvoteCommentResp.newBuilder()
-                    .setStatus(status)
-                    .build();
+    @Override
+    public ServiceResult pinComment(PinCommentReq request) {
+        Boolean status = commentManager.pinComment(request.getCommentId());
 
-            return ServiceResult.newBuilder()
-                    .setIsSuccess(true)
-                    .setData(Any.pack(resp))
-                    .build();
-        } catch (ForumServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            return ServiceResult.newBuilder()
-                    .setIsSuccess(false)
-                    .setErrorCode("EXCEPTION")
-                    .setErrorMsg("系统异常: " + e.getMessage())
-                    .build();
-        }
+        PinCommentResp resp = PinCommentResp.newBuilder()
+                .setStatus(status)
+                .build();
+
+        return ServiceResult.newBuilder()
+                .setIsSuccess(true)
+                .setData(Any.pack(resp))
+                .build();
     }
 
     @Override
@@ -103,5 +77,10 @@ public class CommentServerImpl implements CommentService {
     @Override
     public CompletableFuture<ServiceResult> upvoteCommentAsync(UpvoteCommentReq request) {
         return CompletableFuture.supplyAsync(() -> this.upvoteComment(request));
+    }
+
+    @Override
+    public CompletableFuture<ServiceResult> pinCommentAsync(PinCommentReq request) {
+        return CompletableFuture.supplyAsync(() -> this.pinComment(request));
     }
 }

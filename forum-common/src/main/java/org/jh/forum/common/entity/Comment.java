@@ -1,18 +1,18 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 /**
  * @author qianqianzyk
  * @TableName comment
  */
-@Data
-@Builder
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "comment")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Comment extends BaseEntity {
     private Long userId;
 
