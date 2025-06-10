@@ -1,6 +1,5 @@
 package org.jh.forum.common.constants;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;
 
 /**

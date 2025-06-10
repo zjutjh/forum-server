@@ -2,6 +2,7 @@ package org.jh.forum.start.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +22,7 @@ import java.util.List;
 @RestController
 @Tag(name = "管理员", description = "管理员相关接口")
 @SaCheckLogin
-@SaCheckRole("Admin")
+@SaCheckRole(value = {"Admin", "SuperAdmin"}, mode = SaMode.OR)
 public class AdminController {
     @PostMapping("/test")
     @Operation(summary = "管理员测试")
