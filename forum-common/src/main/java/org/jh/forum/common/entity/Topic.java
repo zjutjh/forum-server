@@ -5,22 +5,14 @@ import lombok.*;
 
 /**
  * @author SugarMGP
- * @TableName post
+ * @TableName topic
  */
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "post")
+@TableName(value = "topic")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post extends BaseEntity {
-    private Long userId;
-
-    private String title;
-
-    private String content;
-
-    private Long categoryId;
-
-    private Boolean isPinned;
+public class Topic extends BaseEntity {
+    private String name;
 }

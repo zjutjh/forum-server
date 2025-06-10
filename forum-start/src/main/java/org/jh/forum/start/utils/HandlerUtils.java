@@ -1,11 +1,9 @@
 package org.jh.forum.start.utils;
 
 import com.alibaba.fastjson.JSON;
-
-import jakarta.servlet.http.HttpServletRequest;
-
 import lombok.extern.slf4j.Slf4j;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 
 /**
@@ -24,6 +22,7 @@ public class HandlerUtils {
     }
 
     private static String getRemoteAddr(HttpServletRequest request) {
-        return request.getRemoteAddr();
+        String ip = request.getHeader("x-forwarded-for");
+        return ip == null ? request.getRemoteAddr() : ip;
     }
 }

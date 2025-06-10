@@ -1,0 +1,44 @@
+syntax = "proto3";
+import "Base.proto";
+option java_multiple_files = true;
+
+package org.jh.forum.api.dubbo;
+
+message PublishPostReq {
+  string title = 1;
+  string content = 2;
+  int64 categoryId = 3;
+  repeated string topics = 4;
+}
+
+message GetPostListReq{
+  int64 categoryId = 1;
+  int32 sortType = 2;
+}
+
+message GetMyPostListReq{
+}
+
+message PostListElement{
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  int64 userId = 4;
+  int64 categoryId = 5;
+  string createAt = 6;
+  bool isPinned = 7;
+  int32 likeCount = 8;
+  int32 commentCount = 9;
+  int32 viewCount = 10;
+  repeated string topics = 11;
+}
+
+message GetPostListResp{
+  repeated PostListElement posts = 1;
+}
+
+service PostService {
+  rpc publishPost(PublishPostReq) returns (ServiceResult);
+  rpc getPostList(GetPostListReq) returns (ServiceResult);
+  rpc getMyPostList(GetMyPostListReq) returns (ServiceResult);
+}
