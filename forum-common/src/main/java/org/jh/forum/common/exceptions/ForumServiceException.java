@@ -17,7 +17,15 @@ public class ForumServiceException extends BaseException {
         super(errorCode, errorMsg);
     }
 
+    public ForumServiceException(String errorMsg) {
+        super(ExceptionEnum.UNKNOWN_ERROR.getErrorCode(), errorMsg);
+    }
+
     public ForumServiceException(ExceptionEnum e) {
         super(e.getErrorCode(), e.getErrorMsg());
+    }
+
+    public boolean isException(ExceptionEnum e) {
+        return e.getErrorCode().equals(this.getErrorCode());
     }
 }
