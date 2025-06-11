@@ -1,5 +1,8 @@
 package org.jh.forum.start.handler;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotRoleException;
+import cn.dev33.satoken.exception.SaTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -44,4 +47,16 @@ public class CustomExceptionHandler {
         return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
     }
 
+    @ExceptionHandler(SaTokenException.class)
+    @ResponseBody
+    public AjaxResult<Object> handleNotLoginException(SaTokenException e, HttpServletRequest request) {
+        HandlerUtils.logException(e, request);
+        if (e instanceof NotLoginException) {
+            return AjaxResult.fail(ExceptionEnum.NOT_LOGIN);
+        }
+        if (e instanceof NotRoleException) {
+            return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+        }
+        return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+    }
 }

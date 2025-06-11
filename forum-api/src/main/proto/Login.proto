@@ -1,0 +1,31 @@
+syntax = "proto3";
+import "Base.proto";
+option java_multiple_files = true;
+
+package org.jh.forum.api.dubbo;
+
+/**
+ * 请求参数
+ */
+message LoginReq {
+  string username = 1;
+  string password = 2;
+  int32 loginType = 3;
+}
+
+/**
+ * 响应参数
+ */
+message LoginResp {
+  string userType = 1;
+}
+
+/**
+ * 服务接口
+ */
+service LoginService {
+  /**
+   * 论坛登录方法定义
+   */
+  rpc login(LoginReq) returns (ServiceResult);
+}

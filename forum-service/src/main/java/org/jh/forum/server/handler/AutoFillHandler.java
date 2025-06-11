@@ -1,6 +1,7 @@
 package org.jh.forum.server.handler;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
@@ -40,6 +41,6 @@ public class AutoFillHandler implements MetaObjectHandler {
      * 获取当前用户ID
      */
     private Long getCurrentUserId() {
-        return StpUtil.getLoginIdAsLong();
+        return StpUtil.isLogin() ? StpUtil.getLoginIdAsLong() : -1L;
     }
 }
