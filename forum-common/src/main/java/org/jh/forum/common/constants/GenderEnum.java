@@ -5,15 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author MangoGovo
+ * @author SugarMGP
  */
 @Getter
 @AllArgsConstructor
-public enum UserTypeEnum {
-    STUDENT("student"),
-    ADMIN("admin"),
-    SUPER_ADMIN("super_admin");
+public enum GenderEnum {
+    FEMALE("female", "女"),
+    MALE("male", "男"),
+    UNKNOW("unknow", "保密");
 
     @EnumValue
     private final String value;
+    private final String desc;
 }

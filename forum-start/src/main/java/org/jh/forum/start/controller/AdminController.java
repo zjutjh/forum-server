@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @Tag(name = "管理员", description = "管理员相关接口")
 @SaCheckLogin
-@SaCheckRole(value = {"Admin", "SuperAdmin"}, mode = SaMode.OR)
+@SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
 public class AdminController {
     @PostMapping("/test")
     @Operation(summary = "管理员测试")

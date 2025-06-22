@@ -22,7 +22,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ServiceResult publishPost(PublishPostReq request) {
-        postManager.publishPost(request);
+        postManager.publishPost(request.getTitle(), request.getContent(), request.getCategoryId(), request.getTopicsList());
         return ServiceResult.newBuilder().setIsSuccess(true).build();
     }
 
