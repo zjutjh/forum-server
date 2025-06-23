@@ -1,4 +1,4 @@
-package org.jh.forum.common.entity.handler;
+package org.jh.forum.server.handler;
 
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.github.yitter.idgen.YitIdHelper;

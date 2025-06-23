@@ -1,11 +1,13 @@
 package org.jh.forum.start.handler;
 
-import java.sql.SQLIntegrityConstraintViolationException;
-
+import com.fasterxml.jackson.databind.JsonMappingException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,8 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 /**
  * 处理参数校验相关异常
@@ -69,4 +70,16 @@ public class ValidateExceptionHandler {
         return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
     }
 
+    /**
+     * Json格式错误拦截处理
+     *
+     * @param e 错误信息集合
+     * @return 错误信息
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseBody
+    public AjaxResult<Object> validationBodyException(HttpMessageNotReadableException e, HttpServletRequest request) {
+        HandlerUtils.logException(e, request);
+        return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
+    }
 }

@@ -1,8 +1,7 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 /**
  * @author SugarMGP
@@ -11,6 +10,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "post_topic_relation")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PostTopicRelation extends BaseEntity {
     private Long postId;
 

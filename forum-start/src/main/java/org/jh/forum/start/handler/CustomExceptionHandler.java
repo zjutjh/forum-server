@@ -1,20 +1,22 @@
 package org.jh.forum.start.handler;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotRoleException;
+import cn.dev33.satoken.exception.SaTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.exceptions.BaseException;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.common.exceptions.BaseException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * 处理 ForumServiceException 及其子类，最先执行
@@ -45,4 +47,16 @@ public class CustomExceptionHandler {
         return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
     }
 
+    @ExceptionHandler(SaTokenException.class)
+    @ResponseBody
+    public AjaxResult<Object> handleNotLoginException(SaTokenException e, HttpServletRequest request) {
+        HandlerUtils.logException(e, request);
+        if (e instanceof NotLoginException) {
+            return AjaxResult.fail(ExceptionEnum.NOT_LOGIN);
+        }
+        if (e instanceof NotRoleException) {
+            return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+        }
+        return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+    }
 }
