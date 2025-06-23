@@ -27,11 +27,11 @@ sticky字段单开还是塞attribute里头？
 好了直接新开一个字段吧
 
 - [x] 公告类型（改一下integrate）
-- [ ] createUid和updateUid记得改jwt（AntoFillHandler），目前Mock值还留着
-- [ ] 调用BaseEntity
+- [x] createUid和updateUid记得改jwt（AntoFillHandler），目前Mock值还留着
+- [x] 调用BaseEntity
 - [x] 调用BaseList
 - [x] 分接口管理（管理员和用户端）
-- [ ] Respond的枚举管理（status和type）
+- [x] Respond的枚举管理（status和type）
 - [x] 接口命名
 - [x] 返回相应里面显示creator_name和updator_name（目前先拿字符填上）
 - [x] 完成MyBatis-Plus迁移
@@ -40,8 +40,10 @@ sticky字段单开还是塞attribute里头？
 - [x] 实现Delete接口
 - [x] GETList（用户）
 - [X] GETDetail（管理员）
+- [ ] SaToken 鉴权
 - [ ] GETList（管理员）
-- [ ] 看看能不能复用TinyRespond
+- [x] 看看能不能复用TinyRespond
+- [ ] 定时发布的逻辑
 
 ```mermaid
 graph TD

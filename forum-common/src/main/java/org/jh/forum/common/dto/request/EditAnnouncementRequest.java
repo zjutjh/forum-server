@@ -24,7 +24,7 @@ public class EditAnnouncementRequest {
     @NotNull(message = "公告ID不能为空")
     @Min(value = 1, message = "公告ID不能小于1")
     @Schema(description = "公告ID", example = "1", required = true)
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "公告标题不能为空")
     @Size(min = 2, max = 100, message = "公告标题必须在2~50个字符之间")
@@ -34,16 +34,15 @@ public class EditAnnouncementRequest {
     @NotBlank(message = "公告内容不能为空")
     @Size(min = 1, max = 1000, message = "公告内容不能超过500个字符")
     @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...", required = true)
-    private String content;
-
-    @Schema(description = "公告类型, 0系统1学校", example = "1", required = true, allowableValues = { "0", "1" })
-    private int type;    @JsonProperty("scheduled_at") // 显式声明JSON字段名称
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")  // 移除timezone配置，让Spring Boot自动处理
+    private String content;    @Schema(description = "公告类型, 0系统1学校", example = "1", required = true, allowableValues = { "0", "1" })
+    private Integer type;
+    @JsonProperty("scheduled_at") // 显式声明JSON字段名称
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") // 让Spring Boot自动处理时间（目前暂时不考虑跨时区问题）
     @Schema(description = "定时发布时间(ISO8601格式，前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00.000Z")
     private LocalDateTime scheduledAt;
 
     @NotNull(message = "必须指定公告状态")
-    @Schema(description = "状态：0草稿、1已发布、2待发布", example = "0",required = true, allowableValues = { "0", "1", "2" })
+    @Schema(description = "状态：0草稿、1已发布、2待发布", example = "0", required = true, allowableValues = { "0", "1", "2" })
     private Integer status;
 
     @NotNull(message = "附加属性不能为空")

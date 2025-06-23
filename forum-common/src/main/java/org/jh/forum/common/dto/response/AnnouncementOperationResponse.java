@@ -13,9 +13,7 @@ import lombok.Data;
  */
 @Data
 @Schema(description = "公告响应")
-public class AnnouncementOperationResponse {
-
-    @Schema(description = "公告ID", example = "1")
+public class AnnouncementOperationResponse {    @Schema(description = "公告ID", example = "1")
     @JsonProperty("announcement_id")
-    private Integer announceId;
+    private Long announceId;
 }

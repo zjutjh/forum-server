@@ -14,10 +14,11 @@ import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
 import org.jh.forum.common.dto.request.ListAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementDetailsResponse;
+import org.jh.forum.common.dto.response.AnnouncementTinyDetailsResponse;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementResponse;
 import org.jh.forum.common.entity.Announcement;
-import org.jh.forum.common.entity.mapper.AnnouncementMapper;
+import org.jh.forum.server.mapper.AnnouncementMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,7 +73,7 @@ public class AnnouncementManager {
     /**
      * 编辑公告 - 原子数据库操作
      */
-    public AnnouncementOperationResponse editAnnouncement(Integer id, EditAnnouncementRequest request) {
+    public AnnouncementOperationResponse editAnnouncement(Long id, EditAnnouncementRequest request) {
         log.info("Manager层执行数据库更新操作，ID：{}，标题：{}", id, request.getTitle());
 
         // 构建要更新的实体对象
@@ -107,7 +108,7 @@ public class AnnouncementManager {
      * update_uid 和 updated_at 由 AutoFillHandler 自动填充
      */
     @Transactional
-    public AnnouncementOperationResponse editBasicFields(Integer id, EditAnnouncementRequest request) {
+    public AnnouncementOperationResponse editBasicFields(Long id, EditAnnouncementRequest request) {
         log.info("Manager层执行基础字段更新操作，ID：{}，标题：{}", id, request.getTitle());
 
         // 使用 MyBatis-Plus 的 updateById 方法，会自动触发 AutoFillHandler
@@ -140,7 +141,7 @@ public class AnnouncementManager {
      * update_uid 和 updated_at 由 AutoFillHandler 自动填充
      */
     @Transactional
-    public AnnouncementOperationResponse editAllFields(Integer id, EditAnnouncementRequest request) {
+    public AnnouncementOperationResponse editAllFields(Long id, EditAnnouncementRequest request) {
         log.info("Manager层执行所有字段更新操作，ID：{}，标题：{}", id, request.getTitle());
 
         // 使用 MyBatis-Plus 的 updateById 方法，会自动触发 AutoFillHandler
@@ -173,7 +174,7 @@ public class AnnouncementManager {
      * 删除公告 - 原子数据库操作（软删除）
      */
     @Transactional
-    public AnnouncementOperationResponse deleteAnnouncement(Integer id) {
+    public AnnouncementOperationResponse deleteAnnouncement(Long id) {
         log.info("Manager层执行数据库软删除操作，ID：{}", id);
 
         // 直接执行删除操作，移除重复的checkExist校验
@@ -201,7 +202,7 @@ public class AnnouncementManager {
     /**
      * 检查标题是否重复（编辑时使用，排除当前公告ID，已排除软删除，后如无特殊情况不再注明）
      */
-    public boolean checkTitleDuplicate(String title, Integer excludeId) {
+    public boolean checkTitleDuplicate(String title, Long excludeId) {
         return announcementMapper.checkExistsByTitleAndIdNot(title, excludeId);
     }
 
@@ -224,7 +225,7 @@ public class AnnouncementManager {
     /**
      * 根据ID检查公告是否存在
      */
-    public boolean checkExist(Integer id) {
+    public boolean checkExist(Long id) {
         // 保留实际数据访问逻辑
         return announcementMapper.checkExist(id);
     }
@@ -232,7 +233,7 @@ public class AnnouncementManager {
     /**
      * 根据ID获取公告实体（用于业务逻辑，返回实体对象）
      */
-    public Announcement getAnnouncementEntityById(Integer id) {
+    public Announcement getAnnouncementEntityById(Long id) {
         log.info("Manager层查询公告实体，ID：{}", id);
         // 直接调用mapper查询，移除重复校验
         return announcementMapper.selectById(id);
@@ -241,7 +242,7 @@ public class AnnouncementManager {
     /**
      * 根据ID查询公告
      */
-    public AnnouncementDetailsResponse getAnnouncementById(Integer id) {
+    public AnnouncementDetailsResponse getAnnouncementById(Long id) {
         log.info("Manager层查询公告详情，ID：{}", id);
 
         // 查询公告实体
@@ -272,10 +273,43 @@ public class AnnouncementManager {
     }
 
     /**
+     * 根据ID查询公告详情（用户版本）
+     * 返回简化的公告信息，不包含管理员才需要的字段
+     */
+    public AnnouncementTinyDetailsResponse getAnnouncementTinyDetailsById(Long id) {
+        log.info("Manager层查询公告详情（用户版），ID：{}", id);
+
+        // 查询公告实体
+        Announcement raw = announcementMapper.findByID(id);
+
+        if (raw == null) {
+            throw new RuntimeException("公告不存在或已被删除");
+        }
+
+        // 只返回用户需要的字段
+        AnnouncementTinyDetailsResponse response = new AnnouncementTinyDetailsResponse();
+        response.setId(id);
+        response.setTitle(raw.getTitle());
+        response.setContent(raw.getContent());
+        response.setType(raw.getType());
+        response.setSticky(raw.getSticky());
+
+        // 填充用户信息
+        response.setCreator(getUsernameById(raw.getCreateUid()));
+        response.setUpdator(getUsernameById(raw.getUpdateUid()));
+
+        // 格式化时间
+        response.setCreatedAt(formatToIso8601(raw.getCreatedAt()));
+        response.setUpdatedAt(formatToIso8601(raw.getUpdatedAt()));
+
+        return response;
+    }
+
+    /**
      * TODO: 更好的对应
      * 辅助方法 暂时的id-username
      */
-    
+
     public String getUsernameById(Long userId) {
         if (userId == null) {
             return "unknown";
@@ -291,14 +325,16 @@ public class AnnouncementManager {
     }
 
     /**
-    * 批量获取用户名（性能优化，一次查询多个）
-    */
+     * 批量获取用户名（性能优化，一次查询多个）
+     */
     public Map<Long, String> getUsernamesByIds(Set<Long> userIds) {
         return userIds.stream()
                 .collect(Collectors.toMap(
                         id -> id,
                         this::getUsernameById));
-    }    /**
+    }
+
+    /**
      * 分页查询公告列表
      */
     public ListAnnouncementResponse listAnnouncements(
@@ -319,19 +355,18 @@ public class AnnouncementManager {
                 request.getStatus(),
                 request.getType(),
                 offset,
-                size
-        );
+                size);
 
         // 查询总数
         Long totalCount = announcementMapper.countAnnouncements(
                 request.getStatus(),
-                request.getType()
-        );
+                request.getType());
 
         // 转换为响应对象
         List<ListAnnouncementResponse.AnnouncementItemResponse> itemList = announcements.stream()
                 .map(this::convertToAnnouncementItem)
-                .toList();        ListAnnouncementResponse response = new ListAnnouncementResponse();
+                .toList();
+        ListAnnouncementResponse response = new ListAnnouncementResponse();
         response.setTotal(totalCount.intValue());
         response.setPage(page);
         response.setPageSize(size);
@@ -346,21 +381,21 @@ public class AnnouncementManager {
      */
     private ListAnnouncementResponse.AnnouncementItemResponse convertToAnnouncementItem(Announcement announcement) {
         ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
-        
+
         item.setId(announcement.getId());
         item.setTitle(announcement.getTitle());
         item.setType(announcement.getType());
         item.setStatus(announcement.getStatus());
         item.setSticky(announcement.getSticky());
-        
+
         // 设置用户名
         item.setCreator(getUsernameById(announcement.getCreateUid()));
         item.setUpdator(getUsernameById(announcement.getUpdateUid()));
-        
+
         // 格式化时间
         item.setCreatedAt(formatToIso8601(announcement.getCreatedAt()));
         item.setUpdatedAt(formatToIso8601(announcement.getUpdatedAt()));
-        
+
         return item;
     }
 
@@ -370,7 +405,7 @@ public class AnnouncementManager {
      * @param excludeId 排除的公告ID（用于编辑时检查）
      * @return true表示可以置顶，false表示已达上限
      */
-    public boolean canStickyAnnouncement(Integer excludeId) {
+    public boolean canStickyAnnouncement(Long excludeId) {
         int count = announcementMapper.countStickyAnnouncementsExcludeId(excludeId);
         return count < 3; // 最多允许3个置顶公告
     }
@@ -386,7 +421,7 @@ public class AnnouncementManager {
     }
 
     @Transactional
-    public AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky) {
+    public AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean isSticky) {
         log.info("Manager层置顶/取消置顶公告，ID：{}，置顶状态：{}", id, isSticky);
 
         // 构建要更新的实体对象（只更新sticky字段）
@@ -420,12 +455,10 @@ public class AnnouncementManager {
                                                                                              // 实际实现中这里会调用Mapper层进行复杂查询
         // 现在先返回Mock数据，模拟管理员查询功能
 
-        List<ListAnnouncementResponse.AnnouncementItemResponse> list = new ArrayList<>(); // 模拟根据筛选条件生成不同的数据
-
-        // 构建模拟数据
+        List<ListAnnouncementResponse.AnnouncementItemResponse> list = new ArrayList<>(); // 模拟根据筛选条件生成不同的数据 // 构建模拟数据
         for (int i = 1; i <= Math.min(request.getSize(), 10); i++) {
             ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
-            item.setId(i + (request.getPage() - 1) * request.getSize());
+            item.setId((long) (i + (request.getPage() - 1) * request.getSize()));
             item.setTitle("Admin Mock公告 - " + item.getId());
             item.setType(0);
             item.setStatus(1);

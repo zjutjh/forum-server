@@ -1,5 +1,8 @@
 package org.jh.forum.start.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import org.jh.forum.api.service.AnnouncementService;
 import org.jh.forum.server.manager.AnnouncementManager;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -10,6 +13,7 @@ import org.jh.forum.common.dto.request.ListAnnouncementRequest;
 import org.jh.forum.common.dto.request.StickyAnnouncementRequest;
 import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementDetailsResponse;
+import org.jh.forum.common.dto.response.AnnouncementTinyDetailsResponse;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.dto.response.ListAnnoucementTinyResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementResponse;
@@ -59,9 +63,7 @@ public class AnnouncementController {
     private AnnouncementService announcementService;
 
     @Resource
-    private AnnouncementManager announcementManager;
-
-    /**
+    private AnnouncementManager announcementManager;    /**
      * 创建公告接口
      *
      * HTTP方法：POST
@@ -99,8 +101,7 @@ public class AnnouncementController {
             log.error("创建公告失败，标题: {}", request.getTitle(), e); // 记录完整的异常堆栈
             return AjaxResult.fail(500, "创建公告失败：" + e.getMessage());
         }
-    }
-
+    }    
     /**
      * 更新公告接口
      *
@@ -139,9 +140,7 @@ public class AnnouncementController {
             log.error("更新公告失败，ID: {}, 标题: {}", request.getId(), request.getTitle(), e); // 记录完整的异常堆栈
             return AjaxResult.fail(500, "更新公告失败：" + e.getMessage());
         }
-    }
-
-    /**
+    }    /**
      * 设置/取消置顶公告接口
      *
      * HTTP方法：PUT
@@ -179,9 +178,7 @@ public class AnnouncementController {
             log.error("置顶/取消置顶公告失败，ID: {}, 错误信息: {}", request.getId(), e.getMessage(), e);
             return AjaxResult.fail(500, "置顶/取消置顶公告失败：" + e.getMessage());
         }
-    }
-
-    /**
+    }    /**
      * 软删除公告接口
      *
      * HTTP方法：DELETE
@@ -194,7 +191,7 @@ public class AnnouncementController {
      */
     @Operation(summary = "软删除公告", description = "软删除指定公告（管理员权限）")
     @DeleteMapping
-    public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@RequestParam("id") Integer id) {
+    public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@RequestParam("id") Long id) {
         try {
             log.info("收到删除公告请求，ID: {}", id);
             AnnouncementOperationResponse result = announcementService.deleteAnnouncement(id);
@@ -223,14 +220,49 @@ public class AnnouncementController {
      *
      * HTTP方法：GET
      * 请求路径：/announcements?id=123
-     * 权限：用户/管理员
+     * 权限：用户
      *
      * @param id 公告ID
      * @return 公告详情
      */
-    @Operation(summary = "查看公告详情", description = "根据ID查询公告详情（用户/管理员）")
+    @Operation(summary = "查看公告基本信息", description = "根据ID查询公告详情（用户）")
     @GetMapping
-    public AjaxResult<AnnouncementDetailsResponse> getAnnouncementDetail(@RequestParam("id") Integer id) {
+    public AjaxResult<AnnouncementTinyDetailsResponse> getAnnouncementTinyDetail(@RequestParam("id") Long id) {
+        try {
+            log.info("收到查询公告详情请求，ID: {}", id);
+            AnnouncementTinyDetailsResponse response = announcementService.getAnnouncementTinyDetailsById(id);
+
+            if (response == null) {
+                log.warn("公告不存在，ID: {}", id);
+                return AjaxResult.fail(404, "公告不存在");
+            }
+
+            return AjaxResult.success(response);
+        } catch (Exception e) {
+            // 优先处理 ApiException（Service层包装的异常）
+            if (e instanceof org.jh.forum.common.exceptions.ApiException) {
+                org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
+                log.error("获取公告异常", apiEx);
+                return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
+            }
+            log.error("获取公告失败，ID: {}, 错误信息: {}", id, e.getMessage(), e);
+            return AjaxResult.fail(500, "获取公告失败：" + e.getMessage());
+        }
+    }    /**
+     * 查看公告详情接口
+     *
+     * HTTP方法：GET
+     * 请求路径：/announcements/see?id=123
+     * 权限：管理员
+     *
+     * @param id 公告ID
+     * @return 公告详情
+     */
+    @Operation(summary = "查看公告详情", description = "根据ID查询公告详情（管理员）")
+    // @SaCheckLogin
+    // @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @GetMapping("/see")
+    public AjaxResult<AnnouncementDetailsResponse> getAnnouncementDetail(@RequestParam("id") Long id) {
         try {
             log.info("收到查询公告详情请求，ID: {}", id);
             AnnouncementDetailsResponse response = announcementService.getAnnouncementById(id);
@@ -354,8 +386,7 @@ public class AnnouncementController {
         target.setSticky(source.isSticky());
 
         return target;
-    }
-
+    }    
     /**
      * 管理员公告列表查询接口
      *

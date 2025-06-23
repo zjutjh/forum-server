@@ -7,6 +7,7 @@ import org.jh.forum.common.dto.request.ListAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementDetailsResponse;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementResponse;
+import org.jh.forum.common.dto.response.AnnouncementTinyDetailsResponse;
 
 /**
  * 公告服务接口
@@ -27,7 +28,16 @@ public interface AnnouncementService {
      * @param id 公告ID
      * @return 公告详情
      */
-    AnnouncementDetailsResponse getAnnouncementById(Integer id);
+    AnnouncementDetailsResponse getAnnouncementById(Long id);
+
+    /**
+     * 根据ID查询公告详情（用户版本）
+     * 返回简化的公告信息，不包含管理员才需要的字段
+     * 
+     * @param id 公告ID
+     * @return 公告简化详情
+     */
+    AnnouncementTinyDetailsResponse getAnnouncementTinyDetailsById(Long id);
 
     /**
      * 查询公告列表
@@ -35,16 +45,14 @@ public interface AnnouncementService {
      * @param request 查询请求
      * @return 分页结果
      */
-    ListAnnouncementResponse listAnnouncements(ListAnnouncementRequest request);
-
-    /**
+    ListAnnouncementResponse listAnnouncements(ListAnnouncementRequest request);    /**
      * 编辑公告
      * 
      * @param id 公告ID
      * @param request 编辑公告请求
      * @return 编辑结果
      */
-    AnnouncementOperationResponse editAnnouncement(Integer id, EditAnnouncementRequest request);
+    AnnouncementOperationResponse editAnnouncement(Long id, EditAnnouncementRequest request);
 
     /**
      * 删除公告
@@ -52,14 +60,14 @@ public interface AnnouncementService {
      * @param id 公告ID
      * @return 删除结果
      */
-    AnnouncementOperationResponse deleteAnnouncement(Integer id);    /**
+    AnnouncementOperationResponse deleteAnnouncement(Long id);/**
      * 置顶/取消置顶公告
      * 
      * @param id 公告ID
      * @param isSticky true表示置顶，false表示取消置顶
      * @return 操作结果
      */
-    AnnouncementOperationResponse stickyAnnouncement(Integer id, Boolean isSticky);    /**
+    AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean isSticky);    /**
      * 管理员查询公告列表
      * 支持复杂筛选和排序
      * 

@@ -27,10 +27,8 @@ public class CreateAnnouncementRequest {
     @NotBlank(message = "公告内容不能为空")
     @Size(min = 1, max = 1000, message = "公告内容不能超过500个字符")
     @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...", required = true)
-    private String content;
-
-    @Schema(description = "公告类型, 0系统1学校", example = "1", allowableValues = { "0", "1" })
-    private int type;
+    private String content;    @Schema(description = "公告类型, 0系统1学校", example = "1", allowableValues = { "0", "1" })
+    private Integer type;
     @JsonProperty("scheduled_at") // 显式声明JSON字段名称
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") // 移除timezone配置，让Spring Boot自动处理
     @Schema(description = "定时发布时间(ISO8601格式，前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00.000Z")

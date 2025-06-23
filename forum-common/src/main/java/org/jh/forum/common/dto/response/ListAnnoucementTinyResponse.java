@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 查询公告列表响应最小DTO
+ * 查询公告列表响应最小DTO（用户版本）
  * 
  * @author SituChengiang
  */
@@ -20,7 +20,7 @@ public class ListAnnoucementTinyResponse
     public static class AnnouncementItemResponse {
 
         @Schema(description = "公告ID", example = "1")
-        private Integer id;
+        private Long id;
 
         @Schema(description = "公告标题", example = "重要系统维护通知")
         private String title;

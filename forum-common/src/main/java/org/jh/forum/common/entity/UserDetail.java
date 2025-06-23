@@ -15,10 +15,10 @@ import java.time.LocalDate;
  * @TableName user_detail
  */
 @TableName(value = "user_detail")
+@Builder
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UserDetail {
     @TableId(value = "user_id", type = IdType.INPUT)
     private Long userId;

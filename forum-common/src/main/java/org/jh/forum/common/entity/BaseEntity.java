@@ -1,7 +1,10 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -9,7 +12,10 @@ import java.time.LocalDateTime;
 /**
  * @author SugarMGP
  */
+@SuperBuilder
 @Data
+@NoArgsConstructor(force = true)
+@AllArgsConstructor
 public class BaseEntity implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;

@@ -21,7 +21,8 @@ public class UserQueryAnnouncementRequest {
     @Min(value = 1, message = "每页数量不能小于1")
     @Max(value = 100, message = "每页数量不能超过100")
     @Schema(description = "每页数量", example = "8", defaultValue = "8")
-    private Integer size = 8;    /**
+    private Integer size = 8;
+    /**
      * 公告类型筛选：1=系统公告(db:type=0)，2=学校公告(db:type=1)，3=全部
      */
     @Schema(description = "类型筛选（1=系统公告，2=学校公告，3=全部）", example = "1", defaultValue = "3", allowableValues = { "1", "2",

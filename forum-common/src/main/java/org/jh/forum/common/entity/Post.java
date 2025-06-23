@@ -1,7 +1,11 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.*;
+import lombok.experimental.SuperBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * @author SugarMGP
@@ -10,9 +14,9 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "post")
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 public class Post extends BaseEntity {
     private Long userId;
 

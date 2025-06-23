@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
-
+import lombok.experimental.SuperBuilder;
 
 /**
  * @author O v O
@@ -12,9 +12,9 @@ import org.jh.forum.common.constants.UserTypeEnum;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
+@NoArgsConstructor(force = true)
 @TableName(value = "user")
 public class User extends BaseEntity {
     /**
