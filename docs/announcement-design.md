@@ -41,9 +41,10 @@ sticky字段单开还是塞attribute里头？
 - [x] GETList（用户）
 - [X] GETDetail（管理员）
 - [ ] SaToken 鉴权
-- [ ] GETList（管理员）
+- [ ] Username - ID
+- [x] GETList（管理员）
 - [x] 看看能不能复用TinyRespond
-- [ ] 定时发布的逻辑
+- [x] 定时发布的逻辑（轮询版本）
 
 ```mermaid
 graph TD

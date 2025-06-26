@@ -447,34 +447,147 @@ public class AnnouncementManager {
 
     /**
      * 管理员查询公告列表
-     * 支持复杂的筛选条件和排序
+     * 支持三种状态筛选（草稿、已发布、待发布）+ 升序/降序排序 + 已删除数据查询
      */
     public ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request) {
-        log.info(
-                "Manager层管理员查询公告列表，页码：{}，排序字段：{}", request.getPage(), request.orderField()); // TODO:
-                                                                                             // 实际实现中这里会调用Mapper层进行复杂查询
-        // 现在先返回Mock数据，模拟管理员查询功能
+        log.info("Manager层管理员查询公告列表，页码：{}，状态：{}，排序方向：{}，查询已删除：{}", 
+                request.getPage(), request.getStatus(), request.orderType(), request.getDeleted());
 
-        List<ListAnnouncementResponse.AnnouncementItemResponse> list = new ArrayList<>(); // 模拟根据筛选条件生成不同的数据 // 构建模拟数据
-        for (int i = 1; i <= Math.min(request.getSize(), 10); i++) {
-            ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
-            item.setId((long) (i + (request.getPage() - 1) * request.getSize()));
-            item.setTitle("Admin Mock公告 - " + item.getId());
-            item.setType(0);
-            item.setStatus(1);
-            item.setCreator("admin");
-            item.setUpdator("suadmin");
-            item.setCreatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusDays(i)));
-            item.setUpdatedAt(formatToIso8601(LocalDateTime.now(ZoneId.of("Asia/Shanghai")).minusHours(i)));
-            list.add(item);
+        // 计算分页参数
+        int page = request.getPage() != null ? request.getPage() : 1;
+        int size = request.getSize() != null ? request.getSize() : 8;
+        int offset = (page - 1) * size;
+        int orderType = request.orderType(); // 已有默认值处理
+        boolean includeDeleted = request.getDeleted() != null ? request.getDeleted() : false;
+
+        List<Announcement> announcements;
+        Long totalCount;
+
+        // 根据状态调用不同的查询方法
+        switch (request.getStatus()) {
+            case 0: // 草稿
+                log.info("查询草稿公告列表，包含已删除：{}", includeDeleted);
+                announcements = announcementMapper.findDraftAnnouncementsForAdmin(orderType, includeDeleted, offset, size);
+                totalCount = announcementMapper.countAnnouncementsByStatusForAdmin(0, includeDeleted);
+                break;
+            case 1: // 已发布
+                log.info("查询已发布公告列表，包含已删除：{}", includeDeleted);
+                announcements = announcementMapper.findPublishedAnnouncementsForAdmin(orderType, includeDeleted, offset, size);
+                totalCount = announcementMapper.countAnnouncementsByStatusForAdmin(1, includeDeleted);
+                break;
+            case 2: // 待发布
+                log.info("查询待发布公告列表，包含已删除：{}", includeDeleted);
+                announcements = announcementMapper.findScheduledAnnouncementsForAdmin(orderType, includeDeleted, offset, size);
+                totalCount = announcementMapper.countAnnouncementsByStatusForAdmin(2, includeDeleted);
+                break;
+            default:
+                log.warn("未知的公告状态：{}，默认查询已发布公告", request.getStatus());
+                announcements = announcementMapper.findPublishedAnnouncementsForAdmin(orderType, includeDeleted, offset, size);
+                totalCount = announcementMapper.countAnnouncementsByStatusForAdmin(1, includeDeleted);
+                break;
         }
+
+        // 转换为响应对象（管理员版本，包含完整字段）
+        List<ListAnnouncementResponse.AnnouncementItemResponse> itemList = announcements.stream()
+                .map(this::convertToAdminAnnouncementItem)
+                .toList();
+
         // 构建响应
         ListAnnouncementResponse response = new ListAnnouncementResponse();
-        response.setList(list);
-        response.setTotal(35); // Mock总数
-        response.setPage(request.getPage());
-        response.setPageSize(request.getSize());
-        log.info("管理员查询公告列表完成，返回{}条记录", list.size());
+        response.setTotal(totalCount.intValue());
+        response.setPage(page);
+        response.setPageSize(size);
+        response.setList(itemList);
+
+        log.info("管理员查询公告列表完成，总数: {}, 当前页数据: {}", totalCount, itemList.size());
         return response;
+    }
+
+    /**
+     * 统计指定状态的公告总数（管理员查询用）
+     * @deprecated 使用 countAnnouncementsByStatusForAdmin 替代
+     */
+    @Deprecated
+    private Long countAnnouncementsByStatus(Integer status) {
+        return announcementMapper.countAnnouncements(status, null); // type为null表示不筛选类型
+    }
+
+    /**
+     * 将 Announcement 实体转换为管理员版 AnnouncementItemResponse
+     * 包含所有字段，包括 status, created_at, scheduled_at 等管理员需要的信息
+     */
+    private ListAnnouncementResponse.AnnouncementItemResponse convertToAdminAnnouncementItem(Announcement announcement) {
+        ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
+
+        item.setId(announcement.getId());
+        item.setTitle(announcement.getTitle());
+        item.setType(announcement.getType());
+        item.setStatus(announcement.getStatus()); // 管理员版包含状态字段
+        item.setSticky(announcement.getSticky());
+
+        // 设置用户名
+        item.setCreator(getUsernameById(announcement.getCreateUid()));
+        item.setUpdator(getUsernameById(announcement.getUpdateUid()));
+
+        // 格式化时间 - 管理员版包含完整时间信息
+        item.setCreatedAt(formatToIso8601(announcement.getCreatedAt()));
+        item.setUpdatedAt(formatToIso8601(announcement.getUpdatedAt()));
+        
+        // 预定发布时间 - 可能为null
+        if (announcement.getScheduledAt() != null) {
+            item.setScheduledAt(formatToIso8601(announcement.getScheduledAt()));
+        }
+
+        return item;
+    }
+
+    /**
+     * 查询到期的待发布公告
+     * 用于定时发布功能
+     */
+    public List<Announcement> findExpiredScheduledAnnouncements() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        log.info("Manager层查询到期的待发布公告，当前时间：{}", formatToIso8601(currentTime));
+        
+        List<Announcement> expiredAnnouncements = announcementMapper.findExpiredScheduledAnnouncements(currentTime);
+        
+        log.info("查询到{}个到期的待发布公告", expiredAnnouncements.size());
+        return expiredAnnouncements;
+    }
+
+    /**
+     * 批量发布到期的公告
+     * 绕过AutoFill机制，手动更新status字段
+     */
+    @Transactional
+    public int batchPublishExpiredAnnouncements(List<Long> announcementIds) {
+        if (announcementIds == null || announcementIds.isEmpty()) {
+            log.info("没有需要发布的公告");
+            return 0;
+        }
+
+        log.info("Manager层批量发布公告，数量：{}, ID列表：{}", announcementIds.size(), announcementIds);
+        
+        int successCount = 0;
+        int failCount = 0;
+        
+        for (Long id : announcementIds) {
+            try {
+                int result = announcementMapper.publishAnnouncementManually(id);
+                if (result > 0) {
+                    successCount++;
+                    log.info("定时发布公告成功，ID：{}", id);
+                } else {
+                    failCount++;
+                    log.warn("定时发布公告失败，ID：{}，可能已被删除或状态已改变", id);
+                }
+            } catch (Exception e) {
+                failCount++;
+                log.error("定时发布公告异常，ID：{}", id, e);
+            }
+        }
+        
+        log.info("批量发布完成，成功：{}个，失败：{}个", successCount, failCount);
+        return successCount;
     }
 }

@@ -365,10 +365,49 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     // 管理员查询公告列表
     @Override
     public ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request) {
-        // log.info("Service层管理员查询公告列表，页码：{}，筛选条件：{}", request.getPage(),
-        // request.getFilters());
-        // TODO: 这里先返回mock数据，后续实现真正的管理员查询逻辑
-        return announcementManager.adminQueryAnnouncements(request);
+        try {
+            log.info("Service层管理员查询公告列表，页码：{}，状态：{}，排序方向：{}", 
+                    request.getPage(), request.getStatus(), request.orderType());
+
+            // 参数校验
+            if (request.getPage() != null && request.getPage() < 1) {
+                throw new IllegalArgumentException("页码必须大于0");
+            }
+            if (request.getSize() != null && (request.getSize() < 1 || request.getSize() > 100)) {
+                throw new IllegalArgumentException("每页大小必须在1-100之间");
+            }
+            if (request.getStatus() != null && (request.getStatus() < 0 || request.getStatus() > 2)) {
+                throw new IllegalArgumentException("状态值必须在0-2之间（0=草稿，1=已发布，2=待发布）");
+            }
+            if (request.orderType() < 0 || request.orderType() > 1) {
+                throw new IllegalArgumentException("排序方向必须为0（升序）或1（降序）");
+            }
+
+            // 设置默认值（AdminQueryAnnouncementRequest已有默认值，但防御性编程）
+            if (request.getPage() == null) request.setPage(1);
+            if (request.getSize() == null) request.setSize(8);
+            if (request.getStatus() == null) request.setStatus(0); // 默认查询草稿
+
+            // TODO: 权限校验 - 检查当前用户是否为管理员
+            // checkAdminPermission();
+
+            return announcementManager.adminQueryAnnouncements(request);
+
+        } catch (IllegalArgumentException e) {
+            // 包装业务校验异常为参数错误
+            log.warn("管理员查询公告列表校验失败: {}", e.getMessage());
+            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (Exception e) {
+            // 包装数据库异常
+            if (e instanceof java.sql.SQLException ||
+                    (e.getCause() != null && e.getCause() instanceof java.sql.SQLException)) {
+                log.error("数据库操作异常", e);
+                throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+            }
+            // 重新抛出其他异常
+            log.error("管理员查询公告列表未知异常", e);
+            throw new ApiException(500, 50000, "管理员查询公告列表失败：系统内部错误");
+        }
     }
 
     /**

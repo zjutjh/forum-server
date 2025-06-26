@@ -1,10 +1,11 @@
 package org.jh.forum.start.controller;
 
-import cn.dev33.satoken.annotation.SaCheckLogin;
-import cn.dev33.satoken.annotation.SaCheckRole;
-import cn.dev33.satoken.annotation.SaMode;
+// import cn.dev33.satoken.annotation.SaCheckLogin;
+// import cn.dev33.satoken.annotation.SaCheckRole;
+// import cn.dev33.satoken.annotation.SaMode;
 import org.jh.forum.api.service.AnnouncementService;
 import org.jh.forum.server.manager.AnnouncementManager;
+import org.jh.forum.server.schedule.AnnouncementScheduleService;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
@@ -41,7 +42,8 @@ import lombok.extern.slf4j.Slf4j;
  * - 更新公告：PUT /announcements
  * - 设置/取消置顶：PUT /announcements/sticky
  * - 软删除公告：DELETE /announcements?id=123
- * - 查看公告详情：GET /announcements?id=123
+ * - 用户查看公告详情：GET /announcements?id=123
+ * - 管理员查看公告全部信息：GET /announcement/see?id=123
  * - 用户公告列表：GET /announcements/list?conditions
  * - 管理员公告列表：GET /announcements/query?conditions
  * 
@@ -63,7 +65,12 @@ public class AnnouncementController {
     private AnnouncementService announcementService;
 
     @Resource
-    private AnnouncementManager announcementManager;    /**
+    private AnnouncementManager announcementManager;
+
+    @Resource
+    private AnnouncementScheduleService scheduleService;
+
+    /**
      * 创建公告接口
      *
      * HTTP方法：POST
@@ -101,7 +108,8 @@ public class AnnouncementController {
             log.error("创建公告失败，标题: {}", request.getTitle(), e); // 记录完整的异常堆栈
             return AjaxResult.fail(500, "创建公告失败：" + e.getMessage());
         }
-    }    
+    }
+
     /**
      * 更新公告接口
      *
@@ -134,13 +142,15 @@ public class AnnouncementController {
             // 优先处理 ApiException（Service层包装的异常）
             if (e instanceof org.jh.forum.common.exceptions.ApiException) {
                 org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
-                log.error("更新公告异常", apiEx); // 记录完整的ApiException堆栈
+                log.error("更新公告异常", apiEx);
                 return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
             }
-            log.error("更新公告失败，ID: {}, 标题: {}", request.getId(), request.getTitle(), e); // 记录完整的异常堆栈
+            log.error("更新公告失败，ID: {}, 标题: {}", request.getId(), request.getTitle(), e);
             return AjaxResult.fail(500, "更新公告失败：" + e.getMessage());
         }
-    }    /**
+    }
+
+    /**
      * 设置/取消置顶公告接口
      *
      * HTTP方法：PUT
@@ -178,7 +188,9 @@ public class AnnouncementController {
             log.error("置顶/取消置顶公告失败，ID: {}, 错误信息: {}", request.getId(), e.getMessage(), e);
             return AjaxResult.fail(500, "置顶/取消置顶公告失败：" + e.getMessage());
         }
-    }    /**
+    }
+
+    /**
      * 软删除公告接口
      *
      * HTTP方法：DELETE
@@ -248,7 +260,9 @@ public class AnnouncementController {
             log.error("获取公告失败，ID: {}, 错误信息: {}", id, e.getMessage(), e);
             return AjaxResult.fail(500, "获取公告失败：" + e.getMessage());
         }
-    }    /**
+    }
+
+    /**
      * 查看公告详情接口
      *
      * HTTP方法：GET
@@ -287,18 +301,17 @@ public class AnnouncementController {
 
     /**
      * 用户公告列表接口
-     *
+     * 
      * HTTP方法：GET
-     * 请求路径：/announcements/list * 支持参数：page, size, type
+     * 请求路径：/announcements/list
+     * 支持参数：page, size, type
      * 默认排序：按 updated_at 升序（最后发布的在最下面）
      * 权限：用户
      * 
      * @param request 用户查询请求参数
      * @return 公告列表（简化版）
      */
-    @Operation(summary = "用户公告列表", description = "查询用户可见的公告列表，按 updated_at 升序（最后发布的在最下面）", responses = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "简化版公告列表，只包含必要字段", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ListAnnoucementTinyResponse.class)))
-    })
+    @Operation(summary = "用户公告列表", description = "查询用户可见的公告列表，按 updated_at 升序（最后发布的在最下面）")
     @GetMapping("/list")
     public AjaxResult<ListAnnoucementTinyResponse> listAnnouncements(@Valid UserQueryAnnouncementRequest request) {
         try {
@@ -306,7 +319,7 @@ public class AnnouncementController {
             // 创建请求对象
             ListAnnouncementRequest serviceRequest = new ListAnnouncementRequest();
             serviceRequest.setPage(request.getPage());
-            serviceRequest.setSize(request.getSize()); // 设置类型筛选
+            serviceRequest.setSize(request.getSize());
             if (request.getType() != null) {
                 // 根据类型值设置筛选条件（前端1,2,3 映射到数据库0,1,不限制）
                 if (request.getType() == 1) {
@@ -320,7 +333,7 @@ public class AnnouncementController {
             }
 
             // 只查询已发布的公告
-            serviceRequest.setStatus(1); // 调用服务获取列表
+            serviceRequest.setStatus(1);
             ListAnnouncementResponse serviceResponse = announcementService.listAnnouncements(serviceRequest);
 
             // 将 ListAnnouncementResponse 转换为 ListAnnoucementTinyResponse
@@ -386,7 +399,8 @@ public class AnnouncementController {
         target.setSticky(source.isSticky());
 
         return target;
-    }    
+    }
+
     /**
      * 管理员公告列表查询接口
      *
@@ -403,17 +417,46 @@ public class AnnouncementController {
     public AjaxResult<ListAnnouncementResponse> adminAnnouncementQueryRequest(
             @Valid AdminQueryAnnouncementRequest request) {
         try {
-            log.info("收到管理员查询公告列表请求，页码: {}, 状态: {}, 排序字段: {}, 排序方向: {}, 是否查询已删除: {}",
-                    request.getPage(), request.getStatus(), request.orderField(),
-                    request.orderType(), request.getDeleted());
+            log.info("收到管理员查询公告列表请求，页码: {}, 状态: {}, 排序方向: {}, 是否查询已删除: {}",
+                    request.getPage(), request.getStatus(), request.orderType(), request.getDeleted());
 
             ListAnnouncementResponse response = announcementService.adminQueryAnnouncements(request);
 
             log.info("管理员查询公告列表成功，总数: {}", response.getTotal());
             return AjaxResult.success(response);
         } catch (Exception e) {
+            // 优先处理 ApiException（Service层包装的异常）
+            if (e instanceof org.jh.forum.common.exceptions.ApiException) {
+                org.jh.forum.common.exceptions.ApiException apiEx = (org.jh.forum.common.exceptions.ApiException) e;
+                log.error("管理员查询公告列表异常", apiEx);
+                return AjaxResult.fail(apiEx.getErrorCode(), apiEx.getErrorMsg());
+            }
             log.error("管理员查询公告列表失败，错误信息: {}", e.getMessage(), e);
             return AjaxResult.fail(500, "查询公告列表失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 手动触发定时发布任务接口（测试用）
+     *
+     * HTTP方法：POST
+     * 请求路径：/announcements/trigger-publish
+     * 权限：管理员
+     *
+     * @return 触发结果
+     */
+    @Operation(summary = "手动触发定时发布", description = "手动触发定时发布任务（测试用，管理员权限）")
+    // @SaCheckLogin
+    // @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @PostMapping("/trigger-publish")
+    public AjaxResult<String> triggerScheduledPublish() {
+        try {
+            log.info("收到手动触发定时发布请求");
+            scheduleService.manualTriggerPublish();
+            return AjaxResult.success("定时发布任务已触发");
+        } catch (Exception e) {
+            log.error("手动触发定时发布失败", e);
+            return AjaxResult.fail(500, "触发定时发布失败：" + e.getMessage());
         }
     }
 }
