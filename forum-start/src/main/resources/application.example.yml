@@ -137,3 +137,8 @@ sa-token:
   is-log: true
   # Dubbo 支持
   check-same-token: true
+
+cube:
+  baseUrl:
+  apiKey:
+  bucketName:
