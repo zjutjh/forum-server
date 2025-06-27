@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -16,8 +16,8 @@ import java.time.LocalDate;
  */
 @TableName(value = "user_detail")
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class UserDetail {
     @TableId(value = "user_id", type = IdType.INPUT)

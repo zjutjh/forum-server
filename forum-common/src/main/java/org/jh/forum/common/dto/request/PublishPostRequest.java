@@ -34,4 +34,9 @@ public class PublishPostRequest {
     @Schema(description = "帖子话题列表")
     @NotNull
     private String[] topics;
+
+    @Schema(description = "帖子附件ID列表")
+    @NotNull
+    @JsonProperty("attachment_ids")
+    private Long[] attachmentIds;
 }
