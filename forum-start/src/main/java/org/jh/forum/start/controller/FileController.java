@@ -57,8 +57,7 @@ public class FileController {
                 LocalDate currentDate = LocalDate.now();
                 String location = String.format("%d%02d", currentDate.getYear(), currentDate.getMonthValue());
                 String objectKey = cubeService.uploadFile(
-                        file.getInputStream(),
-                        file.getOriginalFilename(),
+                        file,
                         location,
                         type == AttachmentTypeEnum.PICTURE,
                         true
@@ -81,6 +80,7 @@ public class FileController {
         } catch (InvalidProtocolBufferException e) {
             throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
         } catch (IOException e) {
+            log.error("文件上传失败", e);
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR);
         }
     }

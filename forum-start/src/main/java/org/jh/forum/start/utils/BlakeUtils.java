@@ -14,7 +14,7 @@ public class BlakeUtils {
     /**
      * 计算 MultipartFile 的 BLAKE3 哈希值
      *
-     * @param file 上传的文件
+     * @param file 文件
      * @return 十六进制格式的哈希字符串
      * @throws IOException 文件读取异常
      */
