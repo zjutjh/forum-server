@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.PostListElement;
+import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.PostTopicRelation;
 import org.jh.forum.server.mapper.PostMapper;
@@ -25,8 +26,9 @@ public class PostManager {
     private final PostMapper postMapper;
     private final PostTopicRelationMapper postTopicRelationMapper;
     private final TopicManager topicManager;
+    private final FileManager fileManager;
 
-    public void publishPost(String title, String content, Long categoryId, List<String> topics) {
+    public void publishPost(String title, String content, Long categoryId, List<String> topics, List<Long> attachmentIds) {
         Post post = Post.builder()
                 .userId(StpUtil.getLoginIdAsLong())
                 .title(title)
@@ -41,6 +43,9 @@ public class PostManager {
                     .topicId(topicManager.getTopicId(topic))
                     .build()
             );
+        }
+        for (Long attachmentId : attachmentIds) {
+            fileManager.bindAttachment(attachmentId, TargetTypeEnum.POST, post.getId());
         }
     }
 

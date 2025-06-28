@@ -12,8 +12,8 @@ import org.jh.forum.common.constants.UserTypeEnum;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @TableName(value = "user")
 public class User extends BaseEntity {

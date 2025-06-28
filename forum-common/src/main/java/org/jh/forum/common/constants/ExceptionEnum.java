@@ -19,6 +19,9 @@ public enum ExceptionEnum {
     NOT_LOGIN(200005, "当前未登录或登录过期, 请重新登录"),
     WRONG_USERNAME_OR_PASSWORD(200006, "用户名或密码错误"),
     PERMISSION_NOT_ALLOWED(200007, "权限不足"),
+    FILE_NOT_PICTURE(200008, "该文件不是图片"),
+    FILE_UPLOAD_ERROR(200009, "文件上传失败"),
+
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     UNKNOWN_ERROR(200500, "未知错误, 请稍后重试"),
     ;
