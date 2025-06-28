@@ -52,8 +52,8 @@ public class PostController {
                     .setTitle(request.getTitle())
                     .setContent(request.getContent())
                     .setCategoryId(request.getCategoryId())
-                    .addAllTopics(List.of(request.getTopics()))
-                    .addAllAttachmentIds(List.of(request.getAttachmentIds()))
+                    .addAllTopics(request.getTopics())
+                    .addAllAttachmentIds(request.getAttachmentIds())
                     .build();
             postService.publishPost(req);
         } catch (ForumServiceException e) {

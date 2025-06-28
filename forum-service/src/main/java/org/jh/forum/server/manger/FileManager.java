@@ -1,5 +1,6 @@
 package org.jh.forum.server.manger;
 
+import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -26,7 +27,7 @@ public class FileManager {
         if (attachment == null) {
             throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
-        if (attachment.getTargetId() != -1L) {
+        if (attachment.getTargetId() != -1L || attachment.getUserId() != StpUtil.getLoginIdAsLong()) {
             throw new ForumServiceException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         if (targetType == TargetTypeEnum.POST) {

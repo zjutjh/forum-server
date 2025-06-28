@@ -12,7 +12,6 @@ import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.FileMapper;
-import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.utils.EnumUtil;
 
 import jakarta.annotation.Resource;
@@ -29,9 +28,6 @@ public class FileServiceImpl implements FileService {
 
     @Resource
     private AttachmentMapper attachmentMapper;
-
-    @Resource
-    private PostMapper postMapper;
 
     @Override
     public ServiceResult checkBlake3(CheckBlake3Req request) {
