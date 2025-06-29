@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
  * @author SugarMGP
  */
@@ -16,26 +14,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetPostListElement {
+public class GetAdminPostListElement {
     @Schema(description = "帖子ID")
     private Long id;
 
-    @Schema(description = "发帖人ID")
-    @JsonProperty("publisher_id")
-    private Long publisherId;
+    @Schema(description = "发帖人")
+    private String publisher;
 
     @Schema(description = "帖子板块ID")
     @JsonProperty("category_id")
     private Long categoryId;
 
-    @Schema(description = "帖子话题列表")
-    private List<String> topics;
-
     @Schema(description = "帖子标题")
     private String title;
-
-    @Schema(description = "帖子内容（截取50字）")
-    private String content;
 
     @Schema(description = "帖子点赞数")
     @JsonProperty("like_count")
@@ -52,4 +43,11 @@ public class GetPostListElement {
     @Schema(description = "发帖时间")
     @JsonProperty("created_at")
     private String createdAt;
+
+    @Schema(description = "帖子状态")
+    private String status;
+
+    @Schema(description = "是否置顶（管理员）")
+    @JsonProperty("is_pinned")
+    private Boolean isPinned;
 }

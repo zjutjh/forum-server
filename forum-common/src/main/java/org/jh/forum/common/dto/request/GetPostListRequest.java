@@ -14,7 +14,7 @@ import jakarta.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class GetPostListRequest extends BaseListRequest {
-    @Schema(description = "帖子板块ID（为0则全部帖子）")
+    @Schema(description = "帖子板块ID（为0则全部）")
     @NotNull
     private Long categoryId;
 

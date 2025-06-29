@@ -10,12 +10,10 @@ import org.jh.forum.api.dubbo.PostService;
 import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.request.BaseListRequest;
+import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
-import org.jh.forum.common.dto.response.BaseListResponse;
-import org.jh.forum.common.dto.response.GetMyPostListElement;
-import org.jh.forum.common.dto.response.GetPostInfoResponse;
-import org.jh.forum.common.dto.response.GetPostListElement;
+import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.start.models.AjaxResult;
@@ -32,6 +30,7 @@ import java.util.List;
  */
 @Slf4j
 @Validated
+@RequestMapping("/post")
 @RestController
 @Tag(name = "帖子", description = "帖子相关接口")
 public class PostController {
@@ -39,13 +38,13 @@ public class PostController {
     private PostService postService;
 
     @Operation(summary = "获取帖子信息")
-    @GetMapping("/post/info")
+    @GetMapping("/info")
     public AjaxResult<GetPostInfoResponse> getPostInfo(@RequestParam(value = "id", required = true) Long id) {
         return null;
     }
 
     @Operation(summary = "创建帖子")
-    @PostMapping("/post/create")
+    @PostMapping("/create")
     public AjaxResult<Void> createPost(@Valid @RequestBody PublishPostRequest request) {
         try {
             PublishPostReq req = PublishPostReq.newBuilder()
@@ -63,13 +62,13 @@ public class PostController {
     }
 
     @Operation(summary = "删除帖子")
-    @DeleteMapping("/post/delete")
+    @DeleteMapping("/delete")
     public AjaxResult<Void> deletePost(@RequestParam(value = "id", required = true) Long id) {
         return AjaxResult.success();
     }
 
     @Operation(summary = "获取帖子列表")
-    @GetMapping("/post/list")
+    @GetMapping("/list")
     public AjaxResult<BaseListResponse<GetPostListElement>> getPostList(@Valid GetPostListRequest request) {
         GetPostListReq req = GetPostListReq.newBuilder()
                 .setCategoryId(request.getCategoryId())
@@ -87,9 +86,9 @@ public class PostController {
                         .commentCount(post.getCommentCount())
                         .viewCount(post.getViewCount())
                         .createdAt(post.getCreateAt())
-                        .userId(post.getUserId())
+                        .publisherId(post.getUserId())
                         .categoryId(post.getCategoryId())
-                        .topics(post.getTopicsList().toArray(new String[0]))
+                        .topics(post.getTopicsList())
                         .build()
                 );
             });
@@ -102,7 +101,7 @@ public class PostController {
     }
 
     @Operation(summary = "获取我的帖子列表")
-    @GetMapping("/post/my_list")
+    @GetMapping("/my_list")
     public AjaxResult<BaseListResponse<GetMyPostListElement>> getMyPostList(BaseListRequest request) {
         try {
             List<GetMyPostListElement> list = new ArrayList<>();
@@ -116,9 +115,9 @@ public class PostController {
                         .commentCount(post.getCommentCount())
                         .viewCount(post.getViewCount())
                         .createdAt(post.getCreateAt())
-                        .isPinned(post.getIsPinned())
+                        .isTopped(post.getIsTopped())
                         .categoryId(post.getCategoryId())
-                        .topics(post.getTopicsList().toArray(new String[0]))
+                        .topics(post.getTopicsList())
                         .build()
                 );
             });
@@ -128,5 +127,12 @@ public class PostController {
         } catch (InvalidProtocolBufferException e) {
             throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
         }
+    }
+
+    @Operation(summary = "获取管理员帖子列表")
+    @Tag(name = "管理员")
+    @GetMapping("/admin_list")
+    public AjaxResult<BaseListResponse<GetAdminPostListElement>> getAdminPostList(GetAdminPostListRequest request) {
+        return null;
     }
 }

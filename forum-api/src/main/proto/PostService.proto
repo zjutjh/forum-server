@@ -27,7 +27,7 @@ message PostListElement{
   int64 userId = 4;
   int64 categoryId = 5;
   string createAt = 6;
-  bool isPinned = 7;
+  bool isTopped = 7;
   int32 likeCount = 8;
   int32 commentCount = 9;
   int32 viewCount = 10;
