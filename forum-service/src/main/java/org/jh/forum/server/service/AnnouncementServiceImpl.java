@@ -1,6 +1,7 @@
 package org.jh.forum.server.service;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.service.AnnouncementService;
@@ -30,9 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @DubboService
 public class AnnouncementServiceImpl implements AnnouncementService {
-
-    @Resource
-    private AnnouncementManager announcementManager; // 创建公告
 
     @Override
     public AnnouncementOperationResponse createAnnouncement(CreateAnnouncementRequest request) {
@@ -84,25 +82,18 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     // DTO转Entity 这里缺少一点特殊字段驼峰-蛇形转换，现在先这么写着
     private Announcement convertToEntity(CreateAnnouncementRequest request) {
-        // 直接使用LocalDateTime，无需时区转换
-        LocalDateTime scheduledAt = request.getScheduledAt();
-        if (scheduledAt != null) {
-            log.debug("使用定时发布时间: {}", scheduledAt);
-        } // TODO: 更好的autofill
         return Announcement.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
                 .type(request.getType())
-                .createUid(123L) // Mock创建人ID TODO: 替换为实际获取的用户ID
-                .updateUid(123L) // 创建时设置更新人为创建人
-                .scheduledAt(scheduledAt).status(request.getStatus() != null ? request.getStatus() : 0)
-                .deleted(false) // 新创建的公告默认未删除
+                .scheduledAt(request.getScheduledAt())
+                .status(Announcement.AnnouncementStatus.fromCode(request.getStatus() != null ? request.getStatus() : 0))
+                .deleted(false)
                 .attribute(convertAttributeToString(request.getAttribute()))
                 .sticky(request.getSticky())
                 .build();
-    } 
-    
-    
+    }
+
     // 编辑公告
 
     @Override
@@ -140,13 +131,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 }
             }
 
-            // TODO 编辑权限校验（等着CurrentUid上线）
-            // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
-            // throw new IllegalArgumentException("您没有编辑该公告的权限");
-            // }
-
             // 内联权限状态检验
-            if (originAnnouncement.getStatus() == 1) {
+            if (originAnnouncement.getStatus() == Announcement.AnnouncementStatus.PUBLISHED) {
                 // 如果当前公告为已发布状态，则不允许编辑定时发布和状态
                 if (request.getScheduledAt() != null || request.getScheduledAt() != originAnnouncement.getScheduledAt()
                         || request.getStatus() != 1) {
@@ -179,6 +165,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
+    @Resource
+    private AnnouncementManager announcementManager;
+
     // 置顶/取消置顶公告
     @Override
     public AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean sticky) {
@@ -194,11 +183,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             if (!announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
-
-            // TODO 编辑权限校验（等着CurrentUid上线）
-            // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
-            // throw new IllegalArgumentException("您没有编辑该公告的权限");
-            // }
 
             // 如果置顶，检查置顶公告数量限制（最多3个）
             if (sticky && !announcementManager.canStickyAnnouncement(id)) {
@@ -234,10 +218,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             if (!announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
-            // TODO 删除权限校验（等着CurrentUid上线)
-            // if (originAnnouncement.getCreateUid() != currentUid && currentRole != 2) {
-            // throw new IllegalArgumentException("您没有删除该公告的权限");
-            // }
 
             // 执行删除操作
             return announcementManager.deleteAnnouncement(id);
@@ -269,8 +249,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             if (!announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
-
-            // TODO 查询权限校验（仅管理可以查看所有参数）
 
             // 具体查询操作
             return announcementManager.getAnnouncementById(id);
@@ -366,7 +344,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request) {
         try {
-            log.info("Service层管理员查询公告列表，页码：{}，状态：{}，排序方向：{}", 
+            log.info("Service层管理员查询公告列表，页码：{}，状态：{}，排序方向：{}",
                     request.getPage(), request.getStatus(), request.orderType());
 
             // 参数校验
@@ -384,12 +362,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
             // 设置默认值（AdminQueryAnnouncementRequest已有默认值，但防御性编程）
-            if (request.getPage() == null) request.setPage(1);
-            if (request.getSize() == null) request.setSize(8);
-            if (request.getStatus() == null) request.setStatus(0); // 默认查询草稿
-
-            // TODO: 权限校验 - 检查当前用户是否为管理员
-            // checkAdminPermission();
+            if (request.getPage() == null)
+                request.setPage(1);
+            if (request.getSize() == null)
+                request.setSize(8);
+            if (request.getStatus() == null)
+                request.setStatus(0); 
 
             return announcementManager.adminQueryAnnouncements(request);
 
@@ -455,12 +433,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     /**
      * 校验创建时的定时发布和状态逻辑
      */
-    private void validateScheduledAndStatus(LocalDateTime scheduledAt, Integer status) {
+    private void validateScheduledAndStatus(ZonedDateTime scheduledAt, Integer status) {
         if (scheduledAt != null) {
-            // scheduled_at非空时，必须是未来时间（+30秒保底）
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime minAllowedTime = now.plusSeconds(30);
+            // 获取当前时区（UTC+8）时间
+            ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Shanghai"));
+            // 设置最小允许时间（当前时间+30秒）
+            ZonedDateTime minAllowedTime = now.plusSeconds(30);
 
+            // 比较带时区的时间
             if (scheduledAt.isBefore(minAllowedTime)) {
                 throw new IllegalArgumentException("定时发布时间必须至少在当前时间30秒之后");
             }
@@ -475,14 +455,5 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 throw new IllegalArgumentException("未设置定时发布时，状态只能为草稿或已发布");
             }
         }
-    }
-
-    /**
-     * 校验逻辑
-     * TODO: 实现权限校验逻辑
-     */
-    @SuppressWarnings("unused")
-    private void checkPermission(Integer id, Long currentUid) {
-        // TODO: 检验当前用户id和公告创建者id是否一致
     }
 }

@@ -16,10 +16,10 @@ public class StickyAnnouncementRequest {
 
     @NotNull(message = "公告ID不能为空")
     @Min(value = 1, message = "公告ID不能小于1")
-    @Schema(description = "公告ID", example = "1", required = true)
+    @Schema(description = "公告ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long id;
 
     @NotNull(message = "置顶状态不能为空")
-    @Schema(description = "是否置顶", example = "true", required = true, allowableValues = { "true", "false" })
+    @Schema(description = "是否置顶", example = "true", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "true", "false" })
     private Boolean Sticky;
 }

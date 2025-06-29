@@ -1,8 +1,6 @@
 package org.jh.forum.start.controller;
 
-// import cn.dev33.satoken.annotation.SaCheckLogin;
-// import cn.dev33.satoken.annotation.SaCheckRole;
-// import cn.dev33.satoken.annotation.SaMode;
+import org.apache.dubbo.common.logger.FluentLogger.S;
 import org.jh.forum.api.service.AnnouncementService;
 import org.jh.forum.server.manager.AnnouncementManager;
 import org.jh.forum.server.schedule.AnnouncementScheduleService;
@@ -28,6 +26,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
+import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -82,12 +84,15 @@ public class AnnouncementController {
      * @return 创建结果，包含公告基本信息
      */
     @Operation(summary = "创建公告", description = "创建一个公告，支持多种类型（管理员权限）")
+    @SaCheckLogin
+    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
     @PostMapping
     public AjaxResult<AnnouncementOperationResponse> createAnnouncement(
             @Valid @RequestBody CreateAnnouncementRequest request) {
+        Long currentUid = StpUtil.getLoginIdAsLong();
         try {
-            log.info("收到创建公告请求，标题: {}, 类型: {}, 预计时间：{}",
-                    request.getTitle(), request.getType(), request.getScheduledAt());
+            log.info("收到创建公告请求，标题: {}, 类型: {}, 预计时间：{}, 操作人ID: {}",
+                    request.getTitle(), request.getType(), request.getScheduledAt(), currentUid);
 
             AnnouncementOperationResponse response = announcementService.createAnnouncement(request);
 
@@ -122,12 +127,28 @@ public class AnnouncementController {
      * @return 编辑结果
      */
     @Operation(summary = "更新公告", description = "更新指定ID的公告信息（管理员权限）")
+    @SaCheckLogin
+    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
     @PutMapping
     public AjaxResult<AnnouncementOperationResponse> editAnnouncement(
+
             @Valid @RequestBody EditAnnouncementRequest request) {
+
+        Long currentUid = StpUtil.getLoginIdAsLong();
+
+        // 若为超级管理员，允许操作
+        if (!StpUtil.hasRole("super_admin")) {
+            // 否则检查是否为公告创建者
+            boolean isCreator = announcementManager.isAnnouncementCreator(request.getId(), currentUid);
+            if (!isCreator) {
+                log.warn("用户无权限修改该公告，ID: {}, 用户ID: {}", request.getId(), currentUid);
+                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            }
+        }
+
         try {
-            log.info("收到更新公告请求，ID: {}, 标题: {}, 类型: {}",
-                    request.getId(), request.getTitle(), request.getType());
+            log.info("收到更新公告请求，ID: {}, 标题: {}, 类型: {}, 操作人id：{}",
+                    request.getId(), request.getTitle(), request.getType(), currentUid);
 
             AnnouncementOperationResponse response = announcementService.editAnnouncement(request.getId(), request);
 
@@ -162,9 +183,23 @@ public class AnnouncementController {
      * @return 操作结果
      */
     @Operation(summary = "设置/取消置顶公告", description = "设置或取消公告的置顶状态（管理员权限）")
+    @SaCheckLogin
+    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
     @PutMapping("/sticky")
     public AjaxResult<AnnouncementOperationResponse> stickyAnnouncement(
             @Valid @RequestBody StickyAnnouncementRequest request) {
+        Long currentUid = StpUtil.getLoginIdAsLong();
+
+        // 若为超级管理员，允许操作
+        if (!StpUtil.hasRole("super_admin")) {
+            // 否则检查是否为公告创建者
+            boolean isCreator = announcementManager.isAnnouncementCreator(request.getId(), currentUid);
+            if (!isCreator) {
+                log.warn("用户无权限修改该公告，ID: {}, 用户ID: {}", request.getId(), currentUid);
+                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            }
+        }
+
         try {
             log.info("收到置顶/取消置顶公告请求，ID: {}, 置顶状态: {}", request.getId(), request.getSticky());
 
@@ -202,8 +237,22 @@ public class AnnouncementController {
      * @return 删除结果
      */
     @Operation(summary = "软删除公告", description = "软删除指定公告（管理员权限）")
+    @SaCheckLogin
+    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
     @DeleteMapping
     public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@RequestParam("id") Long id) {
+        Long currentUid = StpUtil.getLoginIdAsLong();
+
+        // 若为超级管理员，允许操作
+        if (!StpUtil.hasRole("super_admin")) {
+            // 否则检查是否为公告创建者
+            boolean isCreator = announcementManager.isAnnouncementCreator(id, currentUid);
+            if (!isCreator) {
+                log.warn("用户无权限修改该公告，ID: {}, 用户ID: {}", id, currentUid);
+                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            }
+        }
+
         try {
             log.info("收到删除公告请求，ID: {}", id);
             AnnouncementOperationResponse result = announcementService.deleteAnnouncement(id);
@@ -228,7 +277,7 @@ public class AnnouncementController {
     }
 
     /**
-     * 查看公告详情接口
+     * 查看公告基本内容接口
      *
      * HTTP方法：GET
      * 请求路径：/announcements?id=123
@@ -263,7 +312,7 @@ public class AnnouncementController {
     }
 
     /**
-     * 查看公告详情接口
+     * 查看公告全部信息接口
      *
      * HTTP方法：GET
      * 请求路径：/announcements/see?id=123
@@ -272,9 +321,9 @@ public class AnnouncementController {
      * @param id 公告ID
      * @return 公告详情
      */
-    @Operation(summary = "查看公告详情", description = "根据ID查询公告详情（管理员）")
-    // @SaCheckLogin
-    // @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @Operation(summary = "查看公告全部信息", description = "根据ID查询公告详情（管理员）")
+    @SaCheckLogin
+    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
     @GetMapping("/see")
     public AjaxResult<AnnouncementDetailsResponse> getAnnouncementDetail(@RequestParam("id") Long id) {
         try {
@@ -413,6 +462,8 @@ public class AnnouncementController {
      * @return 公告列表
      */
     @Operation(summary = "管理员公告列表查询", description = "查询管理员可见的公告列表（管理员权限）")
+    @SaCheckLogin
+    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
     @GetMapping("/query")
     public AjaxResult<ListAnnouncementResponse> adminAnnouncementQueryRequest(
             @Valid AdminQueryAnnouncementRequest request) {
@@ -445,18 +496,18 @@ public class AnnouncementController {
      *
      * @return 触发结果
      */
-    @Operation(summary = "手动触发定时发布", description = "手动触发定时发布任务（测试用，管理员权限）")
-    // @SaCheckLogin
-    // @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
-    @PostMapping("/trigger-publish")
-    public AjaxResult<String> triggerScheduledPublish() {
-        try {
-            log.info("收到手动触发定时发布请求");
-            scheduleService.manualTriggerPublish();
-            return AjaxResult.success("定时发布任务已触发");
-        } catch (Exception e) {
-            log.error("手动触发定时发布失败", e);
-            return AjaxResult.fail(500, "触发定时发布失败：" + e.getMessage());
-        }
-    }
+    // @Operation(summary = "手动触发定时发布", description = "手动触发定时发布任务（测试用，管理员权限）")
+    // // @SaCheckLogin
+    // // @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    // @PostMapping("/trigger-publish")
+    // public AjaxResult<String> triggerScheduledPublish() {
+    // try {
+    // log.info("收到手动触发定时发布请求");
+    // scheduleService.manualTriggerPublish();
+    // return AjaxResult.success("定时发布任务已触发");
+    // } catch (Exception e) {
+    // log.error("手动触发定时发布失败", e);
+    // return AjaxResult.fail(500, "触发定时发布失败：" + e.getMessage());
+    // }
+    // }
 }
