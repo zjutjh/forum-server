@@ -17,6 +17,7 @@ import org.jh.forum.common.dto.response.GetMyPostListElement;
 import org.jh.forum.common.dto.response.GetPostInfoResponse;
 import org.jh.forum.common.dto.response.GetPostListElement;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -46,13 +47,18 @@ public class PostController {
     @Operation(summary = "创建帖子")
     @PostMapping("/post/create")
     public AjaxResult<Void> createPost(@Valid @RequestBody PublishPostRequest request) {
-        PublishPostReq req = PublishPostReq.newBuilder()
-                .setTitle(request.getTitle())
-                .setContent(request.getContent())
-                .setCategoryId(request.getCategoryId())
-                .addAllTopics(List.of(request.getTopics()))
-                .build();
-        postService.publishPost(req);
+        try {
+            PublishPostReq req = PublishPostReq.newBuilder()
+                    .setTitle(request.getTitle())
+                    .setContent(request.getContent())
+                    .setCategoryId(request.getCategoryId())
+                    .addAllTopics(request.getTopics())
+                    .addAllAttachmentIds(request.getAttachmentIds())
+                    .build();
+            postService.publishPost(req);
+        } catch (ForumServiceException e) {
+            throw new ApiException(e);
+        }
         return AjaxResult.success();
     }
 

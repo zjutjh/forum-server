@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -15,10 +15,10 @@ import java.time.LocalDate;
  * @TableName user_detail
  */
 @TableName(value = "user_detail")
-@Builder
+@SuperBuilder
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserDetail {
     @TableId(value = "user_id", type = IdType.INPUT)
     private Long userId;

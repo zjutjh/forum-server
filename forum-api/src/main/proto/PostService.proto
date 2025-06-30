@@ -9,6 +9,7 @@ message PublishPostReq {
   string content = 2;
   int64 categoryId = 3;
   repeated string topics = 4;
+  repeated int64 attachmentIds = 5;
 }
 
 message GetPostListReq{
