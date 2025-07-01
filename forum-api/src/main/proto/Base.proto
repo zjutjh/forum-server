@@ -17,3 +17,7 @@ message ServiceResult {
   google.protobuf.Any data = 4;
 }
 
+message BaseListReq{
+  int32 page = 1;
+  int32 pageSize = 2;
+}

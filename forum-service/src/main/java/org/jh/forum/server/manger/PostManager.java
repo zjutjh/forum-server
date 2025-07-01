@@ -82,7 +82,7 @@ public class PostManager {
             postList.add(PostListElement.newBuilder()
                     .setId(post.getId())
                     .setUserId(post.getUserId())
-                    .setIsPinned(post.getIsPinned())
+                    .setIsTopped(post.getIsPinned())
                     .setCategoryId(post.getCategoryId())
                     .addAllTopics(topics)
                     .setTitle(post.getTitle())

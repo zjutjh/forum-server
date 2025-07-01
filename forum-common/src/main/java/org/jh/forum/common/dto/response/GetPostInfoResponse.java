@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author SugarMGP
  */
@@ -16,15 +18,15 @@ import lombok.NoArgsConstructor;
 @Data
 public class GetPostInfoResponse {
     @Schema(description = "发帖人ID")
-    @JsonProperty("user_id")
-    private Long userId;
+    @JsonProperty("publisher_id")
+    private Long publisherId;
 
     @Schema(description = "帖子板块ID")
     @JsonProperty("category_id")
     private Long categoryId;
 
     @Schema(description = "帖子话题列表")
-    private String[] topics;
+    private List<String> topics;
 
     @Schema(description = "帖子标题")
     private String title;
