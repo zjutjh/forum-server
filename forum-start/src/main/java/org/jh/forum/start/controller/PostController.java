@@ -16,6 +16,7 @@ import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.start.converter.PostConverter;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +38,9 @@ public class PostController {
     @Resource
     private PostService postService;
 
+    @Resource
+    private PostConverter postConverter;
+
     @Operation(summary = "获取帖子信息")
     @GetMapping("/info")
     public AjaxResult<GetPostInfoResponse> getPostInfo(@RequestParam(value = "id", required = true) Long id) {
@@ -47,13 +51,7 @@ public class PostController {
     @PostMapping("/create")
     public AjaxResult<Void> createPost(@Valid @RequestBody PublishPostRequest request) {
         try {
-            PublishPostReq req = PublishPostReq.newBuilder()
-                    .setTitle(request.getTitle())
-                    .setContent(request.getContent())
-                    .setCategoryId(request.getCategoryId())
-                    .addAllTopics(request.getTopics())
-                    .addAllAttachmentIds(request.getAttachmentIds())
-                    .build();
+            PublishPostReq req = postConverter.toProto(request);
             postService.publishPost(req);
         } catch (ForumServiceException e) {
             throw new ApiException(e);
@@ -70,10 +68,7 @@ public class PostController {
     @Operation(summary = "获取帖子列表")
     @GetMapping("/list")
     public AjaxResult<BaseListResponse<GetPostListElement>> getPostList(@Valid GetPostListRequest request) {
-        GetPostListReq req = GetPostListReq.newBuilder()
-                .setCategoryId(request.getCategoryId())
-                .setSortType(request.getSortType())
-                .build();
+        GetPostListReq req = postConverter.toProto(request);
         try {
             List<GetPostListElement> list = new ArrayList<>();
             GetPostListResp result = postService.getPostList(req).getData().unpack(GetPostListResp.class);

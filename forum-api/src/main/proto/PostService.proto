@@ -13,8 +13,9 @@ message PublishPostReq {
 }
 
 message GetPostListReq{
-  int64 categoryId = 1;
-  int32 sortType = 2;
+  BaseListReq base = 1;
+  int64 categoryId = 2;
+  int32 sortType = 3;
 }
 
 message GetMyPostListReq{
