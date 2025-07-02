@@ -24,8 +24,8 @@ public class UserQueryAnnouncementRequest {
     private Integer size = 8;
     
     /**
-     * 公告类型筛选：1=系统公告(db:type=0)，2=学校公告(db:type=1)，3=全部
+     * 公告类型筛选：1=系统公告(db:type=0)， 2=学校公告(db:type=1)， 3=全部
      */
-    @Schema(description = "类型筛选（1=系统公告，2=学校公告，3=全部）", example = "1", defaultValue = "3", allowableValues = { "1", "2", "3" })
+    @Schema(description = "类型筛选（1=系统公告， 2=学校公告， 3=全部）", example = "1", defaultValue = "3", allowableValues = { "1", "2", "3" })
     private Integer type = 3; // 默认为全部
 }

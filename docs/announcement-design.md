@@ -41,10 +41,16 @@ sticky字段单开还是塞attribute里头？
 - [x] GETList（用户）
 - [X] GETDetail（管理员）
 - [x] SaToken 鉴权（update还没测）
-- [ ] ID - Username
+- [x] caffeine ID - Username
 - [x] GETList（管理员）
-- [x] 看看能不能复用TinyRespond
-- [ ] 定时发布的逻辑（缓存版本）
+- [x] 复用TinyRespond
+- [x] 定时发布+条件筛选的混合确定（2025年7月2日 一半吧，管理端可能看着还是有问题，因此保留了1小时一次的轮询）
+- [x] 重写错误处理逻辑
+- [ ] 标题和内容防SQL、防止XSS攻击
+- [ ] 按标题模糊检索
+- [ ] 全部公告混合排列
+- [ ] 大的UnitTest
+- [ ] Alibaba lint
 
 ```mermaid
 graph TD

@@ -17,7 +17,7 @@ public class ListAnnouncementRequest {
     @Schema(description = "页码", example = "1", defaultValue = "1")
     private Integer page = 1;
 
-    @Schema(description = "每页大小，固定为8条", example = "8", defaultValue = "8", hidden = true)
+    @Schema(description = "每页大小， 固定为8条", example = "8", defaultValue = "8", hidden = true)
     private Integer size = 8;
 
     @Schema(description = "状态筛选：0草稿、1已发布、2待发布", example = "1", allowableValues = { "0", "1", "2" })

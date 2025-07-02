@@ -1,4 +1,4 @@
-package org.jh.forum.server.schedule;
+package org.jh.forum.server.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
-public class AnnouncementScheduleService {
+public class ScheduleService {
 
     @Resource
     private AnnouncementManager announcementManager;
@@ -29,7 +29,7 @@ public class AnnouncementScheduleService {
      * 定时检查并发布到期的公告
      * 每分钟执行一次
      */
-    @Scheduled(fixedRate = 60000) // 60秒 = 1分钟
+    @Scheduled(fixedRate = 3600000) // 每小时执行一次
     public void publishExpiredAnnouncements() {
         try {
             log.debug("开始执行定时发布公告任务，当前时间：{}", LocalDateTime.now());

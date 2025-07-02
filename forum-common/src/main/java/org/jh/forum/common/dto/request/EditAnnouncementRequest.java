@@ -44,7 +44,7 @@ public class EditAnnouncementRequest {
      */
     @JsonProperty("scheduled_at")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
-    @Schema(description = "定时发布时间(ISO8601格式，前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00+08:00")
+    @Schema(description = "定时发布时间(ISO8601格式, 前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00+08:00")
     private ZonedDateTime scheduledAt;
 
     @NotNull(message = "必须指定公告状态")

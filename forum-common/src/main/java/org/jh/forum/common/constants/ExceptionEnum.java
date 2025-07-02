@@ -21,6 +21,9 @@ public enum ExceptionEnum {
     PERMISSION_NOT_ALLOWED(200007, "权限不足"),
     FILE_NOT_PICTURE(200008, "该文件不是图片"),
     FILE_UPLOAD_ERROR(200009, "文件上传失败"),
+    ANNOUNCEMENT_OPERATION_ERROR(200010, "公告操作失败"),
+    ANNOUNCEMENT_DETAIL_ERROR(200011, "公告详情获取失败"),
+    ANNOUNCEMENT_LIST_QUERY_ERROR(200012, "公告列表查询失败"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     UNKNOWN_ERROR(200500, "未知错误, 请稍后重试"),
