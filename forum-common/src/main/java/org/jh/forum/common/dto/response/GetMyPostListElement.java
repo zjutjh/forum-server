@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author SugarMGP
  */
@@ -23,7 +25,7 @@ public class GetMyPostListElement {
     private Long categoryId;
 
     @Schema(description = "帖子话题列表")
-    private String[] topics;
+    private List<String> topics;
 
     @Schema(description = "帖子标题")
     private String title;
@@ -47,7 +49,7 @@ public class GetMyPostListElement {
     @JsonProperty("created_at")
     private String createdAt;
 
-    @Schema(description = "帖子是否被置顶")
-    @JsonProperty("is_pinned")
-    private Boolean isPinned;
+    @Schema(description = "是否置顶（个人主页）")
+    @JsonProperty("is_topped")
+    private Boolean isTopped;
 }

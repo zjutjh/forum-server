@@ -13,8 +13,9 @@ message PublishPostReq {
 }
 
 message GetPostListReq{
-  int64 categoryId = 1;
-  int32 sortType = 2;
+  BaseListReq base = 1;
+  int64 categoryId = 2;
+  int32 sortType = 3;
 }
 
 message GetMyPostListReq{
@@ -27,7 +28,7 @@ message PostListElement{
   int64 userId = 4;
   int64 categoryId = 5;
   string createAt = 6;
-  bool isPinned = 7;
+  bool isTopped = 7;
   int32 likeCount = 8;
   int32 commentCount = 9;
   int32 viewCount = 10;
