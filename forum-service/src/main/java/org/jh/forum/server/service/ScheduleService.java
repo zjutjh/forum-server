@@ -27,9 +27,10 @@ public class ScheduleService {
 
     /**
      * 定时检查并发布到期的公告
-     * 每分钟执行一次
+     * 每小时执行一次
      */
-    @Scheduled(fixedRate = 3600000) // 每小时执行一次
+    @Scheduled(fixedRate = 3600000)
+
     public void publishExpiredAnnouncements() {
         try {
             log.debug("开始执行定时发布公告任务，当前时间：{}", LocalDateTime.now());
@@ -65,8 +66,9 @@ public class ScheduleService {
      * 手动触发定时发布任务（用于测试）
      * 可以通过管理接口调用
      */
-    public void manualTriggerPublish() {
-        log.info("手动触发定时发布任务");
-        publishExpiredAnnouncements();
-    }
+    @Deprecated
+        public void manualTriggerPublish() {
+            log.info("手动触发定时发布任务");
+            publishExpiredAnnouncements();
+        }
 }

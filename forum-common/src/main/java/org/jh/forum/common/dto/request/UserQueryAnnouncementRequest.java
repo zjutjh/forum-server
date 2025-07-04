@@ -15,17 +15,22 @@ import lombok.Data;
 public class UserQueryAnnouncementRequest {
 
     @Min(value = 1, message = "页码不能小于1")
-    @Schema(description = "分页页码", example = "1", defaultValue = "1")
+    @Schema(description = "分页页码", example = "1", defaultValue = "1",requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Integer page = 1;
 
     @Min(value = 1, message = "每页数量不能小于1")
     @Max(value = 50, message = "每页数量不能超过50")
-    @Schema(description = "每页数量", example = "8", defaultValue = "8")
+    @Schema(description = "每页数量", example = "8", defaultValue = "8",requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Integer size = 8;
     
     /**
      * 公告类型筛选：1=系统公告(db:type=0)， 2=学校公告(db:type=1)， 3=全部
      */
-    @Schema(description = "类型筛选（1=系统公告， 2=学校公告， 3=全部）", example = "1", defaultValue = "3", allowableValues = { "1", "2", "3" })
-    private Integer type = 3; // 默认为全部
+    @Schema(description = "类型筛选(1=系统公告， 2=学校公告， 3=全部）", example = "1", defaultValue = "3", allowableValues = { "1", "2", "3" },requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Integer type = 3; 
+    // 默认为全部，除了mapper以外的其他地方都在用枚举，就是mapper里头，如果改了数值记得改
+
+    @Schema(description = "查询关键字", example = "公告标题", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String keyword; 
+    // 可选，查询关键字(Manager层里头实际上是title，因为是标题的关键字)
 }

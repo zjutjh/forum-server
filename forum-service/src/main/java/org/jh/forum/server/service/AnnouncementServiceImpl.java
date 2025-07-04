@@ -8,12 +8,14 @@ import org.jh.forum.api.service.AnnouncementService;
 import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
-import org.jh.forum.common.dto.request.ListAnnouncementRequest;
-import org.jh.forum.common.dto.response.AnnouncementDetailsResponse;
+import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
+import org.jh.forum.common.dto.response.AnnouncementDetailResponse;
 import org.jh.forum.common.dto.response.AnnouncementTinyDetailsResponse;
+import org.jh.forum.common.dto.response.ListAnnouncementTinyResponse;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementResponse;
 import org.jh.forum.common.entity.Announcement;
+import org.jh.forum.common.entity.Announcement.AnnouncementType;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -33,6 +35,19 @@ import lombok.extern.slf4j.Slf4j;
 @DubboService
 public class AnnouncementServiceImpl implements AnnouncementService {
 
+    /**
+     * 分页参数常量定义
+     */
+    private static final int MIN_PAGE_SIZE = 1;
+    private static final int MAX_PAGE_SIZE = 50;
+    private static final int DEFAULT_PAGE_SIZE = 8;
+    private static final int MAX_CONTENT_LENGTH = 500;
+    private static final int MAX_TITLE_LENGTH = 50;
+    private static final int MIN_CONTENT_LENGTH = 2;
+
+    /**
+     * 创建公告
+     */
     @Override
     public AnnouncementOperationResponse createAnnouncement(CreateAnnouncementRequest request) {
         try {
@@ -77,15 +92,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
-    // 编辑公告
-
+    /**
+     * 编辑公告
+     */
     @Override
     public AnnouncementOperationResponse editAnnouncement(Long id, EditAnnouncementRequest request) {
         try {
-            // log.info("Service层编辑公告, ID:{}, 标题:{}", id, request.getTitle());
+            log.info("Service-编辑公告, ID:{}, 标题:{}", id, request.getTitle());
 
-            // 统一存在性校验
-            if (!announcementManager.checkExist(id)) {
+            if (announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
 
@@ -109,7 +124,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             // 如果设置为置顶, 检查置顶公告数量限制 (最多3个)
             if (request.getSticky() != null && request.getSticky()) {
                 // 只有在希望置顶且当前公告未置顶时, 才检查数量限制
-                if (!announcementManager.canStickyAnnouncement(id)) {
+                if (announcementManager.canStickyAnnouncement(id)) {
                     throw new IllegalArgumentException("置顶公告数量已达上限");
                 }
             }
@@ -117,12 +132,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             // 内联权限状态检验
             if (originAnnouncement.getStatus() == Announcement.AnnouncementStatus.PUBLISHED) {
                 // 如果当前公告为已发布状态, 则不允许编辑定时发布和状态
-                if (request.getScheduledAt() != null || request.getScheduledAt() != originAnnouncement.getScheduledAt()
+                if (request.getScheduledAt() != null || null != originAnnouncement.getScheduledAt()
                         || request.getStatus() != 1) {
                     throw new IllegalArgumentException("已发布的公告不允许编辑定时发布和状态");
-                }
-                if (request.getStatus() != null && request.getStatus() != 1) {
-                    throw new IllegalArgumentException("已发布的公告不允许修改发布状态");
                 }
                 // 执行基础字段更新 (只能编辑标题、内容、类型、属性、置顶)
                 return announcementManager.editBasicFields(id, request);
@@ -149,7 +161,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Resource
     private AnnouncementManager announcementManager;
 
-    // 置顶/取消置顶公告
+    /**
+     * 置顶/取消置顶公告
+     */
     @Override
     public AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean sticky) {
         try {
@@ -161,12 +175,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
             // 校验ID并检查公告是否存在且未被删除
-            if (!announcementManager.checkExist(id)) {
+            if (announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
 
             // 如果置顶, 检查置顶公告数量限制 (最多3个)
-            if (sticky && !announcementManager.canStickyAnnouncement(id)) {
+            if (sticky && announcementManager.canStickyAnnouncement(id)) {
                 throw new IllegalArgumentException("置顶公告数量已达上限");
             }
 
@@ -187,13 +201,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
-    // 删除公告
+    /**
+     * 删除公告
+     */
     @Override
     public AnnouncementOperationResponse deleteAnnouncement(Long id) {
         try {
             log.info("Service层删除公告, ID:{}", id);
             // 校验ID
-            if (!announcementManager.checkExist(id)) {
+            if (announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
 
@@ -214,14 +230,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
-    // 根据ID查询公告详情 (管理员)
+    /**
+     * 根据ID查询公告详情 (管理员)
+     */
     @Override
-    public AnnouncementDetailsResponse getAnnouncementById(Long id) {
+    public AnnouncementDetailResponse getAnnouncementById(Long id) {
         try {
             log.info("Service层查询公告详情, ID:{}", id);
 
             // 校验ID
-            if (!announcementManager.checkExist(id)) {
+            if (announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
 
@@ -229,7 +247,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return announcementManager.getAnnouncementById(id);
         } catch (IllegalArgumentException e) {
             // 包装校验异常为参数错误
-            log.warn("查询公告详情校验失败: {}", e.getMessage());
+            log.warn("admin查询公告详情校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (ForumServiceException e) {
             // Manager的异常
@@ -242,14 +260,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
-    // 根据ID查询公告详情 (用户版本)
+    /**
+     * 根据ID查询公告详情 (用户版本)
+     */
     @Override
     public AnnouncementTinyDetailsResponse getAnnouncementTinyDetailsById(Long id) {
         try {
             log.info("Service层查询公告详情 (用户版) , ID:{}", id);
 
             // 校验ID
-            if (!announcementManager.checkExist(id)) {
+            if (announcementManager.checkExist(id)) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
             }
 
@@ -257,7 +277,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return announcementManager.getAnnouncementTinyDetailsById(id);
         } catch (IllegalArgumentException e) {
             // 包装校验异常为参数错误
-            log.warn("查询公告详情校验失败: {}", e.getMessage());
+            log.warn("user查询公告详情校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (ForumServiceException e) {
             log.error("查询公告详情数据库操作异常", e);
@@ -269,36 +289,38 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
-    // 用户查询公告列表
+    /**
+     * 查询公告列表(用户版本)
+     */
     @Override
-    public ListAnnouncementResponse listAnnouncements(ListAnnouncementRequest request) {
+    public ListAnnouncementTinyResponse userListAnnouncements(UserQueryAnnouncementRequest request) {
         try {
-            log.info("Service层查询公告列表, 页码:{}, 状态:{}", request.getPage(), request.getStatus());
+            log.info("Service-用户查询公告列表, 页码:{}", request.getPage());
 
             // 参数校验
             if (request.getPage() != null && request.getPage() < 1) {
                 throw new IllegalArgumentException("页码必须大于0");
             }
-            if (request.getSize() != null && (request.getSize() < 1 || request.getSize() > 50)) {
+            if (request.getSize() != null && (request.getSize() < MIN_PAGE_SIZE || request.getSize() > MAX_PAGE_SIZE)) {
                 throw new IllegalArgumentException("每页大小必须在1-50之间");
             }
 
             // 设置默认值
-            if (request.getPage() == null)
-                request.setPage(1);
-            if (request.getSize() == null)
-                request.setSize(8);
-            if (request.getStatus() == null)
-                request.setStatus(1); // 默认查询已发布的公告
+            if (request.getPage() == null) {
+                request.setPage(MIN_PAGE_SIZE);
+            }
+            if (request.getSize() == null) {
+                request.setSize(DEFAULT_PAGE_SIZE);
+            }
 
-            return announcementManager.listAnnouncements(request);
+            return announcementManager.userListAnnouncements(request);
         } catch (IllegalArgumentException e) {
             // 包装校验异常为参数错误
             log.warn("查询公告列表校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (ForumServiceException e) {
             // Manager的异常
-            log.warn("查询公告列表异常-manager:{}", e.getMessage());
+            log.warn("sys-查询公告列表异常-manager:{}", e.getMessage());
             throw new ApiException(e);
         } catch (Exception e) {
             // 重新抛出其他异常
@@ -307,34 +329,42 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
     }
 
-    // 管理员查询公告列表
+    /**
+     * 管理员查询公告列表
+     */
     @Override
     public ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request) {
         try {
-            log.info("Service层管理员查询公告列表, 页码:{}, 状态:{}, 排序方向:{}",
-                    request.getPage(), request.getStatus(), request.orderType());
+            log.info("Service层管理员查询公告列表, 页码:{}, 状态:{},类型:{}, 排序方向:{}",
+                    request.getPage(), request.getStatus(), request.getType(), request.orderType());
 
             // 参数校验
             if (request.getPage() != null && request.getPage() < 1) {
                 throw new IllegalArgumentException("页码必须大于0");
             }
-            if (request.getSize() != null && (request.getSize() < 1 || request.getSize() > 100)) {
-                throw new IllegalArgumentException("每页大小必须在1-100之间");
+            if (request.getSize() != null && (request.getSize() < 1 || request.getSize() > MAX_PAGE_SIZE)) {
+                throw new IllegalArgumentException("每页大小必须在1-50之间");
             }
-            if (request.getStatus() != null && (request.getStatus() < 0 || request.getStatus() > 2)) {
-                throw new IllegalArgumentException("状态值必须在0-2之间 (0=草稿, 1=已发布, 2=待发布) ");
+            if (request.getStatus() != null && (request.getStatus() < 0 || request.getStatus() > 3)) {
+                throw new IllegalArgumentException("状态值必须在0-3之间 (0=草稿, 1=已发布, 2=待发布, 3=全部) ");
             }
             if (request.orderType() < 0 || request.orderType() > 1) {
                 throw new IllegalArgumentException("排序方向必须为0 (升序) 或1 (降序) ");
             }
 
             // 设置默认值 (AdminQueryAnnouncementRequest已有默认值, 但防御性编程)
-            if (request.getPage() == null)
+            if (request.getPage() == null) {
                 request.setPage(1);
-            if (request.getSize() == null)
+            }
+            if (request.getSize() == null) {
                 request.setSize(8);
-            if (request.getStatus() == null)
+            }
+            if (request.getStatus() == null) {
                 request.setStatus(0);
+            }
+            if (request.getType() == null) {
+                request.setType(3);
+            }
 
             return announcementManager.adminQueryAnnouncements(request);
 
@@ -357,15 +387,17 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 校验标题和内容长度 (作为防御性编程, 虽然DTO层已有校验, 但Service层保留以确保数据安全)
      */
     private void validateTitleAndContent(String title, String content) {
-        // 校验标题长度 (2-50字符)
+        // 校验标题长度 (2-50个字符)
         String trimmedTitle = title != null ? title.trim() : null;
-        if (trimmedTitle == null || trimmedTitle.length() < 2 || trimmedTitle.length() > 50) {
+        if (trimmedTitle == null || trimmedTitle.length() < MIN_CONTENT_LENGTH
+                || trimmedTitle.length() > MAX_TITLE_LENGTH) {
             throw new IllegalArgumentException("公告标题长度必须在2-50字符之间");
         }
 
-        // 校验内容长度 (2-500字符)
+        // 校验内容长度 (2-500个字符)
         String trimmedContent = content != null ? content.trim() : null;
-        if (trimmedContent == null || trimmedContent.length() < 2 || trimmedContent.length() > 500) {
+        if (trimmedContent == null || trimmedContent.length() < MIN_CONTENT_LENGTH
+                || trimmedContent.length() > MAX_CONTENT_LENGTH) {
             throw new IllegalArgumentException("公告内容长度必须在2-500字符之间");
         }
     }
@@ -374,7 +406,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 校验公告类型 (作为防御性编程, 虽然DTO层已有校验, 但Service层保留以确保数据安全)
      */
     private void validateAnnouncementType(int type) {
-        if (type != 0 && type != 1) {
+        if (type != AnnouncementType.SCHOOLING.getCode() && type != AnnouncementType.SYSTEM.getCode()) {
             throw new IllegalArgumentException("公告类型无效, 仅支持系统公告(0)和学校公告(1)");
         }
     }
@@ -395,7 +427,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
             // scheduled_at非空时, status只能为2
-            if (status == null || status != 2) {
+            if (status == null || status != Announcement.AnnouncementStatus.SCHEDULED.getCode()) {
                 throw new IllegalArgumentException("已设置定时发布, 状态已锁定");
             }
         } else {

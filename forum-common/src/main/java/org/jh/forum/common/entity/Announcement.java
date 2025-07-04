@@ -3,7 +3,6 @@ package org.jh.forum.common.entity;
 import java.time.ZonedDateTime;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.core.enums.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -60,7 +59,6 @@ public class Announcement extends BaseEntity {
 
     /**
      * 公告状态枚举
-     * <p>
      * 状态说明：
      * - DRAFT(0): 草稿
      * - PUBLISHED(1): 已发布（注意，现行代码会使过期一小时以上的定时发布的status转为已发布）

@@ -12,7 +12,6 @@ package org.jh.forum.api.dubbo;
  * CreateAnnouncementReq     → CreateAnnouncementRequest.java
  * EditAnnouncementReq       → EditAnnouncementRequest.java
  * UserQueryAnnouncementReq  → UserQueryAnnouncementRequest.java
- * ListAnnouncementReq       → ListAnnouncementRequest.java
  * AdminQueryAnnouncementReq → AdminQueryAnnouncementRequest.java
  * StickyAnnouncementReq     → StickyAnnouncementRequest.java
  * 
@@ -22,7 +21,7 @@ package org.jh.forum.api.dubbo;
  * AnnouncementTinyDetailsResp → AnnouncementTinyDetailsResponse.java (用户详情)
  * ListAnnouncementResp        → ListAnnouncementResponse.java (管理员列表)
  * ListAnnouncementTinyResp    → ListAnnoucementTinyResponse.java (用户列表)
- * 
+ *
  * 服务接口映射：
  * AnnouncementService → org.jh.forum.api.service.AnnouncementService.java
  * 
@@ -47,11 +46,11 @@ package org.jh.forum.api.dubbo;
 message CreateAnnouncementReq {
   string title = 1;           // 公告标题， 2-100字符， 必填
   string content = 2;         // 公告内容， 1-1000字符， 必填
-  int32 type = 3;            // 公告类型：0=系统公告， 1=学校公告
+  int32 type = 3;             // 公告类型：0=系统公告， 1=学校公告
   string scheduledAt = 4;     // 定时发布时间(可选， ISO8601格式， 如"2025-06-07T09:00:00+08:00")
-  int32 status = 5;          // 状态：0=草稿， 1=已发布， 2=待发布， 默认0
+  int32 status = 5;           // 状态：0=草稿， 1=已发布， 2=待发布， 默认0
   string attribute = 6;       // 附加属性(JSON字符串， 可选， 如"{\"test\": \"test\"}")
-  bool sticky = 7;           // 是否置顶， 默认false
+  bool sticky = 7;            // 是否置顶， 默认false
 }
 
 /**
@@ -77,17 +76,7 @@ message UserQueryAnnouncementReq {
   int32 page = 1;            // 页码， 默认1， 最小值1
   int32 size = 2;            // 每页数量， 默认8， 最大50
   int32 type = 3;            // 类型筛选：1=系统公告(数据库type=0)， 2=学校公告(数据库type=1)， 3=全部， 默认3
-}
-
-/**
- * 查询公告列表请求（内部使用）
- * 对应Java类：ListAnnouncementRequest
- */
-message ListAnnouncementReq {
-  int32 page = 1;            // 页码， 默认1， 最小值1
-  int32 size = 2;            // 每页大小， 默认8， 最大50
-  int32 status = 3;          // 状态筛选：0=草稿， 1=已发布， 2=待发布
-  int32 type = 4;            // 类型筛选：0=系统公告， 1=学校公告
+  string keywords = 4;       // 标题关键词
 }
 
 /**
@@ -100,6 +89,7 @@ message AdminQueryAnnouncementReq {
   int32 status = 3;          // 状态筛选：0=草稿， 1=已发布， 2=待发布， 默认0
   int32 orderType = 4;       // 排序方向：0=正序， 1=逆序， 默认0
   bool deleted = 5;          // 是否查询已删除：true=已删除， false=未删除， 默认false
+  string keywords = 6;       // 标题关键词
 }
 
 // ==================== 基础请求消息定义 ====================
@@ -107,21 +97,20 @@ message AdminQueryAnnouncementReq {
 /**
  * 根据ID查询公告详情请求
  */
-message GetAnnouncementByIdReq {
+ message GetAnnouncementByIdReq {
   int64 id = 1;              // 公告ID， 必须大于0
 }
 
 /**
  * 删除公告请求
  */
-message DeleteAnnouncementReq {
+ message DeleteAnnouncementReq {
   int64 id = 1;              // 公告ID， 必须大于0
 }
 
 /**
  * 置顶/取消置顶公告请求
  * 对应Java类：StickyAnnouncementRequest
- * 注意：Java类中字段名为"Sticky"（大写S）， 这可能是个命名错误
  */
 message StickyAnnouncementReq {
   int64 id = 1;              // 公告ID， 必须大于0
@@ -266,11 +255,6 @@ service AnnouncementService {
    */
   rpc getAnnouncementTinyDetailsById(GetAnnouncementByIdReq) returns (ServiceResult);
 
-  /**
-   * 查询公告列表（内部使用）
-   * 用于Service层内部调用， 支持status筛选
-   */
-  rpc listAnnouncements(ListAnnouncementReq) returns (ServiceResult);
 
   /**
    * 用户查询公告列表
@@ -280,8 +264,8 @@ service AnnouncementService {
    * 返回：简化版本的公告列表， 不包含管理员字段
    */
   rpc userQueryAnnouncements(UserQueryAnnouncementReq) returns (ServiceResult);
-
-  /**
+  
+    /**
    * 编辑公告
    * 权限：管理员（admin或super_admin）
    * 对应Controller：PUT /announcements

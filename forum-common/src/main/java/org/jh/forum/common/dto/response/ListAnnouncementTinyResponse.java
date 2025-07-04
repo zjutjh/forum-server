@@ -12,8 +12,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "查询公告列表响应")
-public class ListAnnoucementTinyResponse
-        extends BaseListResponse<ListAnnoucementTinyResponse.AnnouncementItemResponse> {
+public class ListAnnouncementTinyResponse
+        extends BaseListResponse<ListAnnouncementTinyResponse.AnnouncementItemResponse> {
 
     @Data
     @Schema(description = "公告列表项")

@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Schema(description = "公告详情响应")
-public class AnnouncementDetailsResponse extends AnnouncementTinyDetailsResponse{
+public class AnnouncementDetailResponse extends AnnouncementTinyDetailsResponse{
 
     @Schema(description = "状态", example = "0")
     private Integer status;

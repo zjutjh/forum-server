@@ -7,10 +7,12 @@ import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 
 /**
  * @author SugarMGP
  */
+@Component
 @Mapper(componentModel = "spring", collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
 public interface PostConverter {
     PublishPostReq toProto(PublishPostRequest request);

@@ -9,6 +9,7 @@ import org.springframework.web.util.HtmlUtils;
 
 /**
  * Markdown + MathJax + XSS 过滤工具
+ * @author SituChengxiang(SK)
  */
 public class MarkdownMathJaxHtmlFilter {
 
@@ -45,8 +46,9 @@ public class MarkdownMathJaxHtmlFilter {
      * 过滤title，去除所有HTML标签
      */
     public String filterTitle(String input) {
-        if (input == null)
+        if (input == null) {
             return null;
+        }
         return HtmlUtils.htmlEscape(input);
     }
 
