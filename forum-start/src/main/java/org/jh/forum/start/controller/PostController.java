@@ -79,7 +79,7 @@ public class PostController {
             response.setList(list);
             return AjaxResult.success(response);
         } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         }
     }
 
@@ -96,7 +96,7 @@ public class PostController {
             response.setList(list);
             return AjaxResult.success(response);
         } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         }
     }
 

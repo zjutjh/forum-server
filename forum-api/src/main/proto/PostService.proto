@@ -7,14 +7,14 @@ package org.jh.forum.api.dubbo;
 message PublishPostReq {
   string title = 1;
   string content = 2;
-  int64 categoryId = 3;
+  string category = 3;
   repeated string topics = 4;
   repeated int64 attachmentIds = 5;
 }
 
 message GetPostListReq{
   BaseListReq base = 1;
-  int64 categoryId = 2;
+  string category = 2;
   int32 sortType = 3;
 }
 
@@ -29,7 +29,7 @@ message PostListElement{
   int32 likeCount = 5;
   int32 commentCount = 6;
   int32 viewCount = 7;
-  int64 categoryId = 8;
+  string category = 8;
   repeated string topics = 9;
   bool isTopped = 10;
   bool isPinned = 11;

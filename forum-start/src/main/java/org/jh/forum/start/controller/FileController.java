@@ -60,7 +60,7 @@ public class FileController {
         } catch (ForumServiceException e) {
             throw new ApiException(e);
         } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         }
     }
 
@@ -96,10 +96,10 @@ public class FileController {
                     .unpack(AttachmentId.class);
             return attachmentIdResp.getAttachmentId();
         } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         } catch (IOException e) {
             log.error("文件上传失败", e);
-            throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR);
+            throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR, e);
         }
     }
 }

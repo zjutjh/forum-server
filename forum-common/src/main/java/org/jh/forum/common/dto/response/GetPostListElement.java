@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.dto.UserInfoDTO;
 
 import java.util.List;
@@ -25,9 +26,8 @@ public class GetPostListElement {
     @JsonProperty("publisher_info")
     private UserInfoDTO publisherInfo;
 
-    @Schema(description = "帖子板块ID")
-    @JsonProperty("category_id")
-    private Long categoryId;
+    @Schema(description = "帖子板块")
+    private CategoryEnum category;
 
     @Schema(description = "帖子话题列表")
     private List<String> topics;

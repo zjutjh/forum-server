@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.constants.CategoryEnum;
 
 /**
  * @author SugarMGP
@@ -21,9 +22,8 @@ public class GetAdminPostListElement {
     @Schema(description = "发帖人")
     private String publisher;
 
-    @Schema(description = "帖子板块ID")
-    @JsonProperty("category_id")
-    private Long categoryId;
+    @Schema(description = "帖子板块")
+    private CategoryEnum category;
 
     @Schema(description = "帖子标题")
     private String title;

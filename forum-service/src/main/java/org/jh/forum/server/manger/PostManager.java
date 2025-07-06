@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.PostListElement;
 import org.jh.forum.api.dubbo.UserInfo;
+import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.PostTopicRelation;
@@ -29,12 +30,12 @@ public class PostManager {
     private final TopicManager topicManager;
     private final FileManager fileManager;
 
-    public void publishPost(String title, String content, Long categoryId, List<String> topics, List<Long> attachmentIds) {
+    public void publishPost(String title, String content, CategoryEnum category, List<String> topics, List<Long> attachmentIds) {
         Post post = Post.builder()
                 .userId(StpUtil.getLoginIdAsLong())
                 .title(title)
                 .content(content)
-                .categoryId(categoryId)
+                .category(category)
                 .isPinned(false)
                 .build();
         postMapper.insert(post);
@@ -50,10 +51,10 @@ public class PostManager {
         }
     }
 
-    public List<PostListElement> getPostList(Long categoryId) {
+    public List<PostListElement> getPostList(CategoryEnum category) {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        if (categoryId != 0) {
-            queryWrapper.eq(Post::getCategoryId, categoryId);
+        if (category != null) {
+            queryWrapper.eq(Post::getCategory, category);
         }
         queryWrapper.orderByDesc(Post::getCreatedAt);
         List<Post> posts = postMapper.selectList(queryWrapper);
@@ -67,7 +68,7 @@ public class PostManager {
         return convertPostsToElements(posts);
     }
 
-    public List<PostListElement> getHotPostList(Long categoryId) {
+    public List<PostListElement> getHotPostList(CategoryEnum category) {
         // TODO 获取最热帖子
         return null;
     }
@@ -89,7 +90,7 @@ public class PostManager {
                     .setUserInfo(user)
                     .setIsTopped(post.getIsPinned())
                     .setIsPinned(post.getIsPinned())
-                    .setCategoryId(post.getCategoryId())
+                    .setCategory(post.getCategory().getValue())
                     .addAllTopics(topics)
                     .setTitle(post.getTitle())
                     .setContent(post.getContent().substring(0, Math.min(post.getContent().length(), 50)))
