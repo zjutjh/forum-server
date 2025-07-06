@@ -1,9 +1,13 @@
 package org.jh.forum.start.converter;
 
 import org.jh.forum.api.dubbo.GetPostListReq;
+import org.jh.forum.api.dubbo.PostListElement;
 import org.jh.forum.api.dubbo.PublishPostReq;
 import org.jh.forum.common.dto.request.GetPostListRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
+import org.jh.forum.common.dto.response.GetAdminPostListElement;
+import org.jh.forum.common.dto.response.GetMyPostListElement;
+import org.jh.forum.common.dto.response.GetPostListElement;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -18,4 +22,12 @@ public interface PostConverter {
     @Mapping(target = "base.page", source = "page")
     @Mapping(target = "base.pageSize", source = "pageSize")
     GetPostListReq toProto(GetPostListRequest request);
+
+    @Mapping(target = "publisherInfo", source = "userInfo")
+    GetPostListElement toListDTO(PostListElement element);
+
+    @Mapping(target = "publisher", source = "userInfo.nickname")
+    GetAdminPostListElement toAdminListDTO(PostListElement element);
+
+    GetMyPostListElement toMyListDTO(PostListElement element);
 }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.PostListElement;
+import org.jh.forum.api.dubbo.UserInfo;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.PostTopicRelation;
@@ -79,10 +80,15 @@ public class PostManager {
             for (PostTopicRelation relation : relations) {
                 topics.add(topicManager.getTopicName(relation.getTopicId()));
             }
+
+            // TODO: 获取用户信息
+            UserInfo user = UserInfo.newBuilder().build();
+
             postList.add(PostListElement.newBuilder()
                     .setId(post.getId())
-                    .setUserId(post.getUserId())
+                    .setUserInfo(user)
                     .setIsTopped(post.getIsPinned())
+                    .setIsPinned(post.getIsPinned())
                     .setCategoryId(post.getCategoryId())
                     .addAllTopics(topics)
                     .setTitle(post.getTitle())
@@ -90,7 +96,8 @@ public class PostManager {
                     .setLikeCount(0)
                     .setCommentCount(0)
                     .setViewCount(0)
-                    .setCreateAt(post.getCreatedAt().toString())
+                    .setCreatedAt(post.getCreatedAt().toString())
+                    .setStatus("")
                     .build()
             );
         }

@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetPostInfoResponse {
+public class GetAdminPostInfoResponse {
     @Schema(description = "发帖人信息")
     @JsonProperty("publisher_info")
     private UserInfoDTO publisherInfo;
@@ -50,4 +50,11 @@ public class GetPostInfoResponse {
     @Schema(description = "发帖时间")
     @JsonProperty("created_at")
     private String createdAt;
+
+    @Schema(description = "帖子状态")
+    private String status;
+
+    @Schema(description = "是否置顶（管理员）")
+    @JsonProperty("is_pinned")
+    private Boolean isPinned;
 }

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.dto.UserInfoDTO;
 
 import java.util.List;
 
@@ -20,9 +21,9 @@ public class GetPostListElement {
     @Schema(description = "帖子ID")
     private Long id;
 
-    @Schema(description = "发帖人ID")
-    @JsonProperty("publisher_id")
-    private Long publisherId;
+    @Schema(description = "发帖人信息")
+    @JsonProperty("publisher_info")
+    private UserInfoDTO publisherInfo;
 
     @Schema(description = "帖子板块ID")
     @JsonProperty("category_id")

@@ -73,19 +73,7 @@ public class PostController {
             List<GetPostListElement> list = new ArrayList<>();
             GetPostListResp result = postService.getPostList(req).getData().unpack(GetPostListResp.class);
             result.getPostsList().forEach(post -> {
-                list.add(GetPostListElement.builder()
-                        .id(post.getId())
-                        .title(post.getTitle())
-                        .content(post.getContent())
-                        .likeCount(post.getLikeCount())
-                        .commentCount(post.getCommentCount())
-                        .viewCount(post.getViewCount())
-                        .createdAt(post.getCreateAt())
-                        .publisherId(post.getUserId())
-                        .categoryId(post.getCategoryId())
-                        .topics(post.getTopicsList())
-                        .build()
-                );
+                list.add(postConverter.toListDTO(post));
             });
             BaseListResponse<GetPostListElement> response = new BaseListResponse<>();
             response.setList(list);
@@ -102,19 +90,7 @@ public class PostController {
             List<GetMyPostListElement> list = new ArrayList<>();
             GetPostListResp result = postService.getMyPostList(null).getData().unpack(GetPostListResp.class);
             result.getPostsList().forEach(post -> {
-                list.add(GetMyPostListElement.builder()
-                        .id(post.getId())
-                        .title(post.getTitle())
-                        .content(post.getContent())
-                        .likeCount(post.getLikeCount())
-                        .commentCount(post.getCommentCount())
-                        .viewCount(post.getViewCount())
-                        .createdAt(post.getCreateAt())
-                        .isTopped(post.getIsTopped())
-                        .categoryId(post.getCategoryId())
-                        .topics(post.getTopicsList())
-                        .build()
-                );
+                list.add(postConverter.toMyListDTO(post));
             });
             BaseListResponse<GetMyPostListElement> response = new BaseListResponse<>();
             response.setList(list);
@@ -124,10 +100,17 @@ public class PostController {
         }
     }
 
-    @Operation(summary = "获取管理员帖子列表")
+    @Operation(summary = "管理员获取帖子列表")
     @Tag(name = "管理员")
-    @GetMapping("/admin_list")
+    @GetMapping("/admin/list")
     public AjaxResult<BaseListResponse<GetAdminPostListElement>> getAdminPostList(GetAdminPostListRequest request) {
+        return null;
+    }
+
+    @Operation(summary = "管理员获取帖子信息")
+    @Tag(name = "管理员")
+    @GetMapping("/admin/info")
+    public AjaxResult<GetAdminPostInfoResponse> getAdminPostInfo(@RequestParam(value = "id", required = true) Long id) {
         return null;
     }
 }
