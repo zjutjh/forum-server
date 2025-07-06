@@ -37,6 +37,7 @@ public class PostManager {
                 .content(content)
                 .category(category)
                 .isPinned(false)
+                .isTopped(false)
                 .build();
         postMapper.insert(post);
         for (String topic : topics) {
@@ -88,7 +89,7 @@ public class PostManager {
             postList.add(PostListElement.newBuilder()
                     .setId(post.getId())
                     .setUserInfo(user)
-                    .setIsTopped(post.getIsPinned())
+                    .setIsTopped(post.getIsTopped())
                     .setIsPinned(post.getIsPinned())
                     .setCategory(post.getCategory().getValue())
                     .addAllTopics(topics)

@@ -24,4 +24,6 @@ public class Post extends BaseEntity {
     private CategoryEnum category;
 
     private Boolean isPinned;
+
+    private Boolean isTopped;
 }
