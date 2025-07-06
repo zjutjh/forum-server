@@ -23,6 +23,10 @@ public interface PostConverter {
         return EnumUtil.getEnumByField(CategoryEnum.class, CategoryEnum::getValue, value);
     }
 
+    default String map(CategoryEnum value) {
+        return value != null ? value.getValue() : "";
+    }
+
     PublishPostReq toProto(PublishPostRequest request);
 
     @Mapping(target = "base.page", source = "page")
