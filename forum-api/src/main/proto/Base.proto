@@ -21,3 +21,9 @@ message BaseListReq{
   int32 page = 1;
   int32 pageSize = 2;
 }
+
+message UserInfo {
+  int64 id = 1;
+  string nickname = 2;
+  string avatar = 3;
+}

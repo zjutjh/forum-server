@@ -5,11 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.protobuf.Any;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.*;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
+import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
+import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.FileMapper;
 import org.jh.forum.server.utils.EnumUtil;
@@ -29,11 +32,14 @@ public class FileServiceImpl implements FileService {
     @Resource
     private AttachmentMapper attachmentMapper;
 
+    @Resource
+    private CubeService cubeService;
+
     @Override
     public ServiceResult checkBlake3(CheckBlake3Req request) {
         String blake3 = request.getBlake3();
         File file = fileMapper.selectOne(new LambdaQueryWrapper<File>().eq(File::getBlake3, blake3));
-        FileIdResp resp = FileIdResp.newBuilder()
+        FileId resp = FileId.newBuilder()
                 .setFileId(file == null ? -1 : file.getId())
                 .build();
         return ServiceResult.newBuilder()
@@ -49,7 +55,7 @@ public class FileServiceImpl implements FileService {
                 .objectKey(request.getObjectKey())
                 .build();
         fileMapper.insert(file);
-        FileIdResp resp = FileIdResp.newBuilder()
+        FileId resp = FileId.newBuilder()
                 .setFileId(file.getId())
                 .build();
         return ServiceResult.newBuilder()
@@ -69,8 +75,26 @@ public class FileServiceImpl implements FileService {
                 .filename(request.getFilename())
                 .build();
         attachmentMapper.insert(attachment);
-        AttachmentIdResp resp = AttachmentIdResp.newBuilder()
+        AttachmentId resp = AttachmentId.newBuilder()
                 .setAttachmentId(attachment.getId())
+                .build();
+        return ServiceResult.newBuilder()
+                .setIsSuccess(true)
+                .setData(Any.pack(resp))
+                .build();
+    }
+
+    @Override
+    public ServiceResult getAttachmentInfo(AttachmentId request) {
+        Attachment attachment = attachmentMapper.selectById(request.getAttachmentId());
+        if (attachment == null) {
+            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        File file = fileMapper.selectById(attachment.getFileId());
+        GetAttachmentInfoResp resp = GetAttachmentInfoResp.newBuilder()
+                .setUrl(cubeService.getFileUrl(file.getObjectKey()))
+                .setType(attachment.getType().getValue())
+                .setFilename(attachment.getFilename())
                 .build();
         return ServiceResult.newBuilder()
                 .setIsSuccess(true)
@@ -91,5 +115,10 @@ public class FileServiceImpl implements FileService {
     @Override
     public CompletableFuture<ServiceResult> createAttachmentAsync(CreateAttachmentReq request) {
         return CompletableFuture.supplyAsync(() -> createAttachment(request));
+    }
+
+    @Override
+    public CompletableFuture<ServiceResult> getAttachmentInfoAsync(AttachmentId request) {
+        return CompletableFuture.supplyAsync(() -> getAttachmentInfo(request));
     }
 }

@@ -8,7 +8,7 @@ message CheckBlake3Req {
   string blake3 = 1;
 }
 
-message FileIdResp {
+message FileId {
   int64 fileId = 1;
 }
 
@@ -23,12 +23,19 @@ message CreateAttachmentReq{
   string filename = 3;
 }
 
-message AttachmentIdResp{
+message AttachmentId{
   int64 attachmentId = 1;
+}
+
+message GetAttachmentInfoResp{
+  string url = 1;
+  string type = 2;
+  string filename = 3;
 }
 
 service FileService {
   rpc checkBlake3(CheckBlake3Req) returns (ServiceResult);
   rpc createFile(CreateFileReq) returns (ServiceResult);
   rpc createAttachment(CreateAttachmentReq) returns (ServiceResult);
+  rpc getAttachmentInfo(AttachmentId) returns (ServiceResult);
 }

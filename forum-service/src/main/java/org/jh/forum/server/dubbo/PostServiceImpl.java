@@ -5,7 +5,9 @@ import com.google.protobuf.Any;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.*;
+import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.server.manger.PostManager;
+import org.jh.forum.server.utils.EnumUtil;
 
 import jakarta.annotation.Resource;
 import java.util.List;
@@ -22,17 +24,19 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ServiceResult publishPost(PublishPostReq request) {
-        postManager.publishPost(request.getTitle(), request.getContent(), request.getCategoryId(), request.getTopicsList(), request.getAttachmentIdsList());
+        CategoryEnum category = EnumUtil.getEnumByField(CategoryEnum.class, CategoryEnum::getValue, request.getCategory());
+        postManager.publishPost(request.getTitle(), request.getContent(), category, request.getTopicsList(), request.getAttachmentIdsList());
         return ServiceResult.newBuilder().setIsSuccess(true).build();
     }
 
     @Override
     public ServiceResult getPostList(GetPostListReq request) {
         List<PostListElement> postList;
+        CategoryEnum category = EnumUtil.getEnumByField(CategoryEnum.class, CategoryEnum::getValue, request.getCategory());
         if (request.getSortType() == 1) {
-            postList = postManager.getPostList(request.getCategoryId());
+            postList = postManager.getPostList(category);
         } else {
-            postList = postManager.getHotPostList(request.getCategoryId());
+            postList = postManager.getHotPostList(category);
         }
         GetPostListResp resp = GetPostListResp.newBuilder().addAllPosts(postList).build();
         return ServiceResult.newBuilder().setIsSuccess(true).setData(Any.pack(resp)).build();

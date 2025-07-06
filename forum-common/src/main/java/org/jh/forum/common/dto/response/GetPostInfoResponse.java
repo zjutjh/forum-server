@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.dto.UserInfoDTO;
 
 import java.util.List;
 
@@ -17,13 +19,12 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class GetPostInfoResponse {
-    @Schema(description = "发帖人ID")
-    @JsonProperty("publisher_id")
-    private Long publisherId;
+    @Schema(description = "发帖人信息")
+    @JsonProperty("publisher_info")
+    private UserInfoDTO publisherInfo;
 
-    @Schema(description = "帖子板块ID")
-    @JsonProperty("category_id")
-    private Long categoryId;
+    @Schema(description = "帖子板块")
+    private CategoryEnum category;
 
     @Schema(description = "帖子话题列表")
     private List<String> topics;
