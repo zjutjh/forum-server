@@ -3,8 +3,8 @@ package org.jh.forum.start.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.message.PostListElement;
 import org.jh.forum.api.dubbo.service.PostService;
+import org.jh.forum.common.dto.PostListElementDTO;
 import org.jh.forum.common.dto.request.BaseListRequest;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
@@ -64,7 +64,7 @@ public class PostController {
     @GetMapping("/list")
     public AjaxResult<BaseListResponse<GetPostListElement>> getPostList(@Valid GetPostListRequest request) {
         List<GetPostListElement> list = new ArrayList<>();
-        List<PostListElement> result = postService.getPostList(request);
+        List<PostListElementDTO> result = postService.getPostList(request);
         result.forEach(post -> {
             list.add(postConverter.toListDTO(post));
         });
@@ -77,7 +77,7 @@ public class PostController {
     @GetMapping("/my_list")
     public AjaxResult<BaseListResponse<GetMyPostListElement>> getMyPostList(BaseListRequest request) {
         List<GetMyPostListElement> list = new ArrayList<>();
-        List<PostListElement> result = postService.getMyPostList();
+        List<PostListElementDTO> result = postService.getMyPostList();
         result.forEach(post -> {
             list.add(postConverter.toMyListDTO(post));
         });

@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.cube.CubeService;
-import org.jh.forum.api.dubbo.message.CreateAttachmentReq;
-import org.jh.forum.api.dubbo.message.CreateFileReq;
 import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -72,18 +70,9 @@ public class FileController {
                         type == AttachmentTypeEnum.PICTURE,
                         true
                 );
-                CreateFileReq createFileReq = CreateFileReq.builder()
-                        .blake3(hash)
-                        .objectKey(objectKey)
-                        .build();
-                fileId = fileService.createFile(createFileReq);
+                fileId = fileService.createFile(objectKey, hash);
             }
-            CreateAttachmentReq createAttachmentReq = CreateAttachmentReq.builder()
-                    .fileId(fileId)
-                    .filename(file.getOriginalFilename())
-                    .type(type)
-                    .build();
-            return fileService.createAttachment(createAttachmentReq);
+            return fileService.createAttachment(fileId, type, file.getOriginalFilename());
         } catch (InvalidProtocolBufferException e) {
             throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         } catch (IOException e) {

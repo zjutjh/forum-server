@@ -5,9 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.cube.CubeService;
-import org.jh.forum.api.dubbo.message.CreateAttachmentReq;
-import org.jh.forum.api.dubbo.message.CreateFileReq;
 import org.jh.forum.api.dubbo.service.FileService;
+import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
@@ -41,24 +40,24 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Long createFile(CreateFileReq request) {
+    public Long createFile(String objectKey, String blake3) {
         File file = File.builder()
-                .blake3(request.getBlake3())
-                .objectKey(request.getObjectKey())
+                .blake3(blake3)
+                .objectKey(objectKey)
                 .build();
         fileMapper.insert(file);
         return file.getId();
     }
 
     @Override
-    public Long createAttachment(CreateAttachmentReq request) {
+    public Long createAttachment(Long fileId, AttachmentTypeEnum type, String filename) {
         Attachment attachment = Attachment.builder()
                 .userId(StpUtil.getLoginIdAsLong())
-                .fileId(request.getFileId())
+                .fileId(fileId)
                 .targetType(TargetTypeEnum.POST)
                 .targetId(-1L)
-                .type(request.getType())
-                .filename(request.getFilename())
+                .type(type)
+                .filename(filename)
                 .build();
         attachmentMapper.insert(attachment);
         return attachment.getId();

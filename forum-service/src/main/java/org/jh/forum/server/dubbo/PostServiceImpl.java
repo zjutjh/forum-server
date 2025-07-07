@@ -3,8 +3,8 @@ package org.jh.forum.server.dubbo;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.jh.forum.api.dubbo.message.PostListElement;
 import org.jh.forum.api.dubbo.service.PostService;
+import org.jh.forum.common.dto.PostListElementDTO;
 import org.jh.forum.common.dto.request.GetPostListRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.server.manger.PostManager;
@@ -27,8 +27,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostListElement> getPostList(GetPostListRequest request) {
-        List<PostListElement> postList;
+    public List<PostListElementDTO> getPostList(GetPostListRequest request) {
+        List<PostListElementDTO> postList;
         if (request.getSortType() == 1) {
             postList = postManager.getPostList(request.getCategory());
         } else {
@@ -38,7 +38,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostListElement> getMyPostList() {
+    public List<PostListElementDTO> getMyPostList() {
         return postManager.getMyPostList(StpUtil.getLoginIdAsLong());
     }
 }

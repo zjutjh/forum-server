@@ -4,9 +4,9 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.message.PostListElement;
 import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
+import org.jh.forum.common.dto.PostListElementDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.PostTopicRelation;
@@ -52,7 +52,7 @@ public class PostManager {
         }
     }
 
-    public List<PostListElement> getPostList(CategoryEnum category) {
+    public List<PostListElementDTO> getPostList(CategoryEnum category) {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         if (category != null) {
             queryWrapper.eq(Post::getCategory, category);
@@ -62,20 +62,20 @@ public class PostManager {
         return convertPostsToElements(posts);
     }
 
-    public List<PostListElement> getMyPostList(Long userId) {
+    public List<PostListElementDTO> getMyPostList(Long userId) {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getUserId, userId).orderByDesc(Post::getCreatedAt);
         List<Post> posts = postMapper.selectList(queryWrapper);
         return convertPostsToElements(posts);
     }
 
-    public List<PostListElement> getHotPostList(CategoryEnum category) {
+    public List<PostListElementDTO> getHotPostList(CategoryEnum category) {
         // TODO 获取最热帖子
         return null;
     }
 
-    private List<PostListElement> convertPostsToElements(List<Post> posts) {
-        List<PostListElement> postList = new ArrayList<>();
+    private List<PostListElementDTO> convertPostsToElements(List<Post> posts) {
+        List<PostListElementDTO> postList = new ArrayList<>();
         for (Post post : posts) {
             List<PostTopicRelation> relations = postTopicRelationMapper.selectList(new LambdaQueryWrapper<PostTopicRelation>().eq(PostTopicRelation::getPostId, post.getId()));
             List<String> topics = new ArrayList<>();
@@ -86,7 +86,7 @@ public class PostManager {
             // TODO: 获取用户信息
             UserInfoDTO user = UserInfoDTO.builder().build();
 
-            postList.add(PostListElement.builder()
+            postList.add(PostListElementDTO.builder()
                     .id(post.getId())
                     .userInfo(user)
                     .isTopped(post.getIsTopped())

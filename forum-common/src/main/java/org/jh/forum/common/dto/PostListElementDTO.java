@@ -1,9 +1,8 @@
-package org.jh.forum.api.dubbo.message;
+package org.jh.forum.common.dto;
 
 import lombok.Builder;
 import lombok.Data;
 import org.jh.forum.common.constants.CategoryEnum;
-import org.jh.forum.common.dto.UserInfoDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.List;
  */
 @Data
 @Builder
-public class PostListElement {
+public class PostListElementDTO {
     private Long id;
     private String title;
     private String content;

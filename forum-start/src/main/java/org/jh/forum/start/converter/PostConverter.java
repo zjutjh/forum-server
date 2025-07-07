@@ -1,8 +1,8 @@
 package org.jh.forum.start.converter;
 
 import cn.hutool.core.util.EnumUtil;
-import org.jh.forum.api.dubbo.message.PostListElement;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.dto.PostListElementDTO;
 import org.jh.forum.common.dto.response.GetAdminPostListElement;
 import org.jh.forum.common.dto.response.GetMyPostListElement;
 import org.jh.forum.common.dto.response.GetPostListElement;
@@ -24,10 +24,10 @@ public interface PostConverter {
     }
 
     @Mapping(target = "publisherInfo", source = "userInfo")
-    GetPostListElement toListDTO(PostListElement element);
+    GetPostListElement toListDTO(PostListElementDTO element);
 
     @Mapping(target = "publisher", source = "userInfo.nickname")
-    GetAdminPostListElement toAdminListDTO(PostListElement element);
+    GetAdminPostListElement toAdminListDTO(PostListElementDTO element);
 
-    GetMyPostListElement toMyListDTO(PostListElement element);
+    GetMyPostListElement toMyListDTO(PostListElementDTO element);
 }
