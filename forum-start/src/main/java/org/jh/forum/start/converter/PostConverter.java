@@ -27,9 +27,9 @@ public interface PostConverter {
         return value != null ? value.getValue() : "";
     }
 
-    PublishPostReq toProto(PublishPostRequest request);
+    PublishPostReq toMessage(PublishPostRequest request);
 
-    GetPostListReq toProto(GetPostListRequest request);
+    GetPostListReq toMessage(GetPostListRequest request);
 
     @Mapping(target = "publisherInfo", source = "userInfo")
     GetPostListElement toListDTO(PostListElement element);

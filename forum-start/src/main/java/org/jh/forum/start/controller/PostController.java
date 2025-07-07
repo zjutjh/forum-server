@@ -49,7 +49,7 @@ public class PostController {
     @PostMapping("/create")
     public AjaxResult<Void> createPost(@Valid @RequestBody PublishPostRequest request) {
         try {
-            PublishPostReq req = postConverter.toProto(request);
+            PublishPostReq req = postConverter.toMessage(request);
             postService.publishPost(req);
         } catch (ForumServiceException e) {
             throw new ApiException(e);
@@ -66,7 +66,7 @@ public class PostController {
     @Operation(summary = "获取帖子列表")
     @GetMapping("/list")
     public AjaxResult<BaseListResponse<GetPostListElement>> getPostList(@Valid GetPostListRequest request) {
-        GetPostListReq req = postConverter.toProto(request);
+        GetPostListReq req = postConverter.toMessage(request);
         List<GetPostListElement> list = new ArrayList<>();
         List<PostListElement> result = postService.getPostList(req);
         result.forEach(post -> {
