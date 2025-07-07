@@ -1,18 +1,16 @@
 package org.jh.forum.server.dubbo;
 
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.EnumUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.message.CreateAttachmentReq;
 import org.jh.forum.api.dubbo.message.CreateFileReq;
-import org.jh.forum.api.dubbo.message.GetAttachmentInfoResp;
 import org.jh.forum.api.dubbo.service.FileService;
-import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
+import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
 import org.jh.forum.common.exceptions.ForumServiceException;
@@ -59,7 +57,7 @@ public class FileServiceImpl implements FileService {
                 .fileId(request.getFileId())
                 .targetType(TargetTypeEnum.POST)
                 .targetId(-1L)
-                .type(EnumUtil.getBy(AttachmentTypeEnum::getValue, request.getType()))
+                .type(request.getType())
                 .filename(request.getFilename())
                 .build();
         attachmentMapper.insert(attachment);
@@ -67,15 +65,15 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public GetAttachmentInfoResp getAttachmentInfo(Long attachmentId) {
+    public GetAttachmentInfoResponse getAttachmentInfo(Long attachmentId) {
         Attachment attachment = attachmentMapper.selectById(attachmentId);
         if (attachment == null) {
             throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         File file = fileMapper.selectById(attachment.getFileId());
-        return GetAttachmentInfoResp.builder()
+        return GetAttachmentInfoResponse.builder()
                 .url(cubeService.getFileUrl(file.getObjectKey()))
-                .type(attachment.getType().getValue())
+                .type(attachment.getType())
                 .filename(attachment.getFilename())
                 .build();
     }

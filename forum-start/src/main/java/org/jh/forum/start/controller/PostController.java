@@ -3,9 +3,7 @@ package org.jh.forum.start.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.message.GetPostListReq;
 import org.jh.forum.api.dubbo.message.PostListElement;
-import org.jh.forum.api.dubbo.message.PublishPostReq;
 import org.jh.forum.api.dubbo.service.PostService;
 import org.jh.forum.common.dto.request.BaseListRequest;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
@@ -49,8 +47,7 @@ public class PostController {
     @PostMapping("/create")
     public AjaxResult<Void> createPost(@Valid @RequestBody PublishPostRequest request) {
         try {
-            PublishPostReq req = postConverter.toMessage(request);
-            postService.publishPost(req);
+            postService.publishPost(request);
         } catch (ForumServiceException e) {
             throw new ApiException(e);
         }
@@ -66,9 +63,8 @@ public class PostController {
     @Operation(summary = "获取帖子列表")
     @GetMapping("/list")
     public AjaxResult<BaseListResponse<GetPostListElement>> getPostList(@Valid GetPostListRequest request) {
-        GetPostListReq req = postConverter.toMessage(request);
         List<GetPostListElement> list = new ArrayList<>();
-        List<PostListElement> result = postService.getPostList(req);
+        List<PostListElement> result = postService.getPostList(request);
         result.forEach(post -> {
             list.add(postConverter.toListDTO(post));
         });

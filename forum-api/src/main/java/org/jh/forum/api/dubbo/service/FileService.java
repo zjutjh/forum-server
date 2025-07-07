@@ -2,7 +2,7 @@ package org.jh.forum.api.dubbo.service;
 
 import org.jh.forum.api.dubbo.message.CreateAttachmentReq;
 import org.jh.forum.api.dubbo.message.CreateFileReq;
-import org.jh.forum.api.dubbo.message.GetAttachmentInfoResp;
+import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
 
 /**
  * @author SugarMGP
@@ -14,5 +14,5 @@ public interface FileService {
 
     Long createAttachment(CreateAttachmentReq request);
 
-    GetAttachmentInfoResp getAttachmentInfo(Long attachmentId);
+    GetAttachmentInfoResponse getAttachmentInfo(Long attachmentId);
 }

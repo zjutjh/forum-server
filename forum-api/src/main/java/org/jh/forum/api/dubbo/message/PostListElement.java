@@ -3,10 +3,14 @@ package org.jh.forum.api.dubbo.message;
 import lombok.Builder;
 import lombok.Data;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.dto.UserInfoDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * @author SugarMGP
+ */
 @Data
 @Builder
 public class PostListElement {
@@ -21,6 +25,6 @@ public class PostListElement {
     private List<String> topics;
     private Boolean isTopped;
     private Boolean isPinned;
-    private UserInfo userInfo;
+    private UserInfoDTO userInfo;
     private String status;
 }

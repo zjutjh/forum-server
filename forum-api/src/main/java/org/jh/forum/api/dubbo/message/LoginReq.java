@@ -3,6 +3,9 @@ package org.jh.forum.api.dubbo.message;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * @author SugarMGP
+ */
 @Data
 @Builder
 public class LoginReq {

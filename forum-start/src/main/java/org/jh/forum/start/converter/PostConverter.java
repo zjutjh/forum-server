@@ -1,12 +1,8 @@
 package org.jh.forum.start.converter;
 
 import cn.hutool.core.util.EnumUtil;
-import org.jh.forum.api.dubbo.message.GetPostListReq;
 import org.jh.forum.api.dubbo.message.PostListElement;
-import org.jh.forum.api.dubbo.message.PublishPostReq;
 import org.jh.forum.common.constants.CategoryEnum;
-import org.jh.forum.common.dto.request.GetPostListRequest;
-import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.GetAdminPostListElement;
 import org.jh.forum.common.dto.response.GetMyPostListElement;
 import org.jh.forum.common.dto.response.GetPostListElement;
@@ -26,10 +22,6 @@ public interface PostConverter {
     default String map(CategoryEnum value) {
         return value != null ? value.getValue() : "";
     }
-
-    PublishPostReq toMessage(PublishPostRequest request);
-
-    GetPostListReq toMessage(GetPostListRequest request);
 
     @Mapping(target = "publisherInfo", source = "userInfo")
     GetPostListElement toListDTO(PostListElement element);

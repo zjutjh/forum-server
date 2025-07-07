@@ -1,9 +1,9 @@
 package org.jh.forum.api.dubbo.service;
 
 
-import org.jh.forum.api.dubbo.message.GetPostListReq;
 import org.jh.forum.api.dubbo.message.PostListElement;
-import org.jh.forum.api.dubbo.message.PublishPostReq;
+import org.jh.forum.common.dto.request.GetPostListRequest;
+import org.jh.forum.common.dto.request.PublishPostRequest;
 
 import java.util.List;
 
@@ -11,9 +11,9 @@ import java.util.List;
  * @author SugarMGP
  */
 public interface PostService {
-    void publishPost(PublishPostReq request);
+    void publishPost(PublishPostRequest request);
 
-    List<PostListElement> getPostList(GetPostListReq request);
+    List<PostListElement> getPostList(GetPostListRequest request);
 
     List<PostListElement> getMyPostList();
 }

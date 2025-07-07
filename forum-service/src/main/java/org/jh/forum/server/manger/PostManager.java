@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.message.PostListElement;
-import org.jh.forum.api.dubbo.message.UserInfo;
 import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
+import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.PostTopicRelation;
 import org.jh.forum.server.mapper.PostMapper;
@@ -84,7 +84,7 @@ public class PostManager {
             }
 
             // TODO: 获取用户信息
-            UserInfo user = UserInfo.builder().build();
+            UserInfoDTO user = UserInfoDTO.builder().build();
 
             postList.add(PostListElement.builder()
                     .id(post.getId())

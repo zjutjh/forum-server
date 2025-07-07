@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.message.CreateAttachmentReq;
 import org.jh.forum.api.dubbo.message.CreateFileReq;
-import org.jh.forum.api.dubbo.message.GetAttachmentInfoResp;
 import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -16,7 +15,6 @@ import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
 import org.jh.forum.common.dto.response.UploadPictureResponse;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.common.exceptions.ForumServiceException;
-import org.jh.forum.start.converter.FileConverter;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.BlakeUtils;
 import org.springframework.http.MediaType;
@@ -42,9 +40,6 @@ public class FileController {
     @Resource
     private FileService fileService;
 
-    @Resource
-    private FileConverter fileConverter;
-
     @Operation(summary = "上传图片")
     @PostMapping(path = "/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public AjaxResult<UploadPictureResponse> uploadPicture(@RequestParam("picture") MultipartFile picture) {
@@ -56,9 +51,7 @@ public class FileController {
     @GetMapping("/info")
     public AjaxResult<GetAttachmentInfoResponse> getAttachmentInfo(@RequestParam("attachment_id") Long attachmentId) {
         try {
-            GetAttachmentInfoResp result = fileService.getAttachmentInfo(attachmentId);
-            GetAttachmentInfoResponse response = fileConverter.toDTO(result);
-            return AjaxResult.success(response);
+            return AjaxResult.success(fileService.getAttachmentInfo(attachmentId));
         } catch (ForumServiceException e) {
             throw new ApiException(e);
         }
@@ -88,7 +81,7 @@ public class FileController {
             CreateAttachmentReq createAttachmentReq = CreateAttachmentReq.builder()
                     .fileId(fileId)
                     .filename(file.getOriginalFilename())
-                    .type(type.getValue())
+                    .type(type)
                     .build();
             return fileService.createAttachment(createAttachmentReq);
         } catch (InvalidProtocolBufferException e) {
