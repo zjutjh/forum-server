@@ -1,0 +1,12 @@
+package org.jh.forum.api.dubbo.message;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class UserInfo {
+    private Long id;
+    private String nickname;
+    private String avatar;
+}

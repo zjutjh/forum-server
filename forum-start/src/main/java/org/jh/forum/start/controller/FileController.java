@@ -6,7 +6,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.cube.CubeService;
-import org.jh.forum.api.dubbo.*;
+import org.jh.forum.api.dubbo.message.CreateAttachmentReq;
+import org.jh.forum.api.dubbo.message.CreateFileReq;
+import org.jh.forum.api.dubbo.message.GetAttachmentInfoResp;
+import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
@@ -53,25 +56,21 @@ public class FileController {
     @GetMapping("/info")
     public AjaxResult<GetAttachmentInfoResponse> getAttachmentInfo(@RequestParam("attachment_id") Long attachmentId) {
         try {
-            AttachmentId req = AttachmentId.newBuilder().setAttachmentId(attachmentId).build();
-            ServiceResult result = fileService.getAttachmentInfo(req);
-            GetAttachmentInfoResponse response = fileConverter.toDTO(result.getData().unpack(GetAttachmentInfoResp.class));
+            GetAttachmentInfoResp result = fileService.getAttachmentInfo(attachmentId);
+            GetAttachmentInfoResponse response = fileConverter.toDTO(result);
             return AjaxResult.success(response);
         } catch (ForumServiceException e) {
             throw new ApiException(e);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         }
     }
 
     private Long uploadFile(MultipartFile file, AttachmentTypeEnum type) {
         try {
             String hash = BlakeUtils.computeHash(file);
-            CheckBlake3Req checkBlake3Req = CheckBlake3Req.newBuilder().setBlake3(hash).build();
-            FileId resp = fileService.checkBlake3(checkBlake3Req).getData().unpack(FileId.class);
+            Long fileId = fileService.checkBlake3(hash);
 
             // 如果文件不存在
-            if (resp.getFileId() == -1) {
+            if (fileId == -1) {
                 LocalDate currentDate = LocalDate.now();
                 String location = String.format("%d%02d", currentDate.getYear(), currentDate.getMonthValue());
                 String objectKey = cubeService.uploadFile(
@@ -80,21 +79,18 @@ public class FileController {
                         type == AttachmentTypeEnum.PICTURE,
                         true
                 );
-                CreateFileReq createFileReq = CreateFileReq.newBuilder()
-                        .setBlake3(hash)
-                        .setObjectKey(objectKey)
+                CreateFileReq createFileReq = CreateFileReq.builder()
+                        .blake3(hash)
+                        .objectKey(objectKey)
                         .build();
-                resp = fileService.createFile(createFileReq).getData().unpack(FileId.class);
+                fileId = fileService.createFile(createFileReq);
             }
-            CreateAttachmentReq createAttachmentReq = CreateAttachmentReq.newBuilder()
-                    .setFileId(resp.getFileId())
-                    .setFilename(file.getOriginalFilename())
-                    .setType(type.getValue())
+            CreateAttachmentReq createAttachmentReq = CreateAttachmentReq.builder()
+                    .fileId(fileId)
+                    .filename(file.getOriginalFilename())
+                    .type(type.getValue())
                     .build();
-            AttachmentId attachmentIdResp = fileService.createAttachment(createAttachmentReq)
-                    .getData()
-                    .unpack(AttachmentId.class);
-            return attachmentIdResp.getAttachmentId();
+            return fileService.createAttachment(createAttachmentReq);
         } catch (InvalidProtocolBufferException e) {
             throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         } catch (IOException e) {

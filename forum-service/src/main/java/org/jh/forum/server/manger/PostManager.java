@@ -4,8 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.PostListElement;
-import org.jh.forum.api.dubbo.UserInfo;
+import org.jh.forum.api.dubbo.message.PostListElement;
+import org.jh.forum.api.dubbo.message.UserInfo;
 import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.entity.Post;
@@ -84,22 +84,22 @@ public class PostManager {
             }
 
             // TODO: 获取用户信息
-            UserInfo user = UserInfo.newBuilder().build();
+            UserInfo user = UserInfo.builder().build();
 
-            postList.add(PostListElement.newBuilder()
-                    .setId(post.getId())
-                    .setUserInfo(user)
-                    .setIsTopped(post.getIsTopped())
-                    .setIsPinned(post.getIsPinned())
-                    .setCategory(post.getCategory().getValue())
-                    .addAllTopics(topics)
-                    .setTitle(post.getTitle())
-                    .setContent(post.getContent().substring(0, Math.min(post.getContent().length(), 50)))
-                    .setLikeCount(0)
-                    .setCommentCount(0)
-                    .setViewCount(0)
-                    .setCreatedAt(post.getCreatedAt().toString())
-                    .setStatus("")
+            postList.add(PostListElement.builder()
+                    .id(post.getId())
+                    .userInfo(user)
+                    .isTopped(post.getIsTopped())
+                    .isPinned(post.getIsPinned())
+                    .category(post.getCategory())
+                    .topics(topics)
+                    .title(post.getTitle())
+                    .content(post.getContent().substring(0, Math.min(post.getContent().length(), 50)))
+                    .likeCount(0)
+                    .commentCount(0)
+                    .viewCount(0)
+                    .createdAt(post.getCreatedAt())
+                    .status("")
                     .build()
             );
         }

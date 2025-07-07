@@ -1,14 +1,12 @@
 package org.jh.forum.start.controller;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.GetPostListReq;
-import org.jh.forum.api.dubbo.GetPostListResp;
-import org.jh.forum.api.dubbo.PostService;
-import org.jh.forum.api.dubbo.PublishPostReq;
-import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.api.dubbo.message.GetPostListReq;
+import org.jh.forum.api.dubbo.message.PostListElement;
+import org.jh.forum.api.dubbo.message.PublishPostReq;
+import org.jh.forum.api.dubbo.service.PostService;
 import org.jh.forum.common.dto.request.BaseListRequest;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
@@ -69,35 +67,27 @@ public class PostController {
     @GetMapping("/list")
     public AjaxResult<BaseListResponse<GetPostListElement>> getPostList(@Valid GetPostListRequest request) {
         GetPostListReq req = postConverter.toProto(request);
-        try {
-            List<GetPostListElement> list = new ArrayList<>();
-            GetPostListResp result = postService.getPostList(req).getData().unpack(GetPostListResp.class);
-            result.getPostsList().forEach(post -> {
-                list.add(postConverter.toListDTO(post));
-            });
-            BaseListResponse<GetPostListElement> response = new BaseListResponse<>();
-            response.setList(list);
-            return AjaxResult.success(response);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
-        }
+        List<GetPostListElement> list = new ArrayList<>();
+        List<PostListElement> result = postService.getPostList(req);
+        result.forEach(post -> {
+            list.add(postConverter.toListDTO(post));
+        });
+        BaseListResponse<GetPostListElement> response = new BaseListResponse<>();
+        response.setList(list);
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "获取我的帖子列表")
     @GetMapping("/my_list")
     public AjaxResult<BaseListResponse<GetMyPostListElement>> getMyPostList(BaseListRequest request) {
-        try {
-            List<GetMyPostListElement> list = new ArrayList<>();
-            GetPostListResp result = postService.getMyPostList(null).getData().unpack(GetPostListResp.class);
-            result.getPostsList().forEach(post -> {
-                list.add(postConverter.toMyListDTO(post));
-            });
-            BaseListResponse<GetMyPostListElement> response = new BaseListResponse<>();
-            response.setList(list);
-            return AjaxResult.success(response);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
-        }
+        List<GetMyPostListElement> list = new ArrayList<>();
+        List<PostListElement> result = postService.getMyPostList();
+        result.forEach(post -> {
+            list.add(postConverter.toMyListDTO(post));
+        });
+        BaseListResponse<GetMyPostListElement> response = new BaseListResponse<>();
+        response.setList(list);
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "管理员获取帖子列表")
