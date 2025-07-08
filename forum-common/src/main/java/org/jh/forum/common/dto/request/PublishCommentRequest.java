@@ -2,7 +2,10 @@ package org.jh.forum.common.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +13,9 @@ import jakarta.validation.constraints.NotNull;
 /**
  * @author qianqianzyk
  */
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class PublishCommentRequest {
     @Schema(description = "帖子ID")
@@ -31,13 +37,8 @@ public class PublishCommentRequest {
     @NotBlank
     private String content;
 
-    @Schema(description = "评论附件")
-    @JsonProperty("attachment_url")
-    @NotBlank
-    private String attachmentUrl;
-
-    @Schema(description = "@列表，，无值即传[]")
+    @Schema(description = "评论附件ID，无值即传0")
+    @JsonProperty("attachment_id")
     @NotNull
-    @JsonProperty("at_list")
-    private Long[] atList;
+    private Long attachmentId;
 }

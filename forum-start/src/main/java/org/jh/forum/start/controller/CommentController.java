@@ -1,19 +1,17 @@
 package org.jh.forum.start.controller;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.*;
-import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.api.dubbo.service.CommentService;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
-import java.util.Arrays;
 
 /**
  * @author qianqianzyk
@@ -29,75 +27,39 @@ public class CommentController {
     @Operation(summary = "发布评论/回复")
     @PostMapping("/publish")
     public AjaxResult<PublishCommentResponse> publishComment(@RequestBody PublishCommentRequest request) {
-        PublishCommentReq publishCommentReq = PublishCommentReq.newBuilder()
-                .setPostId(request.getPostId())
-                .setParentId(request.getParentId())
-                .setTargetId(request.getTargetId())
-                .setContent(request.getContent())
-                .setAttachmentUrl(request.getAttachmentUrl())
-                .addAllAtList(Arrays.asList(request.getAtList()))
-                .build();
-
-        try {
-            PublishCommentResp resp = commentService.publishComment(publishCommentReq)
-                    .getData()
-                    .unpack(PublishCommentResp.class);
-
-            PublishCommentResponse response = new PublishCommentResponse();
-            response.setCommentId(resp.getCommentId());
-
-            return AjaxResult.success(response);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
-        }
+        Long commentId = commentService.publishComment(request);
+        PublishCommentResponse response = new PublishCommentResponse();
+        response.setCommentId(commentId);
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "删除评论/回复", description = "仅发布人可删\n级联删除")
     @DeleteMapping("/remove")
-    public AjaxResult<String> deleteComment(@RequestParam("comment_id") Integer commentId) {
-        return AjaxResult.success(null);
+    public AjaxResult<Void> deleteComment(@RequestParam RemoveCommentRequest request) {
+        try {
+            commentService.removeComment(request);
+        } catch (ForumServiceException e) {
+            throw new ApiException(e);
+        }
+        return AjaxResult.success();
     }
 
     @Operation(summary = "点赞评论/回复")
     @PostMapping("/upvote")
     public AjaxResult<UpvoteCommentResponse> upvoteComment(@RequestBody UpvoteCommentRequest request) {
-        UpvoteCommentReq upvoteCommentReq = UpvoteCommentReq.newBuilder()
-                .setCommentId(request.getCommentId())
-                .build();
-
-        try {
-            UpvoteCommentResp resp = commentService.upvoteComment(upvoteCommentReq)
-                    .getData()
-                    .unpack(UpvoteCommentResp.class);
-
-            UpvoteCommentResponse response = new UpvoteCommentResponse();
-            response.setStatus(resp.getStatus());
-
-            return AjaxResult.success(response);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
-        }
+        Boolean status = commentService.upvoteComment(request);
+        UpvoteCommentResponse response = new UpvoteCommentResponse();
+        response.setStatus(status);
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "置顶评论/回复", description = "仅帖主设置")
     @PostMapping("/pin")
     public AjaxResult<PinCommentResponse> pinComment(@RequestBody PinCommentRequest request) {
-        PinCommentReq pinCommentReq = PinCommentReq.newBuilder()
-                .setCommentId(request.getCommentId())
-                .build();
-
-        try {
-            PinCommentResp resp = commentService.pinComment(pinCommentReq)
-                    .getData()
-                    .unpack(PinCommentResp.class);
-
-            PinCommentResponse response = new PinCommentResponse();
-            response.setStatus(resp.getStatus());
-
-            return AjaxResult.success(response);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
-        }
+        Boolean status = commentService.pinComment(request);
+        PinCommentResponse response = new PinCommentResponse();
+        response.setStatus(status);
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "获取评论", description = """

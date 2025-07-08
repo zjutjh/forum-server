@@ -1,13 +1,15 @@
 package org.jh.forum.server.dubbo;
 
-import com.google.protobuf.Any;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.jh.forum.api.dubbo.*;
+import org.jh.forum.api.dubbo.service.CommentService;
+import org.jh.forum.common.dto.request.PinCommentRequest;
+import org.jh.forum.common.dto.request.PublishCommentRequest;
+import org.jh.forum.common.dto.request.RemoveCommentRequest;
+import org.jh.forum.common.dto.request.UpvoteCommentRequest;
 import org.jh.forum.server.manger.CommentManager;
 
 import jakarta.annotation.Resource;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author qianqianzyk
@@ -20,67 +22,30 @@ public class CommentServerImpl implements CommentService {
     private CommentManager commentManager;
 
     @Override
-    public ServiceResult publishComment(PublishCommentReq request) {
-        // TODO 评论内容审查
-
-        // TODO 评论附件审查
-
-        Long commentId = commentManager.publishComment(request);
+    public Long publishComment(PublishCommentRequest request) {
+        Long commentId = commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getAttachmentId());
 
         // TODO 发送评论消息
 
-        PublishCommentResp resp = PublishCommentResp.newBuilder()
-                .setCommentId(commentId)
-                .build();
-
-        return ServiceResult.newBuilder()
-                .setIsSuccess(true)
-                .setData(Any.pack(resp))
-                .build();
+        return commentId;
     }
 
     @Override
-    public ServiceResult upvoteComment(UpvoteCommentReq request) {
+    public Boolean upvoteComment(UpvoteCommentRequest request) {
         Boolean status = commentManager.upvoteComment(request.getCommentId());
 
         // TODO 发送点赞消息
 
-        UpvoteCommentResp resp = UpvoteCommentResp.newBuilder()
-                .setStatus(status)
-                .build();
-
-        return ServiceResult.newBuilder()
-                .setIsSuccess(true)
-                .setData(Any.pack(resp))
-                .build();
+        return status;
     }
 
     @Override
-    public ServiceResult pinComment(PinCommentReq request) {
-        Boolean status = commentManager.pinComment(request.getCommentId());
-
-        PinCommentResp resp = PinCommentResp.newBuilder()
-                .setStatus(status)
-                .build();
-
-        return ServiceResult.newBuilder()
-                .setIsSuccess(true)
-                .setData(Any.pack(resp))
-                .build();
+    public Boolean pinComment(PinCommentRequest request) {
+        return commentManager.pinComment(request.getCommentId());
     }
 
     @Override
-    public CompletableFuture<ServiceResult> publishCommentAsync(PublishCommentReq request) {
-        return CompletableFuture.supplyAsync(() -> this.publishComment(request));
-    }
-
-    @Override
-    public CompletableFuture<ServiceResult> upvoteCommentAsync(UpvoteCommentReq request) {
-        return CompletableFuture.supplyAsync(() -> this.upvoteComment(request));
-    }
-
-    @Override
-    public CompletableFuture<ServiceResult> pinCommentAsync(PinCommentReq request) {
-        return CompletableFuture.supplyAsync(() -> this.pinComment(request));
+    public void removeComment(RemoveCommentRequest request) {
+        commentManager.removeComment(request.getCommentId());
     }
 }
