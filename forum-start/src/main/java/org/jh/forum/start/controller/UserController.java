@@ -43,12 +43,9 @@ public class UserController {
             LoginResp loginResp = loginService.login(loginReq).getData().unpack(LoginResp.class);
             return AjaxResult.success(LoginResponse.builder().userType(loginResp.getUserType()).build());
         } catch (ForumServiceException e) {
-            if (e.isException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD)) {
-                throw new ApiException(e);
-            }
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(e);
         } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         }
     }
 }

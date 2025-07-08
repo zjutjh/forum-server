@@ -5,15 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author MangoGovo
+ * @author SugarMGP
  */
 @Getter
 @AllArgsConstructor
-public enum UserTypeEnum {
-    STUDENT("student"),
-    ADMIN("admin"),
-    SUPER_ADMIN("super_admin");
+public enum TargetTypeEnum {
+    POST("post", "帖子"),
+
+    COMMENT("comment", "评论"),
+
+    // 仅在 Report 中被使用
+    USER("user", "用户");
 
     @EnumValue
     private final String value;
+
+    private final String desc;
 }

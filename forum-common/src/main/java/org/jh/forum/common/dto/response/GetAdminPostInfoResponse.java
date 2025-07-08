@@ -18,10 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetPostListElement {
-    @Schema(description = "帖子ID")
-    private Long id;
-
+public class GetAdminPostInfoResponse {
     @Schema(description = "发帖人信息")
     @JsonProperty("publisher_info")
     private UserInfoDTO publisherInfo;
@@ -35,7 +32,7 @@ public class GetPostListElement {
     @Schema(description = "帖子标题")
     private String title;
 
-    @Schema(description = "帖子内容（截取50字）")
+    @Schema(description = "帖子内容")
     private String content;
 
     @Schema(description = "帖子点赞数")
@@ -53,4 +50,11 @@ public class GetPostListElement {
     @Schema(description = "发帖时间")
     @JsonProperty("created_at")
     private String createdAt;
+
+    @Schema(description = "帖子状态")
+    private String status;
+
+    @Schema(description = "是否置顶（管理员）")
+    @JsonProperty("is_pinned")
+    private Boolean isPinned;
 }

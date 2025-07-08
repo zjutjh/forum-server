@@ -2,8 +2,8 @@ package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
-
-import jakarta.validation.constraints.Pattern;
+import org.jh.forum.common.constants.GenderEnum;
+import org.jh.forum.common.constants.UserTypeEnum;
 
 
 /**
@@ -12,8 +12,8 @@ import jakarta.validation.constraints.Pattern;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @TableName(value = "user")
 public class User extends BaseEntity {
@@ -40,13 +40,12 @@ public class User extends BaseEntity {
     /**
      * 学院ID
      */
-    private Integer collegeId;
+    private Long collegeId;
 
     /**
      * 性别(男,女,保密)
      */
-    @Pattern(regexp = "^(男|女|保密)$", message = "性别不合法")
-    private String gender;
+    private GenderEnum gender;
 
     /**
      * 手机号
@@ -61,16 +60,16 @@ public class User extends BaseEntity {
     /**
      * 点赞消息开关
      */
-    private Integer upvoteNotice;
+    private Boolean upvoteNotice;
 
     /**
      * 评论消息开关
      */
-    private Integer commentNotice;
+    private Boolean commentNotice;
 
     /**
      * 用户角色
      */
-    private String role;
+    private UserTypeEnum role;
 
 }
