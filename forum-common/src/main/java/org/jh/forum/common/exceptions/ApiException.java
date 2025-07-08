@@ -39,12 +39,23 @@ public class ApiException extends BaseException {
     }
 
     /**
+     * 包装错误枚举为业务异常
+     *
+     * @param e     错误枚举
+     * @param cause 错误原因
+     */
+    public ApiException(ExceptionEnum e, Throwable cause) {
+        super(e.getErrorCode(), e.getErrorMsg(), cause);
+        this.statusCode = HttpStatus.OK.value();
+    }
+
+    /**
      * 包装RPC调用异常为业务异常
      *
      * @param e RPC调用异常
      */
     public ApiException(ForumServiceException e) {
-        super(e.getErrorCode(), e.getErrorMsg());
+        super(e.getErrorCode(), e.getErrorMsg(), e.getCause());
         this.statusCode = HttpStatus.OK.value();
     }
 }

@@ -14,10 +14,14 @@ public class BaseException extends RuntimeException {
     private Integer errorCode;
     private String errorMsg;
 
-    private BaseException() {
+    public BaseException(Integer errorCode, String errorMsg) {
+        super(errorMsg);
+        this.errorCode = errorCode;
+        this.errorMsg = errorMsg;
     }
 
-    public BaseException(Integer errorCode, String errorMsg) {
+    public BaseException(Integer errorCode, String errorMsg, Throwable cause) {
+        super(errorMsg, cause);
         this.errorCode = errorCode;
         this.errorMsg = errorMsg;
     }
