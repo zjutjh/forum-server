@@ -6,18 +6,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.cube.CubeService;
-import org.jh.forum.api.dubbo.*;
+import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
 import org.jh.forum.common.dto.response.UploadPictureResponse;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.BlakeUtils;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Resource;
@@ -46,14 +45,23 @@ public class FileController {
         return AjaxResult.success(new UploadPictureResponse(attachmentId));
     }
 
-    public Long uploadFile(MultipartFile file, AttachmentTypeEnum type) {
+    @Operation(summary = "获取附件信息")
+    @GetMapping("/info")
+    public AjaxResult<GetAttachmentInfoResponse> getAttachmentInfo(@RequestParam("attachment_id") Long attachmentId) {
+        try {
+            return AjaxResult.success(fileService.getAttachmentInfo(attachmentId));
+        } catch (ForumServiceException e) {
+            throw new ApiException(e);
+        }
+    }
+
+    private Long uploadFile(MultipartFile file, AttachmentTypeEnum type) {
         try {
             String hash = BlakeUtils.computeHash(file);
-            CheckBlake3Req checkBlake3Req = CheckBlake3Req.newBuilder().setBlake3(hash).build();
-            FileIdResp resp = fileService.checkBlake3(checkBlake3Req).getData().unpack(FileIdResp.class);
+            Long fileId = fileService.checkBlake3(hash);
 
             // 如果文件不存在
-            if (resp.getFileId() == -1) {
+            if (fileId == -1) {
                 LocalDate currentDate = LocalDate.now();
                 String location = String.format("%d%02d", currentDate.getYear(), currentDate.getMonthValue());
                 String objectKey = cubeService.uploadFile(
@@ -62,26 +70,14 @@ public class FileController {
                         type == AttachmentTypeEnum.PICTURE,
                         true
                 );
-                CreateFileReq createFileReq = CreateFileReq.newBuilder()
-                        .setBlake3(hash)
-                        .setObjectKey(objectKey)
-                        .build();
-                resp = fileService.createFile(createFileReq).getData().unpack(FileIdResp.class);
+                fileId = fileService.createFile(objectKey, hash);
             }
-            CreateAttachmentReq createAttachmentReq = CreateAttachmentReq.newBuilder()
-                    .setFileId(resp.getFileId())
-                    .setFilename(file.getOriginalFilename())
-                    .setType(type.getValue())
-                    .build();
-            AttachmentIdResp attachmentIdResp = fileService.createAttachment(createAttachmentReq)
-                    .getData()
-                    .unpack(AttachmentIdResp.class);
-            return attachmentIdResp.getAttachmentId();
+            return fileService.createAttachment(fileId, type, file.getOriginalFilename());
         } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         } catch (IOException e) {
             log.error("文件上传失败", e);
-            throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR);
+            throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR, e);
         }
     }
 }

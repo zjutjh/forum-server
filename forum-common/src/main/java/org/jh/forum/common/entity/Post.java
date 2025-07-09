@@ -1,11 +1,8 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.experimental.SuperBuilder;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.jh.forum.common.constants.CategoryEnum;
 
 /**
  * @author SugarMGP
@@ -24,7 +21,9 @@ public class Post extends BaseEntity {
 
     private String content;
 
-    private Long categoryId;
+    private CategoryEnum category;
 
     private Boolean isPinned;
+
+    private Boolean isTopped;
 }

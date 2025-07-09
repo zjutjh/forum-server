@@ -1,14 +1,10 @@
 package org.jh.forum.start.controller;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.api.dubbo.GetPostListReq;
-import org.jh.forum.api.dubbo.GetPostListResp;
-import org.jh.forum.api.dubbo.PostService;
-import org.jh.forum.api.dubbo.PublishPostReq;
-import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.api.dubbo.service.PostService;
+import org.jh.forum.common.dto.PostListElementDTO;
 import org.jh.forum.common.dto.request.BaseListRequest;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
@@ -51,8 +47,7 @@ public class PostController {
     @PostMapping("/create")
     public AjaxResult<Void> createPost(@Valid @RequestBody PublishPostRequest request) {
         try {
-            PublishPostReq req = postConverter.toProto(request);
-            postService.publishPost(req);
+            postService.publishPost(request);
         } catch (ForumServiceException e) {
             throw new ApiException(e);
         }
@@ -68,66 +63,40 @@ public class PostController {
     @Operation(summary = "获取帖子列表")
     @GetMapping("/list")
     public AjaxResult<BaseListResponse<GetPostListElement>> getPostList(@Valid GetPostListRequest request) {
-        GetPostListReq req = postConverter.toProto(request);
-        try {
-            List<GetPostListElement> list = new ArrayList<>();
-            GetPostListResp result = postService.getPostList(req).getData().unpack(GetPostListResp.class);
-            result.getPostsList().forEach(post -> {
-                list.add(GetPostListElement.builder()
-                        .id(post.getId())
-                        .title(post.getTitle())
-                        .content(post.getContent())
-                        .likeCount(post.getLikeCount())
-                        .commentCount(post.getCommentCount())
-                        .viewCount(post.getViewCount())
-                        .createdAt(post.getCreateAt())
-                        .publisherId(post.getUserId())
-                        .categoryId(post.getCategoryId())
-                        .topics(post.getTopicsList())
-                        .build()
-                );
-            });
-            BaseListResponse<GetPostListElement> response = new BaseListResponse<>();
-            response.setList(list);
-            return AjaxResult.success(response);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
-        }
+        List<GetPostListElement> list = new ArrayList<>();
+        List<PostListElementDTO> result = postService.getPostList(request);
+        result.forEach(post -> {
+            list.add(postConverter.toListDTO(post));
+        });
+        BaseListResponse<GetPostListElement> response = new BaseListResponse<>();
+        response.setList(list);
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "获取我的帖子列表")
     @GetMapping("/my_list")
     public AjaxResult<BaseListResponse<GetMyPostListElement>> getMyPostList(BaseListRequest request) {
-        try {
-            List<GetMyPostListElement> list = new ArrayList<>();
-            GetPostListResp result = postService.getMyPostList(null).getData().unpack(GetPostListResp.class);
-            result.getPostsList().forEach(post -> {
-                list.add(GetMyPostListElement.builder()
-                        .id(post.getId())
-                        .title(post.getTitle())
-                        .content(post.getContent())
-                        .likeCount(post.getLikeCount())
-                        .commentCount(post.getCommentCount())
-                        .viewCount(post.getViewCount())
-                        .createdAt(post.getCreateAt())
-                        .isTopped(post.getIsTopped())
-                        .categoryId(post.getCategoryId())
-                        .topics(post.getTopicsList())
-                        .build()
-                );
-            });
-            BaseListResponse<GetMyPostListElement> response = new BaseListResponse<>();
-            response.setList(list);
-            return AjaxResult.success(response);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
-        }
+        List<GetMyPostListElement> list = new ArrayList<>();
+        List<PostListElementDTO> result = postService.getMyPostList();
+        result.forEach(post -> {
+            list.add(postConverter.toMyListDTO(post));
+        });
+        BaseListResponse<GetMyPostListElement> response = new BaseListResponse<>();
+        response.setList(list);
+        return AjaxResult.success(response);
     }
 
-    @Operation(summary = "获取管理员帖子列表")
+    @Operation(summary = "管理员获取帖子列表")
     @Tag(name = "管理员")
-    @GetMapping("/admin_list")
+    @GetMapping("/admin/list")
     public AjaxResult<BaseListResponse<GetAdminPostListElement>> getAdminPostList(GetAdminPostListRequest request) {
+        return null;
+    }
+
+    @Operation(summary = "管理员获取帖子信息")
+    @Tag(name = "管理员")
+    @GetMapping("/admin/info")
+    public AjaxResult<GetAdminPostInfoResponse> getAdminPostInfo(@RequestParam(value = "id", required = true) Long id) {
         return null;
     }
 }
