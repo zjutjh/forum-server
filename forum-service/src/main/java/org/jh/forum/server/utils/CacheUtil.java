@@ -35,7 +35,7 @@ public class CacheUtil {
     /**
      * 根据用户ID获取用户昵称（带缓存）
      * 
-     * @param userId 用户ID的位置参数
+     * @param #a0 用户ID的位置参数
      * @return 用户昵称
      */
     @Cacheable(value = "userNicknameCache", key = "#a0")
@@ -67,11 +67,14 @@ public class CacheUtil {
     /**
      * 根据用户ID批量获取用户昵称
      * 
-     * @param userIds 用户ID集合
+     * @param userId
      */
     public Map<Long, String> getUsernamesByIds(Set<Long> userIds) {
         log.info("批量获取用户昵称, 用户ID列表: {}", userIds);
         Map<Long, String> result = new HashMap<>(userIds.size());
+        if (userIds == null || userIds.isEmpty()) {
+            return result;
+        }
 
         // 1. 批量查缓存
         Cache cache = cacheManager.getCache("userNicknameCache");
@@ -86,7 +89,7 @@ public class CacheUtil {
         }
 
         // 2. 手动循环查数据库
-        Map<Long, String> dbMap = new HashMap<>(userIds.size());
+        Map<Long, String> dbMap = new HashMap<>();
         for (Long id : missedIds) {
             User user = null;
             try {

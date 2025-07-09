@@ -36,26 +36,29 @@ public class EditAnnouncementRequest {
     @NotBlank(message = "公告内容不能为空")
     @Size(min = 1, max = 1000, message = "公告内容不能超过500个字符")
     @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String content;    @Schema(description = "公告类型, 0系统1学校", example = "1", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "0", "1" })
-    private Integer type;
+    private String content;
 
-    /**
-     * 定时发布时间
-     */
+    @NotBlank(message = "公告类型不能为空")
+    @Schema(description = "公告类型", allowableValues = {
+            "systematic", "scholastic" },example = "systematic", defaultValue = "scholastic", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String type;
+
+    @Nullable
     @JsonProperty("scheduled_at")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
-    @Schema(description = "定时发布时间(ISO8601格式, 前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00+08:00")
+    @Schema(description = "定时发布时间(ISO8601格式, 前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00+08:00",requiredMode = Schema.RequiredMode.REQUIRED)
     private ZonedDateTime scheduledAt;
 
     @NotNull(message = "必须指定公告状态")
-    @Schema(description = "状态：0草稿、1已发布、2待发布", example = "0", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "0", "1", "2" })
-    private Integer status;
+    @Schema(description = "状态: draft、published、scheduled", allowableValues = { "draft", "published",
+            "scheduled" },example = "draft", defaultValue = "draft", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String status;
 
     @Nullable
-    @Schema(description = "附加属性", example = "{\"sticky\": true}")
+    @Schema(description = "附加属性", example = "{\"test\": true}",requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Object attribute;
 
-    @Nullable
-    @Schema(description = "是否置顶", example = "false", allowableValues = { "true", "false" })
+    @NotNull(message = "是否置顶不能为空")
+    @Schema(description = "是否置顶", allowableValues = { "true", "false" },example = "false", defaultValue = "false", requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean sticky;
 }

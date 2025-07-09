@@ -1,36 +1,32 @@
 package org.jh.forum.common.dto.request;
 
+import com.alibaba.nacos.shaded.javax.annotation.Nullable;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 用户公告列表查询请求DTO
  * 
  * @author SituChengxiang
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Schema(description = "用户公告列表查询请求")
-public class UserQueryAnnouncementRequest {
+public class UserQueryAnnouncementRequest extends BaseListRequest {
 
-    @Min(value = 1, message = "页码不能小于1")
-    @Schema(description = "分页页码", example = "1", defaultValue = "1",requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Integer page = 1;
-
-    @Min(value = 1, message = "每页数量不能小于1")
-    @Max(value = 50, message = "每页数量不能超过50")
-    @Schema(description = "每页数量", example = "8", defaultValue = "8",requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Integer size = 8;
-    
     /**
-     * 公告类型筛选：1=系统公告(db:type=0)， 2=学校公告(db:type=1)， 3=全部
+     * 公告类型筛选：systematic,scholastic
      */
-    @Schema(description = "类型筛选(1=系统公告， 2=学校公告， 3=全部）", example = "1", defaultValue = "3", allowableValues = { "1", "2", "3" },requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Integer type = 3; 
-    // 默认为全部，除了mapper以外的其他地方都在用枚举，就是mapper里头，如果改了数值记得改
+    @Nullable
+    @Schema(description = "类型筛选 (systematic, scholastic,all)", allowableValues = {
+            "systematic", "scholastic",
+            "all" }, example = "systematic", defaultValue = "all", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String type;
 
-    @Schema(description = "查询关键字", example = "公告标题", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private String keyword; 
+    @Nullable
+    @Schema(description = "查询关键字", example = "节日", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String keywords;
     // 可选，查询关键字(Manager层里头实际上是title，因为是标题的关键字)
 }

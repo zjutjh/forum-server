@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
  * @author SugarMGP
  */
 @Component
-public class AutoFillHandler implements MetaObjectHandler {    /**
+public class AutoFillHandler implements MetaObjectHandler {
+
+    /**
      * 插入填充
      */
     @Override

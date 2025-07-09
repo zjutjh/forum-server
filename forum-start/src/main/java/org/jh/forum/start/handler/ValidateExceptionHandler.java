@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import jakarta.servlet.http.HttpServletRequest;
 import java.sql.SQLIntegrityConstraintViolationException;
 
@@ -36,9 +34,9 @@ public class ValidateExceptionHandler {
      * @param e 错误信息集合
      * @return 错误信息
      */
-    @ExceptionHandler({MethodArgumentNotValidException.class, IllegalArgumentException.class})
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
-    public AjaxResult<Object> validationBodyException(Exception e, HttpServletRequest request) {
+    public AjaxResult<Object> validationBodyException(MethodArgumentNotValidException e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
         return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
     }

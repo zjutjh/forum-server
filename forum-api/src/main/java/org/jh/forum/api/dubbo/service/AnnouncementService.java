@@ -1,4 +1,4 @@
-package org.jh.forum.api.service;
+package org.jh.forum.api.dubbo.service;
 
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
@@ -7,6 +7,7 @@ import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.dto.response.AnnouncementDetailResponse;
 import org.jh.forum.common.dto.response.AnnouncementTinyDetailsResponse;
+import org.jh.forum.common.dto.response.ListAnnouncementMinorResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementResponse;
 import org.jh.forum.common.dto.response.ListAnnouncementTinyResponse;
 
@@ -83,4 +84,20 @@ public interface AnnouncementService {
      * @return 分页结果
      */
     ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request);
+
+    /**
+     * 获取置顶公告
+     * @return 置顶公告列表
+     */
+    ListAnnouncementMinorResponse getTopAnnouncements();
+
+    /**
+     * 辅助方法-判断权限
+     * 
+     * @param announcementId 公告ID
+     * @param userId 用户ID
+     * @param isSuperAdmin 是否为超级管理员
+     * @return 是否为创建者(boolean)
+     */
+    boolean checkPermission(Long announcementId, Long userId, boolean isSuperAdmin);
 }

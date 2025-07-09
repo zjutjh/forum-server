@@ -1,5 +1,8 @@
 package org.jh.forum.common.dto.response;
 
+import org.jh.forum.common.constants.AnnouncementTypeEnum;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -20,20 +23,26 @@ public class AnnouncementTinyDetailsResponse {
     @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...")
     private String content;
 
-    @Schema(description = "公告类型", example = "0")
-    private Integer type;
+    @Schema(description = "公告类型", example = "system")
+    private AnnouncementTypeEnum type;
 
-    @Schema(description = "创建用户的用户名", example = "admin")
+    @Schema(description = "创建用户的昵称", example = "admin")
     private String creator;
 
-    @Schema(description = "更新用户的用户名", example = "suadmin")
+    @Schema(description = "更新用户的昵称", example = "suadmin")
     private String updator;
 
+    @JsonProperty("create_at")
     @Schema(description = "创建时间", example = "2025-06-07T09:00:00.000Z")
     private String createdAt;
 
+    @JsonProperty("update_at")
     @Schema(description = "更新时间", example = "2025-06-07T09:00:00.000Z")
     private String updatedAt;
+
+    @JsonProperty("published_at")
+    @Schema(description = "实际发布时间", example = "2025-06-07T09:00:00.000Z")
+    private String publishedAt;
 
     @Schema(description = "是否置顶", example = "false")
     private Boolean sticky;

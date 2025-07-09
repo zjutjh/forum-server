@@ -4,10 +4,9 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -17,12 +16,12 @@ import org.jh.forum.common.dto.request.EditAnnouncementRequest;
 import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementDetailResponse;
 import org.jh.forum.common.dto.response.AnnouncementTinyDetailsResponse;
-import org.jh.forum.common.dto.response.ListAnnouncementTinyResponse;
+
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
-import org.jh.forum.common.dto.response.ListAnnouncementResponse;
+
 import org.jh.forum.common.entity.Announcement;
-import org.jh.forum.common.entity.Announcement.AnnouncementStatus;
-import org.jh.forum.common.entity.Announcement.AnnouncementType;
+import org.jh.forum.common.constants.AnnouncementStatusEnum;
+import org.jh.forum.common.constants.AnnouncementTypeEnum;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.common.filters.MarkdownMathJaxHtmlFilter;
 import org.jh.forum.server.mapper.AnnouncementMapper;
@@ -101,29 +100,37 @@ public class AnnouncementManager {
         request.setContent(filter.filterContent(request.getContent()));
     }
 
+    private String safeFilterTitle(String tile) {
+        return filter.filterTitle(tile);
+    }
+
     /**
      * 创建公告 - 原子数据库操作
      */
     @Transactional(rollbackFor = Exception.class)
-    public Announcement createAnnouncement(CreateAnnouncementRequest request) {
+    public Announcement createAnnouncement(CreateAnnouncementRequest request, ZonedDateTime publishedAt) {
         log.info("Manager层执行数据库插入操作, 公告标题: {}", request.getTitle());
         try {
             safeFilter(request);
+
             Announcement newEntity = Announcement.builder()
                     .title(request.getTitle())
                     .content(request.getContent())
-                    .type(AnnouncementType.fromCode(request.getType()))
+                    .type(AnnouncementTypeEnum.fromCode(request.getType()))
                     .scheduledAt(request.getScheduledAt())
-                    .status(AnnouncementStatus.fromCode(request.getStatus()))
+                    .publishedAt(publishedAt)
+                    .status(AnnouncementStatusEnum.fromCode(request.getStatus()))
                     .attribute(convertAttributeToString(request.getAttribute()))
                     .sticky(request.getSticky() != null ? request.getSticky() : false)
                     .build();
             announcementMapper.insert(newEntity);
             log.info("数据库插入成功,  announcement_id: {}", newEntity.getId());
             return newEntity;
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("数据库插入公告异常, 标题:{}, 异常:{}", request.getTitle(), e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_OPERATION_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
@@ -143,7 +150,7 @@ public class AnnouncementManager {
                     .id(id)
                     .title(request.getTitle())
                     .content(request.getContent())
-                    .type(Announcement.AnnouncementType.fromCode(request.getType()))
+                    .type(AnnouncementTypeEnum.fromCode(request.getType()))
                     .attribute(convertAttributeToString(request.getAttribute()))
                     .sticky(request.getSticky())
                     .build();
@@ -156,9 +163,11 @@ public class AnnouncementManager {
             response.setAnnounceId(id);
 
             return response;
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("数据库修改公告失败, id:{}, 异常: {}", request.getId(), e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_OPERATION_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
@@ -168,7 +177,8 @@ public class AnnouncementManager {
      * update_uid 和 updated_at 由 AutoFillHandler 自动填充
      */
     @Transactional(rollbackFor = Exception.class)
-    public AnnouncementOperationResponse editAllFields(Long id, EditAnnouncementRequest request) {
+    public AnnouncementOperationResponse editAllFields(Long id, EditAnnouncementRequest request,
+            ZonedDateTime publishedAt) {
         log.info("Manager层执行所有字段更新操作, ID: {}, 标题: {}", id, request.getTitle());
 
         try {
@@ -178,9 +188,10 @@ public class AnnouncementManager {
                     .id(id)
                     .title(request.getTitle())
                     .content(request.getContent())
-                    .type(Announcement.AnnouncementType.fromCode(request.getType()))
-                    .status(Announcement.AnnouncementStatus.fromCode(request.getStatus()))
+                    .type(AnnouncementTypeEnum.fromCode(request.getType()))
+                    .status(AnnouncementStatusEnum.fromCode(request.getStatus()))
                     .scheduledAt(request.getScheduledAt())
+                    .publishedAt(publishedAt)
                     .attribute(convertAttributeToString(request.getAttribute()))
                     .sticky(request.getSticky() != null ? request.getSticky() : false)
                     .build();
@@ -193,9 +204,11 @@ public class AnnouncementManager {
             response.setAnnounceId(id);
 
             return response;
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("数据库修改公告失败, id:{}, 异常: {}", request.getId(), e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_OPERATION_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
@@ -216,9 +229,11 @@ public class AnnouncementManager {
             response.setAnnounceId(id);
 
             return response;
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("数据库删除公告失败, id:{}, 异常: {}", id, e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_OPERATION_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
@@ -229,8 +244,10 @@ public class AnnouncementManager {
     public boolean checkTitleDuplicate(String title) {
         try {
             return announcementMapper.exists(new LambdaQueryWrapper<Announcement>()
-                    .eq(Announcement::getTitle, title)
+                    .eq(Announcement::getTitle, safeFilterTitle(title))
                     .eq(Announcement::getDeleted, false));
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("标题查重失败, 标题: {}, 异常: {}", title, e);
             throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
@@ -244,9 +261,11 @@ public class AnnouncementManager {
     public boolean checkTitleDuplicate(String title, Long excludeId) {
         try {
             return announcementMapper.exists(new LambdaQueryWrapper<Announcement>()
-                    .eq(Announcement::getTitle, title)
+                    .eq(Announcement::getTitle, safeFilterTitle(title))
                     .ne(Announcement::getId, excludeId)
                     .eq(Announcement::getDeleted, false));
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("标题查重失败, 标题: {}, 异常: {}", title, e);
             throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
@@ -265,9 +284,10 @@ public class AnnouncementManager {
             if (attribute instanceof String) {
                 return (String) attribute;
             }
-            // 对于其他类型, 可以转换为JSON字符串
-            // 这里先简单返回toString(), 如果需要完整的JSON序列化可以使用Jackson
+            // 对于其他类型, 转换为JSON字符串, 这里先简单返回toString()
             return attribute.toString();
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.warn("attribute转为json失败: 原文: {} 错误: {}", attribute, e);
             throw new IllegalArgumentException(ExceptionEnum.JSON_PARSE_ERROR.getErrorMsg(), e);
@@ -285,6 +305,8 @@ public class AnnouncementManager {
             return !announcementMapper.exists(new LambdaQueryWrapper<Announcement>()
                     .eq(Announcement::getId, id)
                     .eq(Announcement::getDeleted, false));
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.warn("确定存在失败: {}", e.getMessage(), e);
             throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
@@ -302,6 +324,8 @@ public class AnnouncementManager {
             return announcementMapper.selectOne(new LambdaQueryWrapper<Announcement>()
                     .eq(Announcement::getId, id)
                     .eq(Announcement::getDeleted, false));
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.warn("获取失败: id: {},{}", id, e);
             throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
@@ -325,13 +349,8 @@ public class AnnouncementManager {
             response.setId(id);
             response.setTitle(raw.getTitle());
             response.setContent(raw.getContent());
-            response.setType(raw.getType().getCode());
-            // 设置状态码为枚举的code值
-            if (raw.getStatus() != null) {
-                response.setStatus(raw.getStatus().getCode());
-            } else {
-                response.setStatus(0);
-            }
+            response.setType(raw.getType());
+            response.setStatus(raw.getStatus());
             response.setCreator(cacheUtil.getUsernameById(raw.getCreateUid()));
             response.setUpdator(cacheUtil.getUsernameById(raw.getUpdateUid()));
 
@@ -344,11 +363,10 @@ public class AnnouncementManager {
 
             return response;
         } catch (IllegalArgumentException e) {
-            // 业务校验异常直接抛出，交给Service层处理
             throw e;
         } catch (Exception e) {
             log.warn("Manager-公告转基本内容失败: {}", e.getMessage(), e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_DETAIL_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
 
     }
@@ -366,8 +384,8 @@ public class AnnouncementManager {
 
             if (raw == null) {
                 throw new IllegalArgumentException("公告不存在或已被删除");
-            } else if (raw.getStatus() != AnnouncementStatus.PUBLISHED
-                    && (raw.getStatus() != AnnouncementStatus.SCHEDULED
+            } else if (raw.getStatus() != AnnouncementStatusEnum.PUBLISHED
+                    && (raw.getStatus() != AnnouncementStatusEnum.SCHEDULED
                             && (raw.getScheduledAt() == null || raw.getScheduledAt().isBefore(ZonedDateTime.now())))) {
                 throw new IllegalArgumentException("公告状态异常");
             }
@@ -377,7 +395,7 @@ public class AnnouncementManager {
             response.setId(id);
             response.setTitle(raw.getTitle());
             response.setContent(raw.getContent());
-            response.setType(raw.getType().getCode());
+            response.setType(raw.getType());
             response.setSticky(raw.getSticky());
 
             // 填充用户信息
@@ -390,11 +408,10 @@ public class AnnouncementManager {
 
             return response;
         } catch (IllegalArgumentException e) {
-            // 业务校验异常直接抛出，交给Service层处理
             throw e;
         } catch (Exception e) {
             log.warn("Manager-公告转基本内容失败: {}", e.getMessage(), e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_DETAIL_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
@@ -405,195 +422,85 @@ public class AnnouncementManager {
     private CacheUtil cacheUtil;
 
     /**
-     * 分页查询公告列表（用户版本）
-     * 用户查询需要特殊的排序逻辑（置顶优先）, 暂时保留专用方法
+     * 通用分页查询结果包装类
      */
-    public ListAnnouncementTinyResponse userListAnnouncements(
+    public static class PageResult<T> {
+        private List<T> items;
+        private Long total;
+
+        public PageResult(List<T> items, Long total) {
+            this.items = items;
+            this.total = total;
+        }
+
+        public List<T> getItems() {
+            return items;
+        }
+
+        public Long getTotal() {
+            return total;
+        }
+    }
+
+    /**
+     * 用户分页查询公告 - 只返回实体数据
+     */
+    public PageResult<Announcement> findUserAnnouncementsWithPaging(
             UserQueryAnnouncementRequest request) {
 
-        log.debug(
-                "Manager层查询公告列表, 页码: {}, 类型: {}",
-                request.getPage(),
-                request.getType());
+        log.debug("Manager层用户查询公告列表, 页码: {}, 类型: {}",
+                request.getPage(), request.getType());
+
         try {
             // 计算分页参数
             int page = request.getPage() != null ? request.getPage() : 1;
-            int size = request.getSize() != null ? request.getSize() : 8;
+            int size = request.getPageSize() != null ? request.getPageSize() : 8;
             int offset = (page - 1) * size;
 
-            // 用户查询需要特殊排序（置顶优先）, 使用专用 Mapper 方法
-            List<Announcement> announcements = announcementMapper.findAnnouncementsForUser(
-                    request.getType(),
-                    offset,
-                    size);
+            // 查询数据和总数
+            List<Announcement> announcements = findUserAnnouncements(
+                    request.getType(), offset, size, request.getKeywords());
+            Long totalCount = countUserAnnouncements(request.getType(), request.getKeywords());
 
-            // 查询总数
-            Long totalCount = announcementMapper.countAnnouncementsForUser(
-                    request.getType());
-
-            // 【批量优化】1. 收集所有需要的用户ID
-            Set<Long> userIds = announcements.stream()
-                    .flatMap(announcement -> Stream.of(
-                            announcement.getCreateUid(),
-                            announcement.getUpdateUid()))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-
-            // 【批量优化】2. 批量获取用户昵称
-            Map<Long, String> nicknameMap = cacheUtil.getUsernamesByIds(userIds);
-
-            // 【批量优化】3. 转换为响应对象（使用批量查询的结果）
-            List<ListAnnouncementTinyResponse.AnnouncementItemResponse> itemList = announcements.stream()
-                    .map(announcement -> convertToUserAnnouncementItemBatch(announcement, nicknameMap))
-                    .toList();
-
-            ListAnnouncementTinyResponse response = new ListAnnouncementTinyResponse();
-            response.setTotal(totalCount.intValue());
-            response.setPage(page);
-            response.setPageSize(size);
-            response.setList(itemList);
-
-            log.debug("查询公告列表成功, 总数: {}, 当前页数据: {}", totalCount, itemList.size());
-            return response;
-        } catch (Exception e) {
-            log.error("分页查询公告列表失败, request: {}, 异常: {}", request, e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_LIST_QUERY_ERROR);
-        }
-    }
-
-    /**
-     * 将 Announcement 实体转换为用户版 AnnouncementItemResponse(批量优化版)
-     */
-    private ListAnnouncementTinyResponse.AnnouncementItemResponse convertToUserAnnouncementItemBatch(
-            Announcement announcement, Map<Long, String> nicknameMap) {
-
-        try {
-            ListAnnouncementTinyResponse.AnnouncementItemResponse item = new ListAnnouncementTinyResponse.AnnouncementItemResponse();
-            item.setId(announcement.getId());
-            item.setTitle(announcement.getTitle());
-            item.setType(announcement.getType().getCode());
-            item.setSticky(announcement.getSticky());
-
-            // 【批量优化】设置用户名
-            item.setCreator(nicknameMap.get(announcement.getCreateUid()));
-            item.setUpdator(nicknameMap.get(announcement.getUpdateUid()));
-
-            // 格式化时间
-            // item.setCreatedAt(formatToIso8601(announcement.getCreatedAt()));
-            item.setUpdatedAt(formatToIso8601(announcement.getUpdatedAt()));
-
-            return item;
+            return new PageResult<>(announcements, totalCount);
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            log.error("用户版实体到列表失败, 异常: {}", e.getMessage(), e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_LIST_QUERY_ERROR);
+            log.error("用户分页查询公告失败, request: {}, 异常: {}", request, e);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
     /**
-     * 管理员查询公告列表
-     * 支持三种状态筛选（草稿、已发布、待发布）+ 升序/降序排序 + 已删除数据查询
-     * 使用 QueryWrapper 动态构建查询条件, 替代多个固定的 Mapper 方法
+     * 管理员分页查询公告 - 只返回实体数据
      */
-    public ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request) {
-        log.debug("Manager层管理员查询公告列表, 页码: {}, 状态: {}, 类型: {}, 排序方向: {}, 查询已删除: {}",
-                request.getPage(), request.getStatus(), request.getType(), request.orderType(), request.getDeleted());
+    public PageResult<Announcement> findAdminAnnouncementsWithPaging(
+            AdminQueryAnnouncementRequest request) {
+
+        log.debug("Manager层管理员查询公告列表, 页码: {}, 状态: {}, 类型: {}",
+                request.getPage(), request.getStatus(), request.getType());
 
         try {
             // 计算分页参数
             int page = request.getPage() != null ? request.getPage() : 1;
-            int size = request.getSize() != null ? request.getSize() : 8;
+            int size = request.getPageSize() != null ? request.getPageSize() : 8;
             int offset = (page - 1) * size;
-            int orderType = request.orderType();
-            // 已有默认值处理
+            boolean isDesc = request.orderType() == 1;
             boolean includeDeleted = request.getDeleted() != null ? request.getDeleted() : false;
 
-            // 使用 QueryWrapper 构建动态查询条件
-            List<Announcement> announcements = findAnnouncementsWithConditions(
-                    request.getStatus(),
-                    request.getType(),
-                    includeDeleted,
-                    getOrderFieldByStatus(request.getStatus()),
-                    orderType == 1,
-                    // true=降序, false=升序
-                    offset,
-                    size,
-                    request.getKeyword());
-            // DTO里是keywords, 毕竟查询的是标题里的keywords
+            // 查询数据和总数
+            List<Announcement> announcements = findAdminAnnouncements(
+                    request.getStatus(), request.getType(), includeDeleted,
+                    isDesc, request.getKeywords(), offset, size);
+            Long totalCount = countAdminAnnouncements(
+                    request.getStatus(), request.getType(), includeDeleted, request.getKeywords());
 
-            // 查询总数
-            Long totalCount = countAnnouncementsWithConditions(
-                    request.getStatus(),
-                    request.getType(),
-                    includeDeleted,
-                    request.getKeyword());
-
-            // 【批量优化】收集用户ID并批量查询
-            Set<Long> userIds = announcements.stream()
-                    .flatMap(announcement -> Stream.of(
-                            announcement.getCreateUid(),
-                            announcement.getUpdateUid()))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-
-            Map<Long, String> nicknameMap = cacheUtil.getUsernamesByIds(userIds);
-
-            // 转换为响应对象（管理员版本, 包含完整字段）
-            List<ListAnnouncementResponse.AnnouncementItemResponse> itemList = announcements.stream()
-                    .map(announcement -> convertToAdminAnnouncementItemBatch(announcement, nicknameMap))
-                    .toList();
-
-            // 构建响应
-            ListAnnouncementResponse response = new ListAnnouncementResponse();
-            response.setTotal(totalCount.intValue());
-            response.setPage(page);
-            response.setPageSize(size);
-            response.setList(itemList);
-
-            log.info("管理员查询公告列表完成, 总数: {}, 当前页数据: {}", totalCount, itemList.size());
-            return response;
-        } catch (Exception e) {
-            log.error("管理员查询公告列表失败, request: {}, 异常: {}", request, e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_LIST_QUERY_ERROR);
-        }
-    }
-
-    /**
-     * 将 Announcement 实体转换为管理员版 AnnouncementItemResponse
-     * 包含所有字段, 包括 status, created_at, scheduled_at 等管理员需要的信息
-     */
-    private ListAnnouncementResponse.AnnouncementItemResponse convertToAdminAnnouncementItemBatch(
-            Announcement announcement, Map<Long, String> nicknameMap) {
-        try {
-            ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
-
-            item.setId(announcement.getId());
-            item.setTitle(announcement.getTitle());
-            item.setType(announcement.getType().getCode());
-            item.setStatus(announcement.getStatus().getCode());
-
-            item.setSticky(announcement.getSticky());
-
-            // 【批量优化】从Map获取用户昵称
-            item.setCreator(nicknameMap.get(announcement.getCreateUid()));
-            item.setUpdator(nicknameMap.get(announcement.getUpdateUid()));
-
-            // 格式化时间 - 管理员版包含完整时间信息
-            item.setCreatedAt(formatToIso8601(announcement.getCreatedAt()));
-            item.setUpdatedAt(formatToIso8601(announcement.getUpdatedAt()));
-
-            // 预定发布时间 - 可能为null
-            if (announcement.getScheduledAt() != null) {
-                item.setScheduledAt(formatZonedDateTimeToIso8601(announcement.getScheduledAt()));
-            }
-
-            return item;
+            return new PageResult<>(announcements, totalCount);
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            log.error("全部实体到列表失败, 异常: {}", e.getMessage(), e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_LIST_QUERY_ERROR);
+            log.error("管理员分页查询公告失败, request: {}, 异常: {}", request, e);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
@@ -612,6 +519,8 @@ public class AnnouncementManager {
                     .ne(Announcement::getId, excludeId)
                     .eq(Announcement::getDeleted, false));
             return count >= 3;
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("检查置顶公告失败, 异常: {}", e.getMessage(), e);
             throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
@@ -631,6 +540,8 @@ public class AnnouncementManager {
                     .eq(Announcement::getSticky, true)
                     .eq(Announcement::getDeleted, false));
             return count < 3;
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("检查置顶公告失败, 异常: {}", e.getMessage(), e);
             throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
@@ -652,7 +563,7 @@ public class AnnouncementManager {
             int result = announcementMapper.updateById(updateEntity);
 
             if (result <= 0) {
-                throw new ForumServiceException("数据库更新失败, 数据库或公告状态异常");
+                throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
             }
 
             log.info("置顶状态更新成功, ID: {}, sticky: {}", id, isSticky);
@@ -661,9 +572,11 @@ public class AnnouncementManager {
             response.setAnnounceId(id);
 
             return response;
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("数据库更新公告置顶状态失败, id:{}, 异常: {}", id, e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_OPERATION_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
@@ -683,6 +596,7 @@ public class AnnouncementManager {
                             .eq(Announcement::getStatus, 2)
                             // 预定时间 <= 当前时间
                             .le(Announcement::getScheduledAt, currentTime)
+                            // 是否包括被删除的
                             .eq(Announcement::getDeleted, false)
                             // 按预定时间升序
                             .orderByAsc(Announcement::getScheduledAt));
@@ -693,7 +607,7 @@ public class AnnouncementManager {
             throw e;
         } catch (Exception e) {
             log.error("查询到期待发布公告失败, 异常: {}", e.getMessage(), e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_LIST_QUERY_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
@@ -731,107 +645,187 @@ public class AnnouncementManager {
             }
             log.info("批量发布完成, 成功: {}个, 失败: {}个", successCount, failCount);
             return successCount;
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("批量发布到期公告异常, ID列表: {}, 异常: {}", announcementIds, e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_OPERATION_ERROR);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
     /**
-     * 通用查询方法 - 使用 QueryWrapper 动态构建条件
-     * 替代 Mapper 中的多个固定查询方法
+     * 通用查询条件构建器
      * 
-     * @param status         公告状态（可选）
-     * @param type           公告类型（可选筛选）
-     * @param includeDeleted 是否包含已删除数据
-     * @param orderField     排序字段
-     * @param isDesc         是否降序
-     * @param offset         分页偏移量
-     * @param limit          每页记录数
-     * @return 符合条件的公告列表
+     * @param isAdmin        是否为管理员查询
+     * @param status         状态筛选（管理员专用）
+     * @param type           类型筛选
+     * @param includeDeleted 是否包含已删除（管理员专用）
+     * @param keywords       关键词搜索
      */
-    public List<Announcement> findAnnouncementsWithConditions(
-            Integer status,
-            Integer type,
-            Boolean includeDeleted,
-            String orderField,
-            Boolean isDesc,
-            Integer offset,
-            Integer limit,
-            String title) {
+    private LambdaQueryWrapper<Announcement> buildQueryConditions(boolean isAdmin, String status, String type,
+            Boolean includeDeleted, String keywords) {
+        LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
 
-        log.debug("使用 QueryWrapper 查询公告, 状态: {}, 类型: {}, 包含删除: {}, 排序: {} {}",
-                status, type, includeDeleted, orderField, isDesc ? "DESC" : "ASC");
+        if (isAdmin) {
+            // 管理员查询条件
+            queryWrapper
+                    .eq(status != null && !"all".equals(status), Announcement::getStatus, status)
+                    .eq(type != null && !"all".equals(type), Announcement::getType, type)
+                    .like(StringUtils.isNotBlank(keywords), Announcement::getTitle, keywords)
+                    .eq(!Boolean.TRUE.equals(includeDeleted), Announcement::getDeleted, false);
+        } else {
+            // 用户查询条件
+            queryWrapper.eq(Announcement::getDeleted, false);
+
+            // 状态条件：已发布 OR (定时发布且时间已到)
+            queryWrapper.and(wrapper -> wrapper
+                    .eq(Announcement::getStatus, "published")
+                    .or(subWrapper -> subWrapper
+                            .eq(Announcement::getStatus, "scheduled")
+                            .le(Announcement::getScheduledAt, LocalDateTime.now())));
+
+            // 类型筛选（可选）
+            queryWrapper.eq(type != null && !"all".equals(type), Announcement::getType, type);
+            // 关键词筛选（可选）
+            queryWrapper.like(StringUtils.isNotBlank(keywords), Announcement::getTitle, keywords);
+        }
+
+        return queryWrapper;
+    }
+
+    /**
+     * 通用分页查询模板
+     * 
+     * @param isAdmin        是否为管理员查询
+     * @param status         状态筛选
+     * @param type           类型筛选
+     * @param includeDeleted 是否包含已删除
+     * @param keywords       关键词搜索
+     * @param isDesc         是否降序(默认状态: 最近的在最上面)
+     * @param offset         偏移量
+     * @param limit          限制数量
+     */
+    private List<Announcement> queryAnnouncements(boolean isAdmin, String status, String type,
+            Boolean includeDeleted, String keywords, Boolean isDesc, Integer offset, Integer limit) {
 
         try {
-            LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
+            LambdaQueryWrapper<Announcement> queryWrapper = buildQueryConditions(isAdmin, status, type, includeDeleted,
+                    keywords);
 
-            // 动态添加查询条件
-            queryWrapper
-                    .eq(status != null && status != 3, Announcement::getStatus, status)
-                    .eq(type != null && type != 3, Announcement::getType, type)
-                    .like(StringUtils.isNotBlank(title), Announcement::getTitle, title)
-                    .eq(!Boolean.TRUE.equals(includeDeleted), Announcement::getDeleted, false);
-
-            // 动态排序 - 根据状态选择不同的排序字段
-            if ("scheduled_at".equals(orderField)) {
-                queryWrapper.orderBy(true, !isDesc, Announcement::getScheduledAt);
+            if (isAdmin) {
+                // 管理员排序：根据状态选择不同的排序字段
+                if (AnnouncementStatusEnum.SCHEDULED.getCode().equals(status)) {
+                    queryWrapper.orderByDesc(Announcement::getSticky);
+                    queryWrapper.orderBy(true, isDesc, Announcement::getScheduledAt);
+                } else if (AnnouncementStatusEnum.PUBLISHED.getCode().equals(status)) {
+                    queryWrapper.orderByDesc(Announcement::getSticky);
+                    queryWrapper.orderBy(true, isDesc, Announcement::getPublishedAt);
+                } else {
+                    queryWrapper.orderBy(true, isDesc, Announcement::getUpdatedAt);
+                }
             } else {
-                // 默认按 updated_at 排序
-                queryWrapper.orderBy(true, !isDesc, Announcement::getUpdatedAt);
+                // 用户排序：按发布时间升序
+                queryWrapper.orderByAsc(Announcement::getPublishedAt);
             }
 
-            // 分页处理 - 使用 MyBatis-Plus 的 last() 方法
+            // 分页
             queryWrapper.last("LIMIT " + offset + ", " + limit);
 
             return announcementMapper.selectList(queryWrapper);
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("通用条件查询公告失败, status: {}, type: {}, 异常: {}", status, type, e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_LIST_QUERY_ERROR);
+            log.error("查询公告失败, isAdmin: {}, status: {}, type: {}, 异常: {}", isAdmin, status, type, e);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
     /**
-     * 通用计数方法 - 使用 QueryWrapper 动态构建条件
-     * 
-     * @param status         公告状态（可选，3=全部状态）
-     * @param type           公告类型（可选筛选）
-     * @param includeDeleted 是否包含已删除数据
-     * @param title          标题关键词（可选，模糊检索）
-     * @return 符合条件的公告总数
+     * 通用计数查询模板
      */
-    public Long countAnnouncementsWithConditions(Integer status, Integer type, Boolean includeDeleted, String title) {
+    private Long countAnnouncements(boolean isAdmin, String status, String type,
+            Boolean includeDeleted, String keywords) {
         try {
-            LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
-
-            // 动态添加查询条件 - 保持与列表查询完全一致
-            queryWrapper
-                    .eq(status != null && status != 3, Announcement::getStatus, status)
-                    .eq(type != null && type != 3, Announcement::getType, type)
-                    .eq(!Boolean.TRUE.equals(includeDeleted), Announcement::getDeleted, false)
-                    .like(StringUtils.isNotBlank(title), Announcement::getTitle, title);
-
+            LambdaQueryWrapper<Announcement> queryWrapper = buildQueryConditions(isAdmin, status, type, includeDeleted,
+                    keywords);
             return announcementMapper.selectCount(queryWrapper);
         } catch (Exception e) {
-            log.error("通用条件计数公告失败, status: {}, type: {}, title: {}, 异常: {}", status, type, title, e);
-            throw new ForumServiceException(ExceptionEnum.ANNOUNCEMENT_LIST_QUERY_ERROR);
+            log.error("统计公告失败, isAdmin: {}, status: {}, type: {}, 异常: {}", isAdmin, status, type, e);
+            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
 
     /**
-     * 根据公告状态获取对应的排序字段
-     * 
-     * @param status 公告状态
-     * @return 排序字段名
+     * 用户公告查询
      */
-    private String getOrderFieldByStatus(Integer status) {
-        if (status != null && status == 2) {
-            // 待发布状态按 scheduled_at 排序
-            return "scheduled_at";
-        }
-        // 其他状态（草稿、已发布）按 updated_at 排序
-        return "updated_at";
+    public List<Announcement> findUserAnnouncements(String type, Integer offset, Integer limit, String keywords) {
+        log.debug("用户查询公告, 类型: {}, offset: {}, limit: {}", type, offset, limit);
+        return queryAnnouncements(false, null, type, null, keywords, null, offset, limit);
     }
+
+    /**
+     * 用户公告计数
+     */
+    public Long countUserAnnouncements(String type, String keywords) {
+        log.debug("用户统计公告数量, 类型: {}", type);
+        return countAnnouncements(false, null, type, null, keywords);
+    }
+
+    /**
+     * 管理员公告查询
+     */
+    public List<Announcement> findAdminAnnouncements(String status, String type, Boolean includeDeleted,
+            Boolean isDesc, String keywords, Integer offset, Integer limit) {
+        log.debug("管理员查询公告, 状态: {}, 类型: {}, 包含删除: {}, 降序: {}, 关键词: {}",
+                status, type, includeDeleted, isDesc, keywords);
+        return queryAnnouncements(true, status, type, includeDeleted, keywords, isDesc, offset, limit);
+    }
+
+    /**
+     * 管理员公告计数
+     */
+    public Long countAdminAnnouncements(String status, String type, Boolean includeDeleted, String keywords) {
+        log.debug("管理员统计公告数量, 状态: {}, 类型: {}, 包含删除: {}, 关键词: {}", status, type, includeDeleted, keywords);
+        return countAnnouncements(true, status, type, includeDeleted, keywords);
+    }
+
+    /*
+     * 获取置顶公告
+     */
+    public List<Announcement> getStickyAnnouncements() {
+        log.debug("查询置顶公告");
+        try {
+            return new LambdaQueryChainWrapper<>(announcementMapper)
+                    .eq(Announcement::getSticky, true)
+                    .eq(Announcement::getDeleted, false)
+                    .orderByDesc(Announcement::getUpdatedAt)
+                    .last("LIMIT 3")
+                    .list();
+        } catch (Exception e) {
+            log.error("查询置顶公告失败: {}", e.getMessage(), e);
+            throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
+        }
+    }
+
+    /**
+     * 获取最近更新的3个未被置顶的公告
+     */
+    public List<Announcement> getRecentAnnouncements() {
+        log.debug("查询最近更新的3个未置顶公告");
+        try {
+            return new LambdaQueryChainWrapper<>(announcementMapper)
+                    .eq(Announcement::getSticky, false)
+                    .eq(Announcement::getDeleted, false)
+                    .orderByDesc(Announcement::getUpdatedAt)
+                    .last("LIMIT 3")
+                    .list();
+        } catch (Exception e) {
+            log.error("查询最近更新的公告失败: {}", e.getMessage(), e);
+            throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
+        }
+    }
+
+    // ====================以下部分为辅助方法====================//
 
     /**
      * 检查指定用户是否为公告的创建者
@@ -851,6 +845,8 @@ public class AnnouncementManager {
                 return false;
             }
             return userId.equals(announcement.getCreateUid());
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("检查公告创建者权限失败, 公告ID: {}, 用户ID: {}", announcementId, userId, e);
             return false;
@@ -875,6 +871,8 @@ public class AnnouncementManager {
                 return null;
             }
             return announcement.getCreateUid();
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("获取公告创建者ID失败, 公告ID: {}", announcementId, e);
             return null;

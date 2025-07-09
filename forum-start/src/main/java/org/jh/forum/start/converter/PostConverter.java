@@ -9,12 +9,10 @@ import org.jh.forum.common.dto.response.GetPostListElement;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.stereotype.Component;
 
 /**
  * @author SugarMGP
  */
-@Component
 @Mapper(componentModel = "spring", collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
 public interface PostConverter {
     default CategoryEnum map(String value) {

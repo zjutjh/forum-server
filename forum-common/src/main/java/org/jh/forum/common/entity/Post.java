@@ -2,6 +2,7 @@ package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.CategoryEnum;
 
 /**

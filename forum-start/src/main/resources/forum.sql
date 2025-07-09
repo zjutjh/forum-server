@@ -3,10 +3,11 @@ create table announcement (
         primary key,
     title       varchar(100)                        not null comment '公告标题',
     content     text                                not null comment '正文',
-    type        int                                 not null comment '公告类型（0系统公告、1学校公告）',
+    type        text                                 not null comment '公告类型（systematic、scholastic）',
     created_at  timestamp  default CURRENT_TIMESTAMP not null comment '发布时间',
     updated_at  timestamp                            not null on update CURRENT_TIMESTAMP comment '更新时间',
     scheduled_at timestamp                          null comment '定时发布时间，如果为空则立即发布',
+    publieshed_at timestamp                          null comment '实际发布时间',
     status int                                      not null comment '状态（0：草稿，1：已发布，2：待发布）',
     create_uid  int not                             not null comment '创建用户ID',
     update_uid  int not                             null comment '更新用户ID',
@@ -287,35 +288,3 @@ create table user_detail
     realname_visible boolean     default true not null comment '实名可见性'
 );
 
-create table user (
-    id int not null comment '用户ID' primary key,
-    nickname varchar(50) not null comment '用户昵称',
-    realname varchar(20) not null comment '真实姓名',
-    student_id varchar(12) not null comment '学号',
-    password varchar(255) not null comment '密码哈希',
-    college_id int not null comment '学院ID',
-    gender varchar(20) not null comment '性别(男,女,保密)',
-    phone varchar(20) default '' not null comment '手机号',
-    avatar varchar(255) default '' not null comment '头像地址',
-    upvote_notice boolean default true not null comment '点赞消息开关',
-    comment_notice boolean default true not null comment '评论消息开关',
-    role varchar(20) not null comment '用户角色',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '注册时间',
-    updated_at timestamp not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid int not null comment '创建用户',
-    update_uid int not null comment '更新用户',
-    deleted boolean not null comment '是否被删除',
-    attribute text null comment '属性列（json string）',
-    constraint uq_user unique (nickname, student_id, phone)
-);
-
-create table user_detail (
-    user_id int not null comment '用户ID' primary key,
-    signature varchar(20) default '' not null comment '个性签名',
-    profile varchar(50) default '' not null comment '个人简介',
-    email varchar(50) default '' not null comment '个人邮箱',
-    birthday date null comment '生日',
-    birthday_visible boolean default true not null comment '生日可见性',
-    college_visible boolean default true not null comment '学院可见性',
-    realname_visible boolean default true not null comment '实名可见性'
-);

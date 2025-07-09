@@ -2,9 +2,9 @@ package org.jh.forum.common.dto.request;
 
 import java.time.ZonedDateTime;
 
+import com.alibaba.nacos.shaded.javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -29,19 +29,28 @@ public class CreateAnnouncementRequest {
     @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...", requiredMode = Schema.RequiredMode.REQUIRED)
     private String content;
 
-    @Schema(description = "公告类型, 0系统1学校", example = "1", allowableValues = { "0", "1" })
-    private Integer type;
+    @NotBlank(message = "公告类型不能为空")
+    @Schema(description = "公告类型", allowableValues = { "systematic",
+            "scholastic" }, example = "systematic", defaultValue = "systematic", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String type;
 
+    @Nullable
     @JsonProperty("scheduled_at")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
-    @Schema(description = "定时发布时间(ISO8601格式, 前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00+08:00")
+    @Schema(description = "定时发布时间(ISO8601格式, 前端发送UTC+8本地时间)", example = "2025-06-07T09:00:00+08:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private ZonedDateTime scheduledAt;
 
-    @Schema(description = "状态：0草稿、1已发布、2待发布", example = "0", allowableValues = { "0", "1", "2" })
-    private Integer status;
-    @Schema(description = "附加属性", example = "{\"test\": \"test\"}")
+    @NotBlank(message = "必须指定公告状态")
+    @Schema(description = "状态: draft、published、scheduled", allowableValues = { "draft", "published",
+            "scheduled" }, example = "draft", defaultValue = "draft", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String status;
+
+    @Nullable
+    @Schema(description = "附加属性", example = "{\"test\": true}", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Object attribute;
 
-    @Schema(description = "是否置顶", example = "false", allowableValues = { "true", "false" })
+    @Nullable
+    @Schema(description = "是否置顶", allowableValues = { "true",
+            "false" }, example = "false", defaultValue = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Boolean sticky;
 }
