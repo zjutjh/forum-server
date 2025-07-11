@@ -109,13 +109,13 @@ public class CommentController {
             请求成功后，请前端自行减5（展开n条回复的n值）
             回复排序逻辑跟评论排序逻辑保持一致""")
     @GetMapping("/reply/list")
-    public AjaxResult<GetReplyListResponse> getReplyList(@RequestParam GetReplyListRequest request) {
+    public AjaxResult<BaseListResponse<ReplyElement>> getReplyList(@RequestParam GetReplyListRequest request) {
         List<ReplyElement> list = new ArrayList<>();
         List<ReplyListElementDTO> result = commentService.getReplyList(request);
         result.forEach(reply -> {
             list.add(commentConverter.toReplyListDTO(reply));
         });
-        GetReplyListResponse response = new GetReplyListResponse();
+        BaseListResponse<ReplyElement> response = new BaseListResponse<>();
         response.setList(list);
         return AjaxResult.success(response);
     }
@@ -140,7 +140,22 @@ public class CommentController {
             1. 根据时间顺序排列
             2. 已删除的评论/回复右侧为"恢复"按钮；未删除的评论/回复右侧为"删除"按钮""")
     @GetMapping("/admin/list")
-    public AjaxResult<BaseListResponse<CommentElement>> getCommentListForAdmin(@RequestParam GetCommentListAdminRequest request) {
+    public AjaxResult<GetCommentListAdminResponse> getAdminCommentList(@Valid GetCommentListAdminRequest request) {
+        List<CommentListElementDTO> result = commentService.getAdminCommentList(request);
+        List<CommentElement> list = new ArrayList<>();
+        result.forEach(comment -> {
+            list.add(commentConverter.toCommentListDTO(comment));
+        });
+        GetCommentListAdminResponse response = new GetCommentListAdminResponse();
+        response.setList(list);
+        return AjaxResult.success(response);
+    }
+
+    @Operation(summary = "管理员获取回复列表", description = """
+            1. 根据时间顺序排列
+            2. 每次请求获取10条回复信息""")
+    @PostMapping("/admin/reply")
+    public AjaxResult<BaseListResponse<ReplyElement>> getAdminReplyList(@RequestBody GetReplyListAdminRequest request) {
         return AjaxResult.success(null);
     }
 

@@ -196,7 +196,7 @@ public class CommentManager {
                         .eq(Comment::getParentId, 0)
                         .eq(Comment::getIsPinned, true)
                         .eq(Comment::getDeleted, false)
-                        .orderByDesc(Comment::getUpdatedAt)
+                        .orderByDesc(Comment::getCreatedAt)
         );
 
         // 根据排序规则查询非置顶评论
@@ -292,6 +292,31 @@ public class CommentManager {
         return result;
     }
 
+    public List<CommentListElementDTO> getAdminCommentList(Long postId, Integer status, Integer page, Integer pageSize) {
+        // 根据状态筛选评论
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getPostId, postId)
+                .eq(Comment::getParentId, 0)
+                .orderByDesc(Comment::getCreatedAt);
+        if (status == 2) {
+            wrapper.eq(Comment::getDeleted, true);
+        } else if (status == 3) {
+            wrapper.eq(Comment::getDeleted, false);
+        }
+
+        Page<Comment> commentPage = new Page<>(page, pageSize);
+        Page<Comment> resultPage = commentMapper.selectPage(commentPage, wrapper);
+
+        List<Comment> comments = resultPage.getRecords();
+
+        List<CommentListElementDTO> result = new ArrayList<>();
+        for (Comment comment : comments) {
+            result.add(convertCommentToElementByAdmin(comment, status));
+        }
+        return result;
+    }
+
+
     public CommentListElementDTO convertCommentToElement(Comment comment, ReplyListElementDTO reply) {
         User user = userMapper.selectById(comment.getUserId());
         UserInfoDTO userInfo = user == null ? null : UserInfoDTO.builder()
@@ -361,6 +386,49 @@ public class CommentManager {
                 .replyCount(reply.getReplyCount())
                 .targetUserId(targetUser != null ? targetUser.getId() : null)
                 .targetNickname(targetUser != null ? targetUser.getNickname() : "")
+                .build();
+    }
+
+    public CommentListElementDTO convertCommentToElementByAdmin(Comment comment, Integer status) {
+        User user = userMapper.selectById(comment.getUserId());
+        UserInfoDTO userInfo = user == null ? null : UserInfoDTO.builder()
+                .id(user.getId())
+                .nickname(user.getNickname())
+                .avatar(user.getAvatar())
+                .build();
+        String attachmentUrl = getAttachmentUrl(comment.getId());
+
+        Post post = postMapper.selectById(comment.getPostId());
+        boolean isAuthor = post != null && user != null && post.getUserId().equals(user.getId());
+
+        List<ReplyListElementDTO> replies = new ArrayList<>();
+        LambdaQueryWrapper<Comment> replyWrapper = new LambdaQueryWrapper<>();
+        replyWrapper.eq(Comment::getParentId, comment.getId())
+                .orderByDesc(Comment::getCreatedAt)
+                .last("limit 5");
+        if (status == 2) {
+            replyWrapper.eq(Comment::getDeleted, true);
+        } else if (status == 3) {
+            replyWrapper.eq(Comment::getDeleted, false);
+        }
+
+        List<Comment> replyList = commentMapper.selectList(replyWrapper);
+        for (Comment reply : replyList) {
+            replies.add(convertReplyToElement(reply));
+        }
+
+        return CommentListElementDTO.builder()
+                .commentId(comment.getId())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .isPinned(comment.getIsPinned())
+                .isDeleted(comment.getDeleted())
+                .upvoteCount(comment.getUpvoteCount())
+                .replyCount(comment.getReplyCount())
+                .userInfo(userInfo)
+                .isAuthor(isAuthor)
+                .attachmentUrl(attachmentUrl)
+                .replies(replies)
                 .build();
     }
 
