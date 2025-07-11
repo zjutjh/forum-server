@@ -335,7 +335,21 @@ public class CommentManager {
         }
         return result;
     }
-    
+
+    public void adminChangeCommentStatus(Long commentId, Integer status) {
+        if (status == 1) {
+            commentMapper.deleteById(commentId);
+        }
+        Comment comment = commentMapper.selectOne(
+                new LambdaQueryWrapper<Comment>()
+                        .eq(Comment::getId, commentId)
+                        .eq(Comment::getDeleted, true)
+                        .last("limit 1")
+        );
+        comment.setDeleted(false);
+        commentMapper.updateById(comment);
+    }
+
     public CommentListElementDTO convertCommentToElement(Comment comment, ReplyListElementDTO reply) {
         User user = userMapper.selectById(comment.getUserId());
         UserInfoDTO userInfo = user == null ? null : UserInfoDTO.builder()

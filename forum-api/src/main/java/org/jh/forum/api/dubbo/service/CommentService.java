@@ -30,4 +30,6 @@ public interface CommentService {
     List<CommentListElementDTO> getAdminCommentList(GetCommentListAdminRequest request);
 
     List<ReplyListElementDTO> getAdminReplyList(GetReplyListAdminRequest request);
+
+    void adminChangeCommentStatus(ChangeCommentStatusRequest request);
 }

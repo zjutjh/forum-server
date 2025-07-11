@@ -168,7 +168,12 @@ public class CommentController {
 
     @Operation(summary = "管理员删除/恢复评论")
     @PostMapping("/admin/status")
-    public AjaxResult<Void> changeCommentStatus(@RequestBody ChangeCommentStatusRequest request) {
-        return AjaxResult.success(null);
+    public AjaxResult<Boolean> adminChangeCommentStatus(@RequestBody ChangeCommentStatusRequest request) {
+        try {
+            commentService.adminChangeCommentStatus(request);
+        } catch (ForumServiceException e) {
+            throw new ApiException(e);
+        }
+        return AjaxResult.success();
     }
 }

@@ -96,4 +96,9 @@ public class CommentServerImpl implements CommentService {
     public List<ReplyListElementDTO> getAdminReplyList(GetReplyListAdminRequest request) {
         return commentManager.getAdminReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getStatus());
     }
+
+    @Override
+    public void adminChangeCommentStatus(ChangeCommentStatusRequest request) {
+        commentManager.adminChangeCommentStatus(request.getCommentId(), request.getStatus());
+    }
 }
