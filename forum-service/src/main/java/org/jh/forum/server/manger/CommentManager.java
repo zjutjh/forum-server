@@ -316,7 +316,26 @@ public class CommentManager {
         return result;
     }
 
+    public List<ReplyListElementDTO> getAdminReplyList(Long commentId, Integer page, Integer pageSize, Integer status) {
+        Page<Comment> pageParam = new Page<>(page, pageSize);
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getParentId, commentId)
+                .orderByDesc(Comment::getCreatedAt);
+        if (status == 2) {
+            wrapper.eq(Comment::getDeleted, true);
+        } else if (status == 3) {
+            wrapper.eq(Comment::getDeleted, false);
+        }
 
+        List<Comment> replies = commentMapper.selectPage(pageParam, wrapper).getRecords();
+
+        List<ReplyListElementDTO> result = new ArrayList<>();
+        for (Comment reply : replies) {
+            result.add(convertReplyToElement(reply));
+        }
+        return result;
+    }
+    
     public CommentListElementDTO convertCommentToElement(Comment comment, ReplyListElementDTO reply) {
         User user = userMapper.selectById(comment.getUserId());
         UserInfoDTO userInfo = user == null ? null : UserInfoDTO.builder()

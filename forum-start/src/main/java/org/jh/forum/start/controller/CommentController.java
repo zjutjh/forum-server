@@ -156,7 +156,14 @@ public class CommentController {
             2. 每次请求获取10条回复信息""")
     @PostMapping("/admin/reply")
     public AjaxResult<BaseListResponse<ReplyElement>> getAdminReplyList(@RequestBody GetReplyListAdminRequest request) {
-        return AjaxResult.success(null);
+        List<ReplyElement> list = new ArrayList<>();
+        List<ReplyListElementDTO> result = commentService.getAdminReplyList(request);
+        result.forEach(reply -> {
+            list.add(commentConverter.toReplyListDTO(reply));
+        });
+        BaseListResponse<ReplyElement> response = new BaseListResponse<>();
+        response.setList(list);
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "管理员删除/恢复评论")

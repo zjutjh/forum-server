@@ -28,4 +28,6 @@ public interface CommentService {
     List<MyCommentElementDTO> getMyCommentList();
 
     List<CommentListElementDTO> getAdminCommentList(GetCommentListAdminRequest request);
+
+    List<ReplyListElementDTO> getAdminReplyList(GetReplyListAdminRequest request);
 }
