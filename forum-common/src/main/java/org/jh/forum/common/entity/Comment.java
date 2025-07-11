@@ -25,4 +25,8 @@ public class Comment extends BaseEntity {
     private String content;
 
     private Boolean isPinned;
+
+    private Integer upvoteCount;
+    
+    private Integer replyCount;
 }

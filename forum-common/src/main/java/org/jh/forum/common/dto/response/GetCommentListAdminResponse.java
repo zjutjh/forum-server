@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class GetCommentListAdminResponse extends BaseListResponse<CommentResponse>{
+public class GetCommentListAdminResponse extends BaseListResponse<CommentElement> {
 }

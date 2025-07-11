@@ -48,20 +48,22 @@ create table college
 
 create table comment
 (
-    id         bigint                              not null comment '评论ID'
+    id           bigint                              not null comment '评论ID'
         primary key,
-    user_id    bigint                              not null comment '用户ID',
-    post_id    bigint                              not null comment '帖子ID',
-    parent_id  bigint                              null comment '父评论ID',
-    target_id  bigint                              null comment '回复对象ID',
-    content    varchar(500)                        not null comment '评论内容',
-    is_pinned  boolean                             not null comment '是否被置顶',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    user_id      bigint                              not null comment '用户ID',
+    post_id      bigint                              not null comment '帖子ID',
+    parent_id    bigint                              null comment '父评论ID',
+    target_id    bigint                              null comment '回复对象ID',
+    content      varchar(500)                        not null comment '评论内容',
+    is_pinned    boolean                             not null comment '是否被置顶',
+    upvote_count int       DEFAULT 0                 NOT NULL COMMENT '点赞数',
+    reply_count  int       DEFAULT 0                 NOT NULL COMMENT '回复数',
+    created_at   timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at   timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid   bigint                              not null comment '创建用户',
+    update_uid   bigint                              not null comment '更新用户',
+    deleted      boolean                             not null comment '是否被删除',
+    attribute    text                                null comment '属性列（json string）'
 );
 
 create table faq

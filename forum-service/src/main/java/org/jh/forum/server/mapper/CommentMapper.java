@@ -14,6 +14,7 @@ import java.util.List;
  * @Entity org.jh.forum.common.entity.Comment
  */
 public interface CommentMapper extends BaseMapper<Comment> {
+    // 查询楼中楼的所有子评论ID
     @Select("""
                 WITH RECURSIVE comment_tree AS (
                     SELECT #{targetId} AS id

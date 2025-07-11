@@ -4,14 +4,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.service.CommentService;
+import org.jh.forum.common.dto.CommentListElementDTO;
+import org.jh.forum.common.dto.ReplyListElementDTO;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.start.converter.CommentConverter;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author qianqianzyk
@@ -23,6 +29,9 @@ import jakarta.annotation.Resource;
 public class CommentController {
     @Resource
     private CommentService commentService;
+
+    @Resource
+    private CommentConverter commentConverter;
 
     @Operation(summary = "发布评论/回复")
     @PostMapping("/publish")
@@ -80,8 +89,17 @@ public class CommentController {
             获取时默认每个评论下方展示`一条`该层内`热度最高`的回复
             展开n条评论(n：获取该条评论下方的分级评论条数)""")
     @GetMapping("/list")
-    public AjaxResult<GetCommentListResponse> getCommentList(@RequestParam GetCommentListRequest request) {
-        return AjaxResult.success(null);
+    public AjaxResult<GetCommentListResponse> getCommentList(@Valid GetCommentListRequest request) {
+        List<CommentElement> list = new ArrayList<>();
+        List<CommentListElementDTO> result = commentService.getCommentList(request);
+        result.forEach(comment -> {
+            list.add(commentConverter.toCommentListDTO(comment));
+        });
+        CommentListElementDTO highlight = commentService.getHighlightCommentElement(request);
+        GetCommentListResponse response = new GetCommentListResponse();
+        response.setList(list);
+        response.setHighlightComment(commentConverter.toCommentListDTO(highlight));
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "获取回复", description = """
@@ -91,7 +109,14 @@ public class CommentController {
             回复排序逻辑跟评论排序逻辑保持一致""")
     @GetMapping("/reply/list")
     public AjaxResult<GetReplyListResponse> getReplyList(@RequestParam GetReplyListRequest request) {
-        return AjaxResult.success(null);
+        List<ReplyElement> list = new ArrayList<>();
+        List<ReplyListElementDTO> result = commentService.getReplyList(request);
+        result.forEach(reply -> {
+            list.add(commentConverter.toReplyListDTO(reply));
+        });
+        GetReplyListResponse response = new GetReplyListResponse();
+        response.setList(list);
+        return AjaxResult.success(response);
     }
 
     @Operation(summary = "获取个人评论", description = "按时间先后排序")

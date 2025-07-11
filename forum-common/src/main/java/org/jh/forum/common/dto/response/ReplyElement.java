@@ -2,7 +2,9 @@ package org.jh.forum.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Data;
+import org.jh.forum.common.dto.UserInfoDTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,24 +13,16 @@ import jakarta.validation.constraints.NotNull;
  * @author qianqianzyk
  */
 @Data
-public class ReplyResponse {
+@Builder
+public class ReplyElement {
     @Schema(description = "回复ID")
     @NotNull
-    @JsonProperty("reply_id")
-    private Long replyId;
+    @JsonProperty("id")
+    private Long id;
 
-    @Schema(description = "用户ID")
-    @NotNull
-    @JsonProperty("user_id")
-    private Long userId;
-
-    @Schema(description = "用户昵称")
-    @NotBlank
-    private String nickname;
-
-    @Schema(description = "用户头像")
-    @NotBlank
-    private String avatar;
+    @Schema(description = "回复人信息")
+    @JsonProperty("publisher_info")
+    private UserInfoDTO publisherInfo;
 
     @Schema(description = "回复内容")
     @NotBlank

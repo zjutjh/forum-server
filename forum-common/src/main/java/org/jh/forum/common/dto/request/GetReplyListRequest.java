@@ -13,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class GetReplyListRequest extends BaseListRequest {
-    @Schema(description = "回复ID")
+    @Schema(description = "父评论ID")
     @NotNull
     @JsonProperty("comment_id")
     private Long commentId;

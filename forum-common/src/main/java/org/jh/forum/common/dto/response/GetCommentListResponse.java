@@ -12,9 +12,9 @@ import jakarta.validation.constraints.NotNull;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class GetCommentListResponse extends BaseListResponse<CommentResponse> {
+public class GetCommentListResponse extends BaseListResponse<CommentElement> {
     @Schema(description = "高亮评论")
     @NotNull
     @JsonProperty("highlight_comment")
-    private CommentResponse highlightComment;
+    private CommentElement highlightComment;
 }

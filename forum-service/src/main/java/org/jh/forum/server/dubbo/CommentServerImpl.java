@@ -3,13 +3,14 @@ package org.jh.forum.server.dubbo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.CommentService;
-import org.jh.forum.common.dto.request.PinCommentRequest;
-import org.jh.forum.common.dto.request.PublishCommentRequest;
-import org.jh.forum.common.dto.request.RemoveCommentRequest;
-import org.jh.forum.common.dto.request.UpvoteCommentRequest;
+import org.jh.forum.common.dto.CommentListElementDTO;
+import org.jh.forum.common.dto.ReplyListElementDTO;
+import org.jh.forum.common.dto.request.*;
+import org.jh.forum.common.entity.Comment;
 import org.jh.forum.server.manger.CommentManager;
 
 import jakarta.annotation.Resource;
+import java.util.List;
 
 /**
  * @author qianqianzyk
@@ -47,5 +48,36 @@ public class CommentServerImpl implements CommentService {
     @Override
     public void removeComment(RemoveCommentRequest request) {
         commentManager.removeComment(request.getCommentId());
+    }
+
+    @Override
+    public List<CommentListElementDTO> getCommentList(GetCommentListRequest request) {
+        return commentManager.getCommentList(request.getPostId(), request.getPage(), request.getPageSize(), request.getSort());
+    }
+
+    @Override
+    public CommentListElementDTO getHighlightCommentElement(GetCommentListRequest request) {
+        if (request.getHighlightCommentId() == null || request.getHighlightCommentId() == 0) {
+            return null;
+        }
+        Comment highlightComment = commentManager.getCommentById(request.getHighlightCommentId());
+        if (highlightComment == null || highlightComment.getDeleted()) {
+            return null;
+        }
+        if (highlightComment.getParentId() == 0) {
+            return commentManager.convertCommentToElement(highlightComment, null);
+        } else {
+            Comment parentComment = commentManager.getCommentById(highlightComment.getParentId());
+            if (parentComment == null || highlightComment.getDeleted()) {
+                return null;
+            }
+            ReplyListElementDTO replyDto = commentManager.convertReplyToElement(highlightComment);
+            return commentManager.convertCommentToElement(parentComment, replyDto);
+        }
+    }
+
+    @Override
+    public List<ReplyListElementDTO> getReplyList(GetReplyListRequest request) {
+        return commentManager.getReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getSort());
     }
 }

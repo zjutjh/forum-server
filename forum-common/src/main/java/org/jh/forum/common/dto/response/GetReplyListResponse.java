@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class GetReplyListResponse extends BaseListResponse<ReplyResponse>{
+public class GetReplyListResponse extends BaseListResponse<ReplyElement> {
 }

@@ -3,6 +3,7 @@ package org.jh.forum.common.dto.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.jh.forum.common.dto.UserInfoDTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,24 +13,15 @@ import java.util.List;
  * @author qianqianzyk
  */
 @Data
-public class CommentResponse {
+public class CommentElement {
     @Schema(description = "评论ID")
     @NotNull
-    @JsonProperty("comment_id")
-    private Long commentId;
+    @JsonProperty("id")
+    private Long id;
 
-    @Schema(description = "用户ID")
-    @NotNull
-    @JsonProperty("user_id")
-    private Long userId;
-
-    @Schema(description = "用户昵称")
-    @NotBlank
-    private String nickname;
-
-    @Schema(description = "用户头像")
-    @NotBlank
-    private String avatar;
+    @Schema(description = "评论人信息")
+    @JsonProperty("publisher_info")
+    private UserInfoDTO publisherInfo;
 
     @Schema(description = "评论内容")
     @NotBlank
@@ -72,5 +64,5 @@ public class CommentResponse {
 
     @Schema(description = "回复列表")
     @NotNull
-    private List<ReplyResponse> replys;
+    private List<ReplyElement> replys;
 }
