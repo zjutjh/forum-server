@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.service.CommentService;
 import org.jh.forum.common.dto.CommentListElementDTO;
+import org.jh.forum.common.dto.MyCommentElementDTO;
 import org.jh.forum.common.dto.ReplyListElementDTO;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
@@ -25,7 +26,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/comment")
-@Tag(name = "评论")
+@Tag(name = "评论", description = "评论相关接口")
 public class CommentController {
     @Resource
     private CommentService commentService;
@@ -119,9 +120,33 @@ public class CommentController {
         return AjaxResult.success(response);
     }
 
-    @Operation(summary = "获取个人评论", description = "按时间先后排序")
+    @Operation(summary = "获取个人评论", description = """
+            按时间先后排序
+            如果存在多条评论，单独显示一个评论列表，不存在楼层分级情况
+            """)
     @GetMapping("/personal")
-    public AjaxResult<GetPersonaCommentResponse> getPersonalComment(@ModelAttribute GetPersonaCommentRequest request) {
+    public AjaxResult<BaseListResponse<MyCommentElement>> getPersonalComment() {
+        List<MyCommentElementDTO> result = commentService.getMyCommentList();
+        List<MyCommentElement> list = new ArrayList<>();
+        BaseListResponse<MyCommentElement> response = new BaseListResponse<>();
+        result.forEach(comment -> {
+            list.add(commentConverter.toMyCommentDTO(comment));
+        });
+        response.setList(list);
+        return AjaxResult.success(response);
+    }
+
+    @Operation(summary = "管理员获取评论列表", description = """
+            1. 根据时间顺序排列
+            2. 已删除的评论/回复右侧为"恢复"按钮；未删除的评论/回复右侧为"删除"按钮""")
+    @GetMapping("/admin/list")
+    public AjaxResult<BaseListResponse<CommentElement>> getCommentListForAdmin(@RequestParam GetCommentListAdminRequest request) {
+        return AjaxResult.success(null);
+    }
+
+    @Operation(summary = "管理员删除/恢复评论")
+    @PostMapping("/admin/status")
+    public AjaxResult<Void> changeCommentStatus(@RequestBody ChangeCommentStatusRequest request) {
         return AjaxResult.success(null);
     }
 }

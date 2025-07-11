@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.CommentService;
 import org.jh.forum.common.dto.CommentListElementDTO;
+import org.jh.forum.common.dto.MyCommentElementDTO;
 import org.jh.forum.common.dto.ReplyListElementDTO;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.entity.Comment;
@@ -79,5 +80,10 @@ public class CommentServerImpl implements CommentService {
     @Override
     public List<ReplyListElementDTO> getReplyList(GetReplyListRequest request) {
         return commentManager.getReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getSort());
+    }
+
+    @Override
+    public List<MyCommentElementDTO> getMyCommentList() {
+        return commentManager.getMyComment();
     }
 }

@@ -12,7 +12,7 @@ import java.util.List;
  * @author qianqianzyk
  */
 @Data
-public class PersonalCommentResponse {
+public class MyCommentElement {
     @Schema(description = "帖子ID")
     @NotNull
     @JsonProperty("post_id")
@@ -22,7 +22,7 @@ public class PersonalCommentResponse {
     @NotBlank
     private String title;
 
-    @Schema(description = "帖子正文")
+    @Schema(description = "帖子正文（截取50字）")
     @NotBlank
     private String content;
 
@@ -31,8 +31,18 @@ public class PersonalCommentResponse {
     @JsonProperty("image_url")
     private String imageUrl;
 
+    @Schema(description = "帖子创建时间")
+    @NotBlank
+    @JsonProperty("create_at")
+    private String createAt;
+
+    @Schema(description = "帖子更新时间")
+    @NotBlank
+    @JsonProperty("update_at")
+    private String updateAt;
+
     @Schema(description = "个人评论列表")
     @NotNull
     @JsonProperty("personal_comment_list")
-    private List<SimpleCommentResponse> personalCommentList;
+    private List<MyCommentListElement> personalCommentList;
 }

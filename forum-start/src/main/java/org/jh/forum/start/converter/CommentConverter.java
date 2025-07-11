@@ -1,8 +1,10 @@
 package org.jh.forum.start.converter;
 
 import org.jh.forum.common.dto.CommentListElementDTO;
+import org.jh.forum.common.dto.MyCommentElementDTO;
 import org.jh.forum.common.dto.ReplyListElementDTO;
 import org.jh.forum.common.dto.response.CommentElement;
+import org.jh.forum.common.dto.response.MyCommentElement;
 import org.jh.forum.common.dto.response.ReplyElement;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
@@ -18,4 +20,7 @@ public interface CommentConverter {
 
     @Mapping(target = "publisherInfo", source = "userInfo")
     ReplyElement toReplyListDTO(ReplyListElementDTO dto);
-} 
+
+    @Mapping(target = "personalCommentList", source = "myCommentList")
+    MyCommentElement toMyCommentDTO(MyCommentElementDTO dto);
+}

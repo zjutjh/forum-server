@@ -16,8 +16,8 @@ import java.util.List;
 public class CommentElement {
     @Schema(description = "评论ID")
     @NotNull
-    @JsonProperty("id")
-    private Long id;
+    @JsonProperty("comment_id")
+    private Long commentId;
 
     @Schema(description = "评论人信息")
     @JsonProperty("publisher_info")
@@ -64,5 +64,5 @@ public class CommentElement {
 
     @Schema(description = "回复列表")
     @NotNull
-    private List<ReplyElement> replys;
+    private List<ReplyElement> replies;
 }

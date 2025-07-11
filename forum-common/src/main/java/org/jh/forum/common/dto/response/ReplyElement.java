@@ -17,8 +17,8 @@ import jakarta.validation.constraints.NotNull;
 public class ReplyElement {
     @Schema(description = "回复ID")
     @NotNull
-    @JsonProperty("id")
-    private Long id;
+    @JsonProperty("reply_id")
+    private Long replyId;
 
     @Schema(description = "回复人信息")
     @JsonProperty("publisher_info")

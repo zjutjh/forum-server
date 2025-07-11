@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.dto.CommentListElementDTO;
-import org.jh.forum.common.dto.ReplyListElementDTO;
-import org.jh.forum.common.dto.UserInfoDTO;
+import org.jh.forum.common.dto.*;
 import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.mapper.*;
@@ -19,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -88,8 +87,8 @@ public class CommentManager {
         // 如果是回复，父评论 reply_count + 1
         if (parentId != 0) {
             Comment parentComment = commentMapper.selectById(parentId);
-            if (parentComment != null) {
-                int replyCount = parentComment.getReplyCount() == null ? 0 : parentComment.getReplyCount();
+            if (parentComment != null && !parentComment.getDeleted()) {
+                int replyCount = parentComment.getReplyCount();
                 parentComment.setReplyCount(replyCount + 1);
                 commentMapper.updateById(parentComment);
             }
@@ -118,14 +117,12 @@ public class CommentManager {
                     .status(true)
                     .build();
             upvoteMapper.insert(upvote);
-
-            int upvoteCount = comment.getUpvoteCount() == null ? 0 : comment.getUpvoteCount();
-            comment.setUpvoteCount(upvoteCount + 1);
+            comment.setUpvoteCount(comment.getUpvoteCount() + 1);
             commentMapper.updateById(comment);
         } else {
             upvote.setStatus(!upvote.getStatus());
             upvoteMapper.updateById(upvote);
-            int upvoteCount = comment.getUpvoteCount() == null ? 0 : comment.getUpvoteCount();
+            int upvoteCount = comment.getUpvoteCount();
             if (upvote.getStatus()) {
                 comment.setUpvoteCount(upvoteCount + 1);
             } else {
@@ -240,13 +237,58 @@ public class CommentManager {
         } else {
             wrapper.orderByDesc("updated_at");
         }
-
-        List<Comment> replys = commentMapper.selectPage(pageParam, wrapper).getRecords();
+        List<Comment> replies = commentMapper.selectPage(pageParam, wrapper).getRecords();
 
         List<ReplyListElementDTO> result = new ArrayList<>();
-        for (Comment reply : replys) {
+        for (Comment reply : replies) {
             result.add(convertReplyToElement(reply));
         }
+        return result;
+    }
+
+    public List<MyCommentElementDTO> getMyComment() {
+        // 查询当前用户所有评论
+        Long userId = StpUtil.getLoginIdAsLong();
+        List<Comment> allComments = commentMapper.selectList(
+                new LambdaQueryWrapper<Comment>()
+                        .eq(Comment::getUserId, userId)
+                        .eq(Comment::getDeleted, false)
+        );
+        // 按 postId 分组
+        Map<Long, List<Comment>> postCommentMap = allComments.stream().collect(Collectors.groupingBy(Comment::getPostId));
+        List<MyCommentElementDTO> result = new ArrayList<>();
+        for (Long postId : postCommentMap.keySet()) {
+            // 查询该用户在该帖下所有评论
+            List<Comment> comments = postCommentMap.get(postId).stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .toList();
+            List<MyCommentListElementDTO> myCommentList = new ArrayList<>();
+            for (Comment comment : comments) {
+                myCommentList.add(MyCommentListElementDTO.builder()
+                        .commentId(comment.getId())
+                        .content(comment.getContent())
+                        .attachmentUrl(getAttachmentUrl(comment.getId()))
+                        .createAt(comment.getCreatedAt())
+                        .upvoteCount(comment.getUpvoteCount())
+                        .replyCount(comment.getReplyCount())
+                        .build());
+            }
+            // 查询帖子信息
+            Post post = postMapper.selectById(postId);
+            if (post != null) {
+                result.add(MyCommentElementDTO.builder()
+                        .postId(post.getId())
+                        .title(post.getTitle())
+                        .content(post.getContent().substring(0, Math.min(post.getContent().length(), 50)))
+                        .imageUrl("")
+                        .createAt(post.getCreatedAt())
+                        .updateAt(post.getUpdatedAt())
+                        .myCommentList(myCommentList)
+                        .build());
+            }
+        }
+        // 按帖子最新评论时间降序排列
+        result.sort((a, b) -> b.getMyCommentList().get(0).getCreateAt().compareTo(a.getMyCommentList().get(0).getCreateAt()));
         return result;
     }
 
@@ -262,9 +304,9 @@ public class CommentManager {
         Post post = postMapper.selectById(comment.getPostId());
         boolean isAuthor = post != null && user != null && post.getUserId().equals(user.getId());
 
-        List<ReplyListElementDTO> replys = new ArrayList<>();
+        List<ReplyListElementDTO> replies = new ArrayList<>();
         if (reply != null) {
-            replys.add(reply);
+            replies.add(reply);
         } else {
             QueryWrapper<Comment> wrapper = new QueryWrapper<>();
             wrapper.eq("parent_id", comment.getId())
@@ -273,12 +315,12 @@ public class CommentManager {
                     .last("limit 1");
             Comment hottestReply = commentMapper.selectOne(wrapper);
             if (hottestReply != null) {
-                replys.add(convertReplyToElement(hottestReply));
+                replies.add(convertReplyToElement(hottestReply));
             }
         }
 
         return CommentListElementDTO.builder()
-                .id(comment.getId())
+                .commentId(comment.getId())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .isPinned(comment.getIsPinned())
@@ -288,7 +330,7 @@ public class CommentManager {
                 .userInfo(userInfo)
                 .isAuthor(isAuthor)
                 .attachmentUrl(attachmentUrl)
-                .replys(replys)
+                .replies(replies)
                 .build();
     }
 
@@ -307,14 +349,14 @@ public class CommentManager {
         User targetUser = reply.getTargetId() != null ? userMapper.selectById(reply.getTargetId()) : null;
 
         return ReplyListElementDTO.builder()
-                .id(reply.getId())
+                .replyId(reply.getId())
                 .userInfo(userInfo)
                 .content(reply.getContent())
                 .attachmentUrl(attachmentUrl)
                 .isPinned(reply.getIsPinned())
                 .isAuthor(isAuthor)
                 .isDeleted(reply.getDeleted())
-                .createAt(reply.getCreatedAt() != null ? reply.getCreatedAt().toString() : "")
+                .createAt(reply.getCreatedAt())
                 .upvoteCount(reply.getUpvoteCount())
                 .replyCount(reply.getReplyCount())
                 .targetUserId(targetUser != null ? targetUser.getId() : null)

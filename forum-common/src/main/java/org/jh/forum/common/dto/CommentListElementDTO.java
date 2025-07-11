@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @Builder
 public class CommentListElementDTO {
-    private Long id;
+    private Long commentId;
     private String content;
     private LocalDateTime createdAt;
     private Integer upvoteCount;
@@ -22,5 +22,5 @@ public class CommentListElementDTO {
     private Boolean isDeleted;
     private UserInfoDTO userInfo;
     private String attachmentUrl;
-    private List<ReplyListElementDTO> replys;
+    private List<ReplyListElementDTO> replies;
 } 

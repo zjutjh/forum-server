@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotNull;
  * @author qianqianzyk
  */
 @Data
-public class SimpleCommentResponse {
+public class MyCommentListElement {
     @Schema(description = "评论ID")
     @NotNull
     @JsonProperty("comment_id")
@@ -26,7 +26,7 @@ public class SimpleCommentResponse {
     @JsonProperty("attachment_url")
     private String attachmentUrl;
 
-    @Schema(description = "创建时间")
+    @Schema(description = "发表时间")
     @NotBlank
     @JsonProperty("create_at")
     private String createAt;

@@ -1,6 +1,7 @@
 package org.jh.forum.api.dubbo.service;
 
 import org.jh.forum.common.dto.CommentListElementDTO;
+import org.jh.forum.common.dto.MyCommentElementDTO;
 import org.jh.forum.common.dto.ReplyListElementDTO;
 import org.jh.forum.common.dto.request.*;
 
@@ -23,4 +24,6 @@ public interface CommentService {
     CommentListElementDTO getHighlightCommentElement(GetCommentListRequest request);
 
     List<ReplyListElementDTO> getReplyList(GetReplyListRequest request);
+
+    List<MyCommentElementDTO> getMyCommentList();
 }

@@ -10,17 +10,11 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
-public class ReplyListElementDTO {
-    private Long replyId;
-    private UserInfoDTO userInfo;
+public class MyCommentListElementDTO {
+    private Long commentId;
     private String content;
     private String attachmentUrl;
-    private Boolean isPinned;
-    private Boolean isAuthor;
-    private Boolean isDeleted;
     private LocalDateTime createAt;
     private Integer upvoteCount;
     private Integer replyCount;
-    private Long targetUserId;
-    private String targetNickname;
 }
