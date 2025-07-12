@@ -50,6 +50,7 @@ public class PostManager {
     private final FileManager fileManager;
     private final AttachmentMapper attachmentMapper;
     private final UserMapper userMapper;
+    private final PostRankManager postRankManager;
 
     public void publishPost(PublishPostRequest request) {
         Post post = Post.builder()
@@ -137,8 +138,29 @@ public class PostManager {
     }
 
     public BaseListResponse<GetPostListElement> getHotPostList(CategoryEnum category, Integer page, Integer pageSize) {
-        // TODO 获取最热帖子
-        return null;
+        List<GetPostListElement> list = new ArrayList<>();
+        PostRankManager.PageResult<Long> result = postRankManager.getHotPostIds(page, pageSize);
+        result.getRecords().forEach(id -> {
+            Post post = postMapper.selectById(id);
+            list.add(GetPostListElement.builder()
+                    .id(id)
+                    .publisherInfo(userManager.getUserInfo(post.getUserId()))
+                    .category(post.getCategory())
+                    .topics(getPostTopics(id))
+                    .title(post.getTitle())
+                    .content(truncateContent(post.getContent()))
+                    .likeCount(getLikeCount(id))
+                    .commentCount(getCommentCount(id))
+                    .createdAt(post.getCreatedAt())
+                    .build()
+            );
+        });
+        return BaseListResponse.<GetPostListElement>builder()
+                .list(list)
+                .total(result.getTotal())
+                .page(page)
+                .pageSize(pageSize)
+                .build();
     }
 
     public GetPostInfoResponse getPostInfo(Long postId, Long userId) {
@@ -150,6 +172,7 @@ public class PostManager {
             throw new ForumServiceException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         updateViewCount(postId, userId);
+        postRankManager.recordAction(postId, postRankManager.VIEW);
         return GetPostInfoResponse.builder()
                 .publisherInfo(userManager.getUserInfo(post.getUserId()))
                 .category(post.getCategory())
