@@ -172,7 +172,6 @@ public class PostManager {
             throw new ForumServiceException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         updateViewCount(postId, userId);
-        postRankManager.recordAction(postId, postRankManager.VIEW);
         return GetPostInfoResponse.builder()
                 .publisherInfo(userManager.getUserInfo(post.getUserId()))
                 .category(post.getCategory())
@@ -320,6 +319,7 @@ public class PostManager {
             return;
         }
         postMapper.incrementViewCount(postId);
+        postRankManager.recordAction(postId, postRankManager.VIEW);
     }
 
     private String truncateContent(String content) {

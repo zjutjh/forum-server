@@ -2,6 +2,7 @@ package org.jh.forum.server.manger;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.annotation.WithLock;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PostRankManager {
     public final String ACTIVE_POSTS_KEY = "active_posts";
     public final String HOT_RANK_KEY = "hot_rank";
@@ -45,15 +47,17 @@ public class PostRankManager {
         redisTemplate.opsForZSet().add(ACTIVE_POSTS_KEY, postId.toString(), currentTime);
     }
 
-    @WithLock(prefix = "hot_rank")
+    @WithLock(prefix = "post_rank")
     @Scheduled(cron = "0 */15 * * * *")
     public void computeHotRank() {
+        log.info("[PostRankManager] 开始计算帖子热度值");
         long currentTime = System.currentTimeMillis() / 1000;
         long currentHour = currentTime / 3600;
         long threshold = currentTime - 86400;
 
         // 清理24小时外的帖子（每小时执行一次）
         if (lastCleanupHour.get() != currentHour) {
+            log.info("[PostRankManager] 清理过期帖子");
             redisTemplate.opsForZSet().removeRangeByScore(ACTIVE_POSTS_KEY, 0, threshold - 1);
             lastCleanupHour.set(currentHour);
         }
