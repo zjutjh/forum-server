@@ -1,7 +1,7 @@
 package org.jh.forum.api.dubbo.service;
 
 import org.jh.forum.common.constants.AttachmentTypeEnum;
-import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 
 /**
  * @author SugarMGP
@@ -13,5 +13,5 @@ public interface FileService {
 
     Long createAttachment(Long fileId, AttachmentTypeEnum type, String filename);
 
-    GetAttachmentInfoResponse getAttachmentInfo(Long attachmentId);
+    AttachmentInfoDTO getAttachmentInfo(Long attachmentId);
 }

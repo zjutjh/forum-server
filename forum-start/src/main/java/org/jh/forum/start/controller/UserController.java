@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.service.LoginService;
+import org.jh.forum.common.constants.UserTypeEnum;
 import org.jh.forum.common.dto.request.LoginRequest;
 import org.jh.forum.common.dto.response.LoginResponse;
 import org.jh.forum.common.exceptions.ApiException;
@@ -32,7 +33,7 @@ public class UserController {
     @Operation(summary = "用户登录")
     public AjaxResult<Object> login(@RequestBody @Valid LoginRequest request) {
         try {
-            String userType = loginService.login(request.getUsername(), request.getPassword(), request.getLoginType());
+            UserTypeEnum userType = loginService.login(request.getUsername(), request.getPassword(), request.getLoginType());
             return AjaxResult.success(LoginResponse.builder().userType(userType).build());
         } catch (ForumServiceException e) {
             throw new ApiException(e);

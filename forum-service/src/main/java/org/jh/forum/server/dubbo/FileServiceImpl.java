@@ -9,7 +9,7 @@ import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
 import org.jh.forum.common.exceptions.ForumServiceException;
@@ -64,13 +64,13 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public GetAttachmentInfoResponse getAttachmentInfo(Long attachmentId) {
+    public AttachmentInfoDTO getAttachmentInfo(Long attachmentId) {
         Attachment attachment = attachmentMapper.selectById(attachmentId);
         if (attachment == null) {
             throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         File file = fileMapper.selectById(attachment.getFileId());
-        return GetAttachmentInfoResponse.builder()
+        return AttachmentInfoDTO.builder()
                 .url(cubeService.getFileUrl(file.getObjectKey()))
                 .type(attachment.getType())
                 .filename(attachment.getFilename())

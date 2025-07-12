@@ -1,5 +1,6 @@
 package org.jh.forum.common.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -7,8 +8,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostStatusEnum;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -48,13 +52,17 @@ public class GetAdminPostInfoResponse {
     private Integer viewCount;
 
     @Schema(description = "发帖时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("created_at")
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     @Schema(description = "帖子状态")
-    private String status;
+    private PostStatusEnum status;
 
     @Schema(description = "是否置顶（管理员）")
     @JsonProperty("is_pinned")
     private Boolean isPinned;
+
+    @Schema(description = "帖子附件列表")
+    private List<AttachmentInfoDTO> attachments;
 }

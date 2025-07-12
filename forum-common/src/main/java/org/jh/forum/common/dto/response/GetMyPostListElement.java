@@ -1,5 +1,6 @@
 package org.jh.forum.common.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostStatusEnum;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -46,10 +49,14 @@ public class GetMyPostListElement {
     private Integer viewCount;
 
     @Schema(description = "发帖时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("created_at")
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     @Schema(description = "是否置顶（个人主页）")
     @JsonProperty("is_topped")
     private Boolean isTopped;
+
+    @Schema(description = "帖子状态（此处不会是deleted）")
+    private PostStatusEnum status;
 }

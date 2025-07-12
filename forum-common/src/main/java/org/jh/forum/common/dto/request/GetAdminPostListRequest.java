@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostStatusEnum;
 
 import java.time.LocalDate;
 
@@ -19,7 +20,7 @@ public class GetAdminPostListRequest extends BaseListRequest {
     private CategoryEnum category;
 
     @Schema(description = "帖子状态")
-    private String status;
+    private PostStatusEnum status;
 
     @Schema(description = "帖子标题")
     private String title;
@@ -28,7 +29,7 @@ public class GetAdminPostListRequest extends BaseListRequest {
     private String publisher;
 
     @Schema(description = "发帖日")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     @JsonProperty("created_day")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdDay;
 }
