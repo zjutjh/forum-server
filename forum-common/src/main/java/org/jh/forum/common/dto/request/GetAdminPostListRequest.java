@@ -1,7 +1,5 @@
 package org.jh.forum.common.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,8 +26,6 @@ public class GetAdminPostListRequest extends BaseListRequest {
     @Schema(description = "发帖人")
     private String publisher;
 
-    @Schema(description = "发帖日")
-    @JsonProperty("created_day")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate createdDay;
+    @Schema(description = "发帖日（yyyy-MM-dd）")
+    private LocalDate date;
 }

@@ -56,14 +56,14 @@ public class PostController {
 
     @Operation(summary = "获取我的帖子列表")
     @GetMapping("/my_list")
-    public AjaxResult<BaseListResponse<GetMyPostListElement>> getMyPostList(BaseListRequest request) {
+    public AjaxResult<BaseListResponse<GetMyPostListElement>> getMyPostList(@Valid BaseListRequest request) {
         return AjaxResult.success(postService.getMyPostList(request));
     }
 
     @Operation(summary = "管理员获取帖子列表")
     @Tag(name = "管理员")
     @GetMapping("/admin/list")
-    public AjaxResult<BaseListResponse<GetAdminPostListElement>> getAdminPostList(GetAdminPostListRequest request) {
+    public AjaxResult<BaseListResponse<GetAdminPostListElement>> getAdminPostList(@Valid GetAdminPostListRequest request) {
         return AjaxResult.success(postService.getAdminPostList(request));
     }
 

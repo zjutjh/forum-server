@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author SugarMGP
@@ -191,14 +192,16 @@ public class PostManager {
             userQueryWrapper.like(User::getNickname, request.getPublisher());
             List<Long> userIds = userMapper.selectList(userQueryWrapper).stream()
                     .map(User::getId)
-                    .toList();
-            queryWrapper.in(!userIds.isEmpty(), Post::getId, userIds);
+                    .collect(Collectors.toCollection(ArrayList::new));
+            // 添加一个虚拟用户，防止筛选失效
+            userIds.add(0L);
+            queryWrapper.in(Post::getUserId, userIds);
         }
 
         // 筛选发帖时间
-        if (request.getCreatedDay() != null) {
-            LocalDateTime startOfDay = request.getCreatedDay().atStartOfDay();
-            LocalDateTime endOfDay = request.getCreatedDay().atTime(23, 59, 59);
+        if (request.getDate() != null) {
+            LocalDateTime startOfDay = request.getDate().atStartOfDay();
+            LocalDateTime endOfDay = request.getDate().atTime(23, 59, 59);
             queryWrapper.between(Post::getCreatedAt, startOfDay, endOfDay);
         }
 
