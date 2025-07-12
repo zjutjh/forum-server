@@ -9,7 +9,7 @@ import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.dto.response.GetAttachmentInfoResponse;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.response.UploadPictureResponse;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.common.exceptions.ForumServiceException;
@@ -47,7 +47,7 @@ public class FileController {
 
     @Operation(summary = "获取附件信息")
     @GetMapping("/info")
-    public AjaxResult<GetAttachmentInfoResponse> getAttachmentInfo(@RequestParam("attachment_id") Long attachmentId) {
+    public AjaxResult<AttachmentInfoDTO> getAttachmentInfo(@RequestParam("attachment_id") Long attachmentId) {
         try {
             return AjaxResult.success(fileService.getAttachmentInfo(attachmentId));
         } catch (ForumServiceException e) {
