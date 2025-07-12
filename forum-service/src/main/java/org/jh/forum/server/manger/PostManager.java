@@ -293,10 +293,7 @@ public class PostManager {
         if (Boolean.FALSE.equals(isSet)) {
             return;
         }
-
-        Post post = postMapper.selectById(postId);
-        post.setViewCount(post.getViewCount() + 1);
-        postMapper.updateById(post);
+        postMapper.incrementViewCount(postId);
     }
 
     private String truncateContent(String content) {

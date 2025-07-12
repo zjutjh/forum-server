@@ -36,7 +36,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public Long checkBlake3(String blake3) {
         File file = fileMapper.selectOne(new LambdaQueryWrapper<File>().eq(File::getBlake3, blake3));
-        return file == null ? -1 : file.getId();
+        return file == null ? -1L : file.getId();
     }
 
     @Override
