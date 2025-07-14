@@ -1,0 +1,69 @@
+package org.jh.forum.server.dubbo;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboService;
+import org.jh.forum.api.dubbo.service.ReportService;
+import org.jh.forum.common.constants.ReportTargetTypeEnum;
+import org.jh.forum.common.dto.request.GetReportListRequest;
+import org.jh.forum.common.dto.request.HandleReportRequest;
+import org.jh.forum.common.dto.request.ReportContentRequest;
+import org.jh.forum.common.dto.request.ReportUserRequest;
+import org.jh.forum.common.dto.response.BaseListResponse;
+import org.jh.forum.common.dto.response.GetReportDetailResponse;
+import org.jh.forum.common.dto.response.GetReportListElement;
+import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.server.manger.ReportManager;
+
+import jakarta.annotation.Resource;
+
+/**
+ * @author zzb
+ */
+@DubboService(version = "1.0.0")
+@Slf4j
+public class ReportServiceImpl implements ReportService {
+    @Resource
+    private ReportManager reportManager;
+
+    @Override
+    public Long reportUser(ReportUserRequest request) {
+        return reportManager.reportUser(request.getType(), request.getReason(), request.getUserId(), ReportTargetTypeEnum.USER);
+    }
+
+    @Override
+    public Long reportContent(ReportContentRequest request) {
+        Long resp;
+        try {
+            resp = reportManager.reportContent(request.getType(), request.getReason(),
+                    request.getTargetId(), request.getTarget());
+        } catch (ForumServiceException e) {
+            throw new ApiException(e);
+        }
+        return resp;
+    }
+
+    @Override
+    public void handleReport(HandleReportRequest request) {
+        reportManager.handleReport(request);
+    }
+
+    @Override
+    public BaseListResponse<GetReportListElement> getReportList(GetReportListRequest request) {
+        BaseListResponse<GetReportListElement> reportList;
+        reportList = reportManager.getReportList(request.getStatus(), request.getOrder(),
+                request.getPage(), request.getPageSize());
+        return reportList;
+    }
+
+    @Override
+    public GetReportDetailResponse getReportDetail(Long id) {
+        GetReportDetailResponse response;
+        try {
+            response = reportManager.getReportDetail(id);
+        } catch (ForumServiceException e) {
+            throw new ApiException(e);
+        }
+        return response;
+    }
+}
