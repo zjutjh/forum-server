@@ -1,4 +1,4 @@
-package org.jh.forum.server.manger;
+package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;

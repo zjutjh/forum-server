@@ -25,7 +25,7 @@ public enum AnnouncementStatusEnum {
     private final String code;
     private final String description;
 
-    public static AnnouncementStatusEnum fromCode(String code){
+    public static AnnouncementStatusEnum fromCode(String code) {
         for (AnnouncementStatusEnum status : AnnouncementStatusEnum.values()) {
             if (status.getCode().equals(code)) {
                 return status;

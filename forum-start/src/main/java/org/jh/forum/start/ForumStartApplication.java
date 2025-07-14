@@ -1,8 +1,6 @@
 package org.jh.forum.start;
 
-import java.util.TimeZone;
-
-import com.alibaba.nacos.api.annotation.NacosInjected; 
+import com.alibaba.nacos.api.annotation.NacosInjected;
 import com.alibaba.nacos.api.naming.NamingService;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.mybatis.spring.annotation.MapperScan;
@@ -12,6 +10,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.util.TimeZone;
 
 @SpringBootApplication
 @EnableAspectJAutoProxy

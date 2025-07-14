@@ -1,12 +1,16 @@
 package org.jh.forum.common.entity;
 
-import java.time.ZonedDateTime;
-
-import com.baomidou.mybatisplus.annotation.*;
-import lombok.*;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.AnnouncementStatusEnum;
 import org.jh.forum.common.constants.AnnouncementTypeEnum;
+
+import java.time.LocalDateTime;
 
 
 /**
@@ -16,10 +20,10 @@ import org.jh.forum.common.constants.AnnouncementTypeEnum;
  */
 @SuperBuilder
 @Data
-@EqualsAndHashCode(callSuper = true) 
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
-@TableName("announcement") 
+@TableName("announcement")
 
 public class Announcement extends BaseEntity {
 
@@ -45,13 +49,13 @@ public class Announcement extends BaseEntity {
      * 预定发布时间 - 可空
      */
     @TableField("scheduled_at")
-    private ZonedDateTime scheduledAt;
+    private LocalDateTime scheduledAt;
 
     /**
      * 实际发布时间 - 可空
      */
     @TableField("published_at")
-    private ZonedDateTime publishedAt;
+    private LocalDateTime publishedAt;
 
     /**
      * 状态 - 必填：0:草稿、1:已发布、2:待发布

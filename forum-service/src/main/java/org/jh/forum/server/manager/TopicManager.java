@@ -1,4 +1,4 @@
-package org.jh.forum.server.manger;
+package org.jh.forum.server.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;

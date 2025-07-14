@@ -1,7 +1,27 @@
-package org.jh.forum.server.service;
+package org.jh.forum.server.dubbo;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboService;
+import org.jh.forum.api.dubbo.service.AnnouncementService;
+import org.jh.forum.common.constants.AnnouncementStatusEnum;
+import org.jh.forum.common.constants.AnnouncementTypeEnum;
+import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
+import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
+import org.jh.forum.common.dto.request.EditAnnouncementRequest;
+import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
+import org.jh.forum.common.dto.response.*;
+import org.jh.forum.common.entity.Announcement;
+import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.common.filters.MarkdownMathJaxHtmlFilter;
+import org.jh.forum.server.manager.AnnouncementManager;
+import org.jh.forum.server.manager.UserManager;
+import org.springframework.stereotype.Service;
+
+import jakarta.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -9,34 +29,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
-import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
-import org.jh.forum.common.dto.request.EditAnnouncementRequest;
-import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
-import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
-import org.jh.forum.common.dto.response.AnnouncementDetailResponse;
-import org.jh.forum.common.dto.response.AnnouncementTinyDetailsResponse;
-import org.jh.forum.common.dto.response.ListAnnouncementResponse;
-import org.jh.forum.common.dto.response.ListAnnouncementTinyResponse;
-import org.jh.forum.common.dto.response.ListAnnouncementMinorResponse;
-import org.jh.forum.common.entity.Announcement;
-import org.jh.forum.common.constants.AnnouncementStatusEnum;
-import org.jh.forum.common.constants.AnnouncementTypeEnum;
-import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.common.exceptions.ForumServiceException;
-import org.jh.forum.api.dubbo.service.AnnouncementService;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.server.manager.AnnouncementManager;
-import org.jh.forum.server.utils.CacheUtil;
-
-import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.stereotype.Service;
-import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * 公告服务实现类
- * 
+ *
  * @author SituChengxiang (SK)
  */
 @Slf4j
@@ -53,12 +48,26 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private static final int MAX_CONTENT_LENGTH = 500;
     private static final int MAX_TITLE_LENGTH = 50;
     private static final int MIN_CONTENT_LENGTH = 2;
+    private static final String NO_CONDITION = "all";
 
+    private final MarkdownMathJaxHtmlFilter filter = new MarkdownMathJaxHtmlFilter();
     @Resource
     private AnnouncementManager announcementManager;
-
     @Resource
-    private CacheUtil cacheUtil;
+    private UserManager userManager;
+
+    /**
+     * 防止标题和内容SQL、XSS注入(理论上来说应该没这个问题，但是谁知道呢)
+     */
+    public void safeFilter(CreateAnnouncementRequest request) {
+        request.setTitle(filter.filterTitle(request.getTitle()));
+        request.setContent(filter.filterContent(request.getContent()));
+    }
+
+    public void safeFilter(EditAnnouncementRequest request) {
+        request.setTitle(filter.filterTitle(request.getTitle()));
+        request.setContent(filter.filterContent(request.getContent()));
+    }
 
     /**
      * 创建公告
@@ -66,28 +75,28 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public AnnouncementOperationResponse createAnnouncement(CreateAnnouncementRequest request) {
         try {
-
-            // 标题和内容基本
+            // 标题和内容基本校验
             validateTitleAndContent(request.getTitle(), request.getContent());
 
-            // 标题查重校验 (使用trim后的标题)
-            String trimmedTitle = request.getTitle().trim();
-            if (announcementManager.checkTitleDuplicate(trimmedTitle)) {
+            // 标题Trim、XSS过滤、查重校验（XSS过滤会把内容也给过滤掉）
+            request.setTitle(request.getTitle().trim());
+            safeFilter(request);
+            if (announcementManager.checkTitleDuplicate(request.getTitle())) {
                 throw new IllegalArgumentException("公告标题已存在, 请使用其他标题");
             }
+
             // 校验公告类型
             validateAnnouncementType(request.getType());
 
             // 校验定时发布和状态逻辑
             validateScheduledAndStatus(request.getScheduledAt(), request.getStatus());
-            ZonedDateTime publishedAt = null;
-            if (request.getScheduledAt() != null
-                    && request.getStatus().equals(AnnouncementStatusEnum.SCHEDULED.getCode())) {
+            LocalDateTime publishedAt = null;
+            if (request.getStatus().equals(AnnouncementStatusEnum.SCHEDULED.getCode())) {
                 // 预发布的，先设置发布时间为预发布
                 publishedAt = request.getScheduledAt();
             } else if (request.getStatus().equals(AnnouncementStatusEnum.PUBLISHED.getCode())) {
-                publishedAt = ZonedDateTime.now(ZoneId.of("Asia/Shanghai"));
-
+                // 直接发布的，选择当前时间作为发布时间
+                publishedAt = LocalDateTime.now();
             }
 
             // 如果设置为置顶, 检查置顶公告数量限制 (最多3个)
@@ -95,11 +104,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 throw new IllegalArgumentException("置顶公告数量已达上限");
             }
 
-            // Manager层执行原子数据库操作-插入保存
             Announcement saved = announcementManager.createAnnouncement(request, publishedAt);
 
             AnnouncementOperationResponse response = new AnnouncementOperationResponse();
-            response.setAnnounceId(saved.getId());
+            response.setAnnouncementId(saved.getId());
             return response;
         } catch (IllegalArgumentException e) {
             // 包装参数错误
@@ -107,7 +115,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (ForumServiceException e) {
             // Manager的异常
-            log.warn("创建公告-manager:{}", e.getMessage());
+            log.warn("创建公告异常:{}", e.getMessage());
             throw new ApiException(e);
         } catch (Exception e) {
             // 别的异常
@@ -120,20 +128,28 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 编辑公告
      */
     @Override
-    public AnnouncementOperationResponse editAnnouncement(Long id, EditAnnouncementRequest request) {
+    public AnnouncementOperationResponse editAnnouncement(EditAnnouncementRequest request, Long currentUid,
+                                                          boolean isSuperAdmin) {
+        log.info("Service-编辑公告, ID:{}, 标题:{}", request.getId(), request.getTitle());
         try {
-            log.info("Service-编辑公告, ID:{}, 标题:{}", id, request.getTitle());
 
-            if (announcementManager.checkExist(id)) {
-                throw new IllegalArgumentException("公告不存在或已被删除");
+            if (!checkPermission(request.getId(), currentUid, isSuperAdmin)) {
+                log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", request.getId(), currentUid);
+                throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            }
+
+            if (!announcementManager.isExist(request.getId())) {
+                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
             // 校验标题和内容
+            request.setTitle(request.getTitle().trim());
+            safeFilter(request);
             validateTitleAndContent(request.getTitle(), request.getContent());
 
             // 标题查重校验 (编辑时排除当前公告ID)
             String trimmedTitle = request.getTitle().trim();
-            if (announcementManager.checkTitleDuplicate(trimmedTitle, id)) {
+            if (announcementManager.checkTitleDuplicate(trimmedTitle, request.getId())) {
                 throw new IllegalArgumentException("公告标题已存在, 请使用其他标题");
             }
 
@@ -142,23 +158,26 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
             // 校验定时发布和状态逻辑
             validateScheduledAndStatus(request.getScheduledAt(), request.getStatus());
-            ZonedDateTime publishedAt = null;
+            LocalDateTime publishedAt = null;
             if (request.getScheduledAt() != null
                     && request.getStatus().equals(AnnouncementStatusEnum.SCHEDULED.getCode())) {
                 // 预发布的，先设置发布时间为预发布
                 publishedAt = request.getScheduledAt();
             } else if (request.getStatus().equals(AnnouncementStatusEnum.PUBLISHED.getCode())) {
-                publishedAt = ZonedDateTime.now(ZoneId.of("Asia/Shanghai"));
+                publishedAt = LocalDateTime.now();
             }
 
-            Announcement originAnnouncement = announcementManager.getAnnouncementEntityById(id);
+            // 是否存在
+            if (!announcementManager.isExist(request.getId())) {
+                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
+            }
+
+            Announcement originAnnouncement = announcementManager.getAnnouncementEntityById(request.getId());
 
             // 如果设置为置顶, 检查置顶公告数量限制 (最多3个)
-            if (request.getSticky() != null && request.getSticky()) {
-                // 只有在希望置顶且当前公告未置顶时, 才检查数量限制
-                if (announcementManager.canStickyAnnouncement(id)) {
-                    throw new IllegalArgumentException("置顶公告数量已达上限");
-                }
+            if (request.getSticky() != null && request.getSticky()
+                    && !announcementManager.canStickyAnnouncement(request.getId())) {
+                throw new IllegalArgumentException("置顶公告数量已达上限");
             }
 
             // 内联权限状态检验
@@ -169,17 +188,17 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                     throw new IllegalArgumentException("已发布的公告不允许编辑定时发布和状态");
                 }
                 // 执行基础字段更新 (只能编辑标题、内容、类型、属性、置顶)
-                return announcementManager.editBasicFields(id, request);
+                return announcementManager.editBasicFields(request.getId(), request);
             } else {
                 // 草稿和待发布状态的公告可以编辑所有字段
-                return announcementManager.editAllFields(id, request, publishedAt);
+                return announcementManager.editAllFields(request.getId(), request, publishedAt);
             }
 
         } catch (IllegalArgumentException e) {
             log.warn("参数校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (ForumServiceException e) {
-            log.warn("manager-编辑公告异常:{}", e.getMessage());
+            log.warn("编辑公告异常:{}", e.getMessage());
             throw new ApiException(e);
         } catch (Exception e) {
             log.error("编辑公告异常", e);
@@ -191,22 +210,28 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 置顶/取消置顶公告
      */
     @Override
-    public AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean sticky) {
+    public AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean sticky, Long currentUid,
+                                                            boolean isSuperAdmin) {
         try {
-            log.info("Service层置顶/取消置顶公告, ID:{}, 置顶状态:{}", id, sticky);
+            log.info("置顶/取消置顶公告, ID:{}, 置顶状态:{}", id, sticky);
 
             // 校验sticky参数 (防御性编程)
             if (sticky == null) {
                 throw new IllegalArgumentException("置顶状态不能为空, 必须为true或false");
             }
 
+            if (!checkPermission(id, currentUid, isSuperAdmin)) {
+                log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", id, currentUid);
+                throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            }
+
             // 校验ID并检查公告是否存在且未被删除
-            if (announcementManager.checkExist(id)) {
-                throw new IllegalArgumentException("公告不存在或已被删除");
+            if (!announcementManager.isExist(id)) {
+                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
             // 如果置顶, 检查置顶公告数量限制 (最多3个)
-            if (sticky && announcementManager.canStickyAnnouncement(id)) {
+            if (sticky && !announcementManager.canStickyAnnouncement(id)) {
                 throw new IllegalArgumentException("置顶公告数量已达上限");
             }
 
@@ -228,23 +253,27 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 删除公告
      */
     @Override
-    public AnnouncementOperationResponse deleteAnnouncement(Long id) {
+    public AnnouncementOperationResponse deleteAnnouncement(Long id, Long currentUid, boolean isSuperAdmin) {
         try {
-            log.info("Service层删除公告, ID:{}", id);
-            // 校验ID
-            if (announcementManager.checkExist(id)) {
-                throw new IllegalArgumentException("公告不存在或已被删除");
+
+            if (!checkPermission(id, currentUid, isSuperAdmin)) {
+                log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", id, currentUid);
+                throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
             }
 
+            log.info("删除公告, ID:{}", id);
+            if (!announcementManager.isExist(id)) {
+                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
+            }
             return announcementManager.deleteAnnouncement(id);
         } catch (IllegalArgumentException e) {
             log.warn("参数校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
         } catch (ForumServiceException e) {
-            log.warn("编辑公告-manager:{}", e.getMessage());
+            log.warn("删除公告失败:{}", e.getMessage());
             throw new ApiException(e);
         } catch (Exception e) {
-            log.error("编辑公告异常", e);
+            log.error("删除公告异常", e);
             throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
@@ -255,14 +284,31 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public AnnouncementDetailResponse getAnnouncementById(Long id) {
         try {
-            log.info("Service层查询公告详情, ID:{}", id);
+            log.info("查询公告详情, ID:{}", id);
 
-            // 校验ID
-            if (announcementManager.checkExist(id)) {
-                throw new IllegalArgumentException("公告不存在或已被删除");
+            if (!announcementManager.isExist(id)) {
+                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
-            return announcementManager.getAnnouncementById(id);
+            AnnouncementDetailResponse response = new AnnouncementDetailResponse();
+            Announcement raw = announcementManager.getAnnouncementEntityById(id);
+            response.setId(raw.getId());
+            response.setTitle(raw.getTitle());
+            response.setContent(raw.getContent());
+            response.setType(raw.getType());
+            response.setStatus(raw.getStatus());
+            response.setCreator(getUsernameById(raw.getCreateUid()));
+            response.setUpdater(getUsernameById(raw.getUpdateUid()));
+
+            // 使用实际的时间数据和时间数据
+            response.setCreatedAt(raw.getCreatedAt());
+            response.setUpdatedAt(raw.getUpdatedAt());
+            response.setScheduledAt(raw.getScheduledAt());
+            response.setPublishedAt(raw.getPublishedAt());
+            response.setAttribute(raw.getAttribute());
+            response.setSticky(raw.getSticky());
+
+            return response;
         } catch (IllegalArgumentException e) {
             log.warn("admin查询公告详情校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
@@ -281,14 +327,40 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public AnnouncementTinyDetailsResponse getAnnouncementTinyDetailsById(Long id) {
         try {
-            log.info("Service层查询公告详情 (用户版) , ID:{}", id);
+            log.info("查询公告详情 (用户版) , ID:{}", id);
 
-            // 校验ID
-            if (announcementManager.checkExist(id)) {
-                throw new IllegalArgumentException("公告不存在或已被删除");
+            if (!announcementManager.isExist(id)) {
+                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
-            return announcementManager.getAnnouncementTinyDetailsById(id);
+            AnnouncementTinyDetailsResponse response = new AnnouncementTinyDetailsResponse();
+            Announcement raw = announcementManager.getAnnouncementEntityById(id);
+
+            // 检查公告状态
+            if (raw.getDeleted()) {
+                throw new IllegalArgumentException("公告状态异常");
+            } else {
+                if (raw.getStatus() == AnnouncementStatusEnum.SCHEDULED
+                        && (raw.getScheduledAt() == null || raw.getScheduledAt().isBefore(LocalDateTime.now()))) {
+                    throw new IllegalArgumentException("公告状态异常");
+                }
+            }
+
+            response.setId(id);
+            response.setTitle(raw.getTitle());
+            response.setContent(raw.getContent());
+            response.setType(raw.getType());
+            response.setSticky(raw.getSticky());
+
+            // 填充用户信息
+            response.setCreator(getUsernameById(raw.getCreateUid()));
+            response.setUpdater(getUsernameById(raw.getUpdateUid()));
+
+            // 格式化时间
+            response.setUpdatedAt(raw.getUpdatedAt());
+            response.setPublishedAt(raw.getPublishedAt());
+
+            return response;
         } catch (IllegalArgumentException e) {
             log.warn("user查询公告详情校验失败: {}", e.getMessage());
             throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
@@ -305,9 +377,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 查询公告列表(用户版本)
      */
     @Override
-    public ListAnnouncementTinyResponse userListAnnouncements(UserQueryAnnouncementRequest request) {
+    public BaseListResponse<ListAnnouncementTinyItemResponse> userListAnnouncements(
+            UserQueryAnnouncementRequest request) {
         try {
-            log.info("Service-用户查询公告列表, 页码:{}", request.getPage());
+            log.debug("用户查询公告列表, 页码:{}, 大小:{}, 类型: {}", request.getPage(), request.getPageSize(), request.getType());
 
             // page：不传或 <1 时都设为 1
             request.setPage(
@@ -320,8 +393,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                     request.getPageSize() == null
                             || request.getPageSize() < MIN_PAGE_SIZE
                             || request.getPageSize() > MAX_PAGE_SIZE
-                                    ? DEFAULT_PAGE_SIZE
-                                    : request.getPageSize());
+                            ? DEFAULT_PAGE_SIZE
+                            : request.getPageSize());
 
             // 处理类型转换
             if (request.getType() != null) {
@@ -341,11 +414,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
             // 调用Manager层获取分页数据
-            AnnouncementManager.PageResult<Announcement> pageResult = announcementManager
+            IPage<Announcement> pageResult = announcementManager
                     .findUserAnnouncementsWithPaging(request);
 
             // 【批量优化】1. 收集所有需要的用户ID
-            Set<Long> userIds = pageResult.getItems().stream()
+            Set<Long> userIds = pageResult.getRecords().stream()
                     .flatMap(announcement -> Stream.of(
                             announcement.getCreateUid(),
                             announcement.getUpdateUid()))
@@ -353,19 +426,21 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                     .collect(Collectors.toSet());
 
             // 【批量优化】2. 批量获取用户昵称
-            Map<Long, String> nicknameMap = cacheUtil.getUsernamesByIds(userIds);
+            Map<Long, String> nicknameMap = getUsernamesByIds(userIds);
 
             // 【批量优化】3. 转换为响应对象
-            List<ListAnnouncementTinyResponse.AnnouncementItemResponse> itemList = pageResult.getItems().stream()
-                    .map(announcement -> convertToUserAnnouncementItemBatch(announcement, nicknameMap))
+            List<ListAnnouncementTinyItemResponse> itemList = pageResult.getRecords().stream()
+                    .map(announcement -> convertToUserAnnouncementItem(announcement, nicknameMap))
                     .toList();
 
             // 构建分页响应
-            ListAnnouncementTinyResponse response = new ListAnnouncementTinyResponse();
-            response.setTotal(pageResult.getTotal());
-            response.setPage(request.getPage());
-            response.setPageSize(request.getPageSize());
-            response.setList(itemList);
+            BaseListResponse<ListAnnouncementTinyItemResponse> response = BaseListResponse
+                    .<ListAnnouncementTinyItemResponse>builder()
+                    .total(pageResult.getTotal())
+                    .page(pageResult.getCurrent() <= Integer.MAX_VALUE ? (int) pageResult.getCurrent() : 1)
+                    .pageSize(pageResult.getSize() <= Integer.MAX_VALUE ? (int) pageResult.getSize() : 10)
+                    .list(itemList)
+                    .build();
 
             log.debug("查询公告列表成功, 总数: {}, 当前页数据: {}", pageResult.getTotal(), itemList.size());
             return response;
@@ -382,13 +457,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     /**
-     * 将 Announcement 实体转换为用户版 AnnouncementItemResponse(批量优化版)
+     * 将 Announcement 实体转换为用户版 ListAnnouncementTinyItemResponse
      */
-    private ListAnnouncementTinyResponse.AnnouncementItemResponse convertToUserAnnouncementItemBatch(
+    private ListAnnouncementTinyItemResponse convertToUserAnnouncementItem(
             Announcement announcement, Map<Long, String> nicknameMap) {
 
         try {
-            ListAnnouncementTinyResponse.AnnouncementItemResponse item = new ListAnnouncementTinyResponse.AnnouncementItemResponse();
+            ListAnnouncementTinyItemResponse item = new ListAnnouncementTinyItemResponse();
             item.setId(announcement.getId());
             item.setTitle(announcement.getTitle());
             item.setType(announcement.getType());
@@ -396,11 +471,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
             // 【批量优化】设置用户名
             item.setCreator(nicknameMap.get(announcement.getCreateUid()));
-            item.setUpdator(nicknameMap.get(announcement.getUpdateUid()));
+            item.setUpdater(nicknameMap.get(announcement.getUpdateUid()));
 
             // 格式化时间 - 用户版本相对简化
-            item.setUpdatedAt(announcementManager.formatToIso8601(announcement.getUpdatedAt()));
-            item.setPublishedAt(announcementManager.formatZonedDateTimeToIso8601(announcement.getScheduledAt()));
+            item.setUpdatedAt(announcement.getUpdatedAt());
+            item.setPublishedAt(announcement.getPublishedAt());
 
             return item;
         } catch (IllegalArgumentException e) {
@@ -415,9 +490,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 管理员查询公告列表
      */
     @Override
-    public ListAnnouncementResponse adminQueryAnnouncements(AdminQueryAnnouncementRequest request) {
+    public BaseListResponse<ListAnnouncementItemResponse> adminQueryAnnouncements(
+            AdminQueryAnnouncementRequest request) {
         try {
-            log.info("Service层管理员查询公告列表, 页码:{}, 状态:{},类型:{}, 排序方向:{}",
+            log.info("管理员查询公告列表, 页码:{}, 状态:{},类型:{}, 排序方向:{}",
                     request.getPage(), request.getStatus(), request.getType(), request.orderType());
 
             // page：不传或 <1 时都设为 1
@@ -431,10 +507,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                     request.getPageSize() == null
                             || request.getPageSize() < MIN_PAGE_SIZE
                             || request.getPageSize() > MAX_PAGE_SIZE
-                                    ? DEFAULT_PAGE_SIZE
-                                    : request.getPageSize());
+                            ? DEFAULT_PAGE_SIZE
+                            : request.getPageSize());
 
-            if (request.getStatus() != null && !request.getStatus().equals("all")
+            if (request.getStatus() != null && !NO_CONDITION.equals(request.getStatus())
                     && !request.getStatus().equals(AnnouncementStatusEnum.DRAFT.getCode())
                     && !request.getStatus().equals(AnnouncementStatusEnum.PUBLISHED.getCode())
                     && !request.getStatus().equals(AnnouncementStatusEnum.SCHEDULED.getCode())) {
@@ -481,11 +557,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
             // 调用Manager层获取分页数据
-            AnnouncementManager.PageResult<Announcement> pageResult = announcementManager
+            IPage<Announcement> pageResult = announcementManager
                     .findAdminAnnouncementsWithPaging(request);
 
             // 【批量优化】1. 收集所有需要的用户ID
-            Set<Long> userIds = pageResult.getItems().stream()
+            Set<Long> userIds = pageResult.getRecords().stream()
                     .flatMap(announcement -> Stream.of(
                             announcement.getCreateUid(),
                             announcement.getUpdateUid()))
@@ -493,19 +569,21 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                     .collect(Collectors.toSet());
 
             // 【批量优化】2. 批量获取用户昵称
-            Map<Long, String> nicknameMap = cacheUtil.getUsernamesByIds(userIds);
+            Map<Long, String> nicknameMap = getUsernamesByIds(userIds);
 
             // 【批量优化】3. 转换为响应对象
-            List<ListAnnouncementResponse.AnnouncementItemResponse> itemList = pageResult.getItems().stream()
-                    .map(announcement -> convertToAdminAnnouncementItemBatch(announcement, nicknameMap))
+            List<ListAnnouncementItemResponse> itemList = pageResult.getRecords().stream()
+                    .map(announcement -> convertToAdminAnnouncementItem(announcement, nicknameMap))
                     .toList();
 
             // 构建分页响应
-            ListAnnouncementResponse response = new ListAnnouncementResponse();
-            response.setTotal(pageResult.getTotal());
-            response.setPage(request.getPage());
-            response.setPageSize(request.getPageSize());
-            response.setList(itemList);
+            BaseListResponse<ListAnnouncementItemResponse> response = BaseListResponse
+                    .<ListAnnouncementItemResponse>builder()
+                    .total(pageResult.getTotal())
+                    .page(pageResult.getCurrent() <= Integer.MAX_VALUE ? (int) pageResult.getCurrent() : 1)
+                    .pageSize(pageResult.getSize() <= Integer.MAX_VALUE ? (int) pageResult.getSize() : 10)
+                    .list(itemList)
+                    .build();
 
             log.debug("管理员查询公告列表成功, 总数: {}, 当前页数据: {}", pageResult.getTotal(), itemList.size());
             return response;
@@ -523,13 +601,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     /**
-     * 将 Announcement 实体转换为管理员版 AnnouncementItemResponse(批量优化版)
+     * 将 Announcement 实体转换为管理员版 ListAnnouncementItemResponse
      */
-    private ListAnnouncementResponse.AnnouncementItemResponse convertToAdminAnnouncementItemBatch(
+    private ListAnnouncementItemResponse convertToAdminAnnouncementItem(
             Announcement announcement, Map<Long, String> nicknameMap) {
 
         try {
-            ListAnnouncementResponse.AnnouncementItemResponse item = new ListAnnouncementResponse.AnnouncementItemResponse();
+            ListAnnouncementItemResponse item = new ListAnnouncementItemResponse();
             item.setId(announcement.getId());
             item.setTitle(announcement.getTitle());
             item.setType(announcement.getType());
@@ -538,13 +616,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
             // 【批量优化】设置用户名
             item.setCreator(nicknameMap.get(announcement.getCreateUid()));
-            item.setUpdator(nicknameMap.get(announcement.getUpdateUid()));
+            item.setUpdater(nicknameMap.get(announcement.getUpdateUid()));
 
             // 格式化时间 - 管理员版包含完整时间信息
-            item.setCreatedAt(announcementManager.formatToIso8601(announcement.getCreatedAt()));
-            item.setUpdatedAt(announcementManager.formatToIso8601(announcement.getUpdatedAt()));
-            item.setScheduledAt(announcementManager.formatZonedDateTimeToIso8601(announcement.getScheduledAt()));
-            item.setPublishedAt(announcementManager.formatZonedDateTimeToIso8601(announcement.getPublishedAt()));
+            item.setCreatedAt(announcement.getCreatedAt());
+            item.setUpdatedAt(announcement.getUpdatedAt());
+            item.setScheduledAt(announcement.getScheduledAt());
+            item.setPublishedAt(announcement.getPublishedAt());
 
             return item;
         } catch (IllegalArgumentException e) {
@@ -560,10 +638,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      */
     private ListAnnouncementMinorResponse.AnnouncementMinorResponse toItemDto(Announcement announcement) {
         return new ListAnnouncementMinorResponse.AnnouncementMinorResponse(
-            announcement.getId(),
-            announcement.getTitle(),
-            announcement.getSticky()
-        );
+                announcement.getId(),
+                announcement.getTitle(),
+                announcement.getSticky());
     }
 
     @Override
@@ -572,16 +649,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             List<Announcement> stickies = announcementManager.getStickyAnnouncements();
             List<Announcement> recents = announcementManager.getRecentAnnouncements();
 
-            // Stream 流中的类型现在是嵌套的 record 类型
+            // Stream 流中的类型是嵌套的 record 类型
             List<ListAnnouncementMinorResponse.AnnouncementMinorResponse> topAnnouncements = Stream
                     .concat(stickies.stream(), recents.stream())
                     .distinct()
                     .limit(3)
-                    // map 时调用 toItemDto 方法
                     .map(this::toItemDto)
                     .collect(Collectors.toList());
 
-            // 使用处理好的列表创建并返回最终的响应对象
+            // 使用处理过的列表创建并返回最终响应对象
             return new ListAnnouncementMinorResponse(topAnnouncements);
 
         } catch (Exception e) {
@@ -593,7 +669,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     /**
      * 辅助方法-编辑/删除权限校验
      */
-    @Override
     public boolean checkPermission(Long announcementId, Long userId, boolean isSuperAdmin) {
         if (!isSuperAdmin) {
             try {
@@ -604,7 +679,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
             }
         } else {
-            return isSuperAdmin;
+            return true;
         }
     }
 
@@ -640,12 +715,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     /**
      * 校验创建时的定时发布和状态逻辑
      */
-    private void validateScheduledAndStatus(ZonedDateTime scheduledAt, String status) {
+    private void validateScheduledAndStatus(LocalDateTime scheduledAt, String status) {
         if (scheduledAt != null) {
             // 获取当前时区 (UTC+8) 时间
-            ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Shanghai"));
+            LocalDateTime now = LocalDateTime.now();
             // 设置最小允许时间 (当前时间+30秒)
-            ZonedDateTime minAllowedTime = now.plusSeconds(30);
+            LocalDateTime minAllowedTime = now.plusSeconds(30);
 
             // 比较带时区的时间
             if (scheduledAt.isBefore(minAllowedTime)) {
@@ -663,6 +738,27 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 throw new IllegalArgumentException("未设置定时发布时, 状态只能为草稿或已发布");
             }
         }
+    }
+
+    /**
+     * 辅助方法-根据id获取用户昵称（直接查MySQL）
+     */
+    private Map<Long, String> getUsernamesByIds(Set<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+        return userManager.getUsernamesByIds(userIds);
+    }
+
+    /**
+     * 获取单个用户名（直接查UserManager.getUserInfo）
+     */
+    private String getUsernameById(Long userId) {
+        if (userId == null) {
+            return "";
+        }
+        var userInfo = userManager.getUserInfo(userId);
+        return userInfo != null && userInfo.getNickname() != null ? userInfo.getNickname() : "";
     }
 
 }

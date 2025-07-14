@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * 定时任务配置
  * 启用Spring的定时任务支持
- * 
+ *
  * @author SituChengxiang
  */
 @Configuration

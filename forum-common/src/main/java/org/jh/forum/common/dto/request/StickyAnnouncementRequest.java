@@ -1,13 +1,14 @@
 package org.jh.forum.common.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
 /**
  * 置顶公告请求DTO
- * 
+ *
  * @author SituChengxiang
  */
 @Data
@@ -20,6 +21,6 @@ public class StickyAnnouncementRequest {
     private Long id;
 
     @NotNull(message = "置顶状态不能为空")
-    @Schema(description = "是否置顶", example = "true", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "true", "false" })
-    private Boolean Sticky;
+    @Schema(description = "是否置顶", example = "true", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"true", "false"})
+    private Boolean sticky;
 }

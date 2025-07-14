@@ -1,4 +1,4 @@
-package org.jh.forum.server.manger;
+package org.jh.forum.server.manager;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

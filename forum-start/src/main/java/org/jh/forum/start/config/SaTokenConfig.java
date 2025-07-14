@@ -3,7 +3,7 @@ package org.jh.forum.start.config;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpInterface;
 import lombok.AllArgsConstructor;
-import org.jh.forum.server.manger.UserManager;
+import org.jh.forum.server.manager.UserManager;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

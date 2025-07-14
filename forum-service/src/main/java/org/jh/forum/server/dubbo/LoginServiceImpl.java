@@ -13,7 +13,7 @@ import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
 import org.jh.forum.common.entity.User;
 import org.jh.forum.common.exceptions.ForumServiceException;
-import org.jh.forum.server.manger.UserManager;
+import org.jh.forum.server.manager.UserManager;
 import org.jh.forum.server.mapper.UserMapper;
 
 import java.util.Objects;

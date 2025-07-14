@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author  SituChengxiang
+ * @author SituChengxiang
  */
 
 @AllArgsConstructor
@@ -24,7 +24,7 @@ public enum AnnouncementTypeEnum {
     private final String code;
     private final String description;
 
-    public static AnnouncementTypeEnum fromCode(String code){
+    public static AnnouncementTypeEnum fromCode(String code) {
         for (AnnouncementTypeEnum type : AnnouncementTypeEnum.values()) {
             if (type.getCode().equals(code)) {
                 return type;

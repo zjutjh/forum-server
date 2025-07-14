@@ -1,42 +1,25 @@
 package org.jh.forum.start.controller;
 
-import org.jh.forum.api.dubbo.service.AnnouncementService;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.dto.request.AdminQueryAnnouncementRequest;
-import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
-import org.jh.forum.common.dto.request.EditAnnouncementRequest;
-import org.jh.forum.common.dto.request.StickyAnnouncementRequest;
-import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
-import org.jh.forum.common.dto.response.AnnouncementDetailResponse;
-import org.jh.forum.common.dto.response.AnnouncementTinyDetailsResponse;
-import org.jh.forum.common.dto.response.ListAnnouncementMinorResponse;
-import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
-import org.jh.forum.common.dto.response.ListAnnouncementTinyResponse;
-import org.jh.forum.common.dto.response.ListAnnouncementResponse;
-import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.start.models.AjaxResult;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.jh.forum.api.dubbo.service.AnnouncementService;
+import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.common.dto.request.*;
+import org.jh.forum.common.dto.response.*;
+import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.start.models.AjaxResult;
+import org.springframework.web.bind.annotation.*;
+
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 公告管理控制器
- * ·*
  * 功能概述:
  * - 创建公告: POST /announcements
  * - 更新公告: PUT /announcements
@@ -53,10 +36,11 @@ import lombok.extern.slf4j.Slf4j;
  * 4. Manager 调用 Mapper 操作数据库
  * 5. 返回结果给前端
  *
- * @author SituChengxiang( SK )
+ * @author SituChengxiang(SK)
  */
 @Slf4j
 @RestController
+@SaCheckLogin
 @RequestMapping("/announcements")
 @Tag(name = "公告管理接口", description = "公告的创建、发布、查询等功能")
 public class AnnouncementController {
@@ -76,8 +60,7 @@ public class AnnouncementController {
      * @return 创建结果, 包含公告基本信息
      */
     @Operation(summary = "创建公告", description = "创建一个公告, 支持多种类型( 管理员权限 )")
-    @SaCheckLogin
-    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @PostMapping
     public AjaxResult<AnnouncementOperationResponse> createAnnouncement(
             @Valid @RequestBody CreateAnnouncementRequest request) {
@@ -88,7 +71,7 @@ public class AnnouncementController {
 
             AnnouncementOperationResponse response = announcementService.createAnnouncement(request);
 
-            log.info("公告创建成功, ID: {}", response.getAnnounceId());
+            log.info("公告创建成功, ID: {}", response.getAnnouncementId());
             return AjaxResult.success("created", response);
         } catch (ApiException e) {
             // 处理 ApiException( Service层包装的异常 )
@@ -96,7 +79,7 @@ public class AnnouncementController {
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             // 处理未知异常
-            log.error("创建公共失败, 未知错误: {}", e.getMessage(), e);
+            log.error("创建公告失败, 未知错误: {}", e.getMessage(), e);
             return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
         }
     }
@@ -112,8 +95,7 @@ public class AnnouncementController {
      * @return 编辑结果
      */
     @Operation(summary = "更新公告", description = "更新指定ID的公告信息( 管理员权限 )")
-    @SaCheckLogin
-    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @PutMapping
     public AjaxResult<AnnouncementOperationResponse> editAnnouncement(
             @Valid @RequestBody EditAnnouncementRequest request) {
@@ -124,14 +106,15 @@ public class AnnouncementController {
         log.info("收到更新公告请求, ID: {}, 标题: {}, 类型: {}, 操作人id: {}",
                 request.getId(), request.getTitle(), request.getType(), currentUid);
         try {
-            if (!announcementService.checkPermission(request.getId(), currentUid, isSuperAdmin)) {
-                log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", request.getId(), currentUid);
-                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
-            }
+            // TODO :带回权限管理
+//            if (!announcementService.checkPermission(request.getId(), currentUid, isSuperAdmin)) {
+//                log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", request.getId(), currentUid);
+//                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+//            }
 
-            AnnouncementOperationResponse response = announcementService.editAnnouncement(request.getId(), request);
+            AnnouncementOperationResponse response = announcementService.editAnnouncement(request, currentUid, isSuperAdmin);
 
-            log.info("公告更新成功, ID: {}", response.getAnnounceId());
+            log.info("公告更新成功, ID: {}", response.getAnnouncementId());
             return AjaxResult.success("updated", response);
         } catch (ApiException e) {
             log.warn("更新公告失败: {}", e.getErrorMsg());
@@ -153,8 +136,7 @@ public class AnnouncementController {
      * @return 操作结果
      */
     @Operation(summary = "设置/取消置顶公告", description = "设置或取消公告的置顶状态( 管理员权限 )")
-    @SaCheckLogin
-    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @PutMapping("/sticky")
     public AjaxResult<AnnouncementOperationResponse> stickyAnnouncement(
             @Valid @RequestBody StickyAnnouncementRequest request) {
@@ -164,15 +146,16 @@ public class AnnouncementController {
         log.info("收到置顶/取消置顶公告请求, ID: {}, 置顶状态: {}", request.getId(), request.getSticky());
         try {
 
-            if (!announcementService.checkPermission(currentUid, currentUid, isSuperAdmin)) {
-                log.warn("用户无权限置顶/取消置顶公告, ID: {}, 用户ID: {}", request.getId(), currentUid);
-                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
-            }
+            // TODO :带回权限管理
+//            if (!announcementService.checkPermission(request.getId(), currentUid, isSuperAdmin)) {
+//                log.warn("用户无权限置顶/取消置顶公告, ID: {}, 用户ID: {}", request.getId(), currentUid);
+//                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+//            }
 
             AnnouncementOperationResponse response = announcementService.stickyAnnouncement(
-                    request.getId(), request.getSticky());
+                    request.getId(), request.getSticky(), currentUid, isSuperAdmin);
 
-            log.info("公告{}成功, ID: {}", request.getSticky() ? "置顶" : "取消置顶", response.getAnnounceId());
+            log.info("公告{}成功, ID: {}", request.getSticky() ? "置顶" : "取消置顶", response.getAnnouncementId());
             return AjaxResult.success(request.getSticky() ? "stickied" : "unstick", response);
         } catch (ApiException e) {
             log.error("置顶/取消公告异常 {}", e.getMessage(), e);
@@ -194,8 +177,7 @@ public class AnnouncementController {
      * @return 删除结果
      */
     @Operation(summary = "软删除公告", description = "软删除指定公告( 管理员权限 )")
-    @SaCheckLogin
-    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @DeleteMapping
     public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@RequestParam("id") Long id) {
         Long currentUid = StpUtil.getLoginIdAsLong();
@@ -204,12 +186,13 @@ public class AnnouncementController {
         try {
             log.info("收到删除公告请求, ID: {}", id);
 
-            if (!announcementService.checkPermission(id, currentUid, isSuperAdmin)) {
-                log.warn("用户无权限删除该公告, 公告ID: {}, 用户ID: {}", id, currentUid);
-                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
-            }
+            // TODO :带回权限管理
+//            if (!announcementService.checkPermission(id, currentUid, isSuperAdmin)) {
+//                log.warn("用户无权限删除该公告, 公告ID: {}, 用户ID: {}", id, currentUid);
+//                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+//            }
 
-            AnnouncementOperationResponse result = announcementService.deleteAnnouncement(id);
+            AnnouncementOperationResponse result = announcementService.deleteAnnouncement(id, currentUid, isSuperAdmin);
 
             log.info("删除公告成功, ID: {}", id);
             return AjaxResult.success("deleted", result);
@@ -258,8 +241,7 @@ public class AnnouncementController {
      * @return 公告详情
      */
     @Operation(summary = "查看公告全部信息", description = "根据ID查询公告详情( 管理员 )")
-    @SaCheckLogin
-    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @GetMapping("/see")
     public AjaxResult<AnnouncementDetailResponse> getAnnouncementDetail(@RequestParam("id") Long id) {
         try {
@@ -283,20 +265,20 @@ public class AnnouncementController {
      * 支持参数: page, size, type
      * 默认排序: 按 updated_at 升序( 最后发布的在最下面 )
      * 权限: 用户
-     * 
+     *
      * @param request 用户查询请求参数
-     * @return 公告列表( 简化版 )
+     * @return 公告列表(简化版)
      */
     @Operation(summary = "用户公告列表", description = "查询用户可见的公告列表, 按 updated_at 升序( 最后发布的在最下面 )")
     @GetMapping("/list")
-    public AjaxResult<ListAnnouncementTinyResponse> listAnnouncements(@Valid UserQueryAnnouncementRequest request) {
+    public AjaxResult<BaseListResponse<ListAnnouncementTinyItemResponse>> listAnnouncements(@Valid UserQueryAnnouncementRequest request) {
         try {
-            log.info("收到查询公告列表请求, 页码: {}, 大小: {}, 类型: {}", request.getPage(), request.getPageSize(), request.getType());
+            log.debug("收到查询公告列表请求, 页码: {}, 大小: {}, 类型: {}", request.getPage(), request.getPageSize(), request.getType());
 
             // 只查询已发布的公告并转换为 ListAnnouncementTinyResponse
-            ListAnnouncementTinyResponse response = announcementService.userListAnnouncements(request);
+            BaseListResponse<ListAnnouncementTinyItemResponse> response = announcementService.userListAnnouncements(request);
 
-            log.info("查询公告列表成功, 总数: {}", response.getTotal());
+            log.debug("查询公告列表成功, 总数: {}", response.getTotal());
             return AjaxResult.success(response);
         } catch (ApiException e) {
             log.error("查询公告列表异常: {}", e.getErrorMsg());
@@ -318,17 +300,16 @@ public class AnnouncementController {
      * @return 公告列表
      */
     @Operation(summary = "管理员公告列表查询", description = "查询管理员可见的公告列表( 管理员权限 )")
-    @SaCheckLogin
-    @SaCheckRole(value = { "admin", "super_admin" }, mode = SaMode.OR)
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @GetMapping("/query")
-    public AjaxResult<ListAnnouncementResponse> adminAnnouncementQueryRequest(
+    public AjaxResult<BaseListResponse<ListAnnouncementItemResponse>> adminAnnouncementQueryRequest(
             @Valid AdminQueryAnnouncementRequest request) {
         try {
             log.info("收到管理员查询公告列表请求, 页码: {}, 页大小: {}, 状态: {}, 类型: {}, 排序方向: {}, 是否查询已删除: {}",
                     request.getPage(), request.getPageSize(), request.getStatus(), request.getType(),
                     request.orderType(), request.getDeleted());
 
-            ListAnnouncementResponse response = announcementService.adminQueryAnnouncements(request);
+            BaseListResponse<ListAnnouncementItemResponse> response = announcementService.adminQueryAnnouncements(request);
 
             log.info("管理员查询公告列表成功, 总数: {}", response.getTotal());
             return AjaxResult.success(response);
@@ -345,7 +326,7 @@ public class AnnouncementController {
     /**
      * 手动触发定时发布任务接口( 测试用 )
      * HTTP方法: POST
-     * 请求路径: /announcements/trigger-publish
+     * 请求路径: /announcements/trigger-publish，目前是用不聊的，因为定时服务目前还没弄完
      * 权限: 管理员
      *
      * @return 触发结果
@@ -371,6 +352,7 @@ public class AnnouncementController {
      * HTTP方法: GET
      * 请求路径: /announcements/top
      * 权限: 用户
+     *
      * @return 置顶公告列表
      */
     @Operation(summary = "获取置顶公告", description = "获取置顶的三条公告，不够的话最新更新的来凑")

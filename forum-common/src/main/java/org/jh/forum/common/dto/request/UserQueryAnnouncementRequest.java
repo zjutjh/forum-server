@@ -1,14 +1,13 @@
 package org.jh.forum.common.dto.request;
 
 import com.alibaba.nacos.shaded.javax.annotation.Nullable;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
  * 用户公告列表查询请求DTO
- * 
+ *
  * @author SituChengxiang
  */
 @EqualsAndHashCode(callSuper = true)
@@ -22,7 +21,7 @@ public class UserQueryAnnouncementRequest extends BaseListRequest {
     @Nullable
     @Schema(description = "类型筛选 (systematic, scholastic,all)", allowableValues = {
             "systematic", "scholastic",
-            "all" }, example = "systematic", defaultValue = "all", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            "all"}, example = "systematic", defaultValue = "all", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String type;
 
     @Nullable

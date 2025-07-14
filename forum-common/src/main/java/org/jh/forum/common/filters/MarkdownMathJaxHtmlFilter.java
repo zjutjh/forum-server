@@ -1,6 +1,6 @@
 package org.jh.forum.common.filters;
 
-import org.commonmark.node.*;
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.jsoup.Jsoup;
@@ -9,6 +9,7 @@ import org.springframework.web.util.HtmlUtils;
 
 /**
  * Markdown + MathJax + XSS 过滤工具
+ *
  * @author SituChengxiang(SK)
  */
 public class MarkdownMathJaxHtmlFilter {
@@ -23,11 +24,11 @@ public class MarkdownMathJaxHtmlFilter {
 
         // 允许常用HTML和MathJax标签
         this.safelist = Safelist.relaxed()
-                .addTags("math", "mi", "mo", "mn", "msup", "msub", "mrow", "span","svg")
+                .addTags("math", "mi", "mo", "mn", "msup", "msub", "mrow", "span", "svg")
                 .addAttributes("span", "class", "style")
                 .addAttributes("math", "xmlns", "display")
                 .addAttributes("img", "src", "alt", "title")
-                .addProtocols("a","herf","img", "src", "http", "https", "data","mailto");
+                .addProtocols("a", "href", "img", "src", "http", "https", "data", "mailto");
     }
 
     /**

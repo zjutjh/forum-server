@@ -2,35 +2,39 @@ package org.jh.forum.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.AnnouncementTypeEnum;
 
 import java.time.LocalDateTime;
 
 /**
- * 公告详情响应DTO（用户版本）
+ * 查询公告列表响应最小DTO（用户版本）
  *
- * @author SituChengxiang
+ * @author SituChengiang
  */
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
-@Schema(description = "公告详情响应")
-public class AnnouncementTinyDetailsResponse {
+@Schema(description = "公告列表项（用户版）")
+public class ListAnnouncementTinyItemResponse {
+
     @Schema(description = "公告ID", example = "1")
     private Long id;
 
     @Schema(description = "公告标题", example = "重要系统维护通知")
     private String title;
 
-    @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...")
-    private String content;
-
-    @Schema(description = "公告类型", example = "system")
+    @Schema(description = "类型", example = "systematic")
     private AnnouncementTypeEnum type;
 
-    @Schema(description = "创建用户的昵称", example = "admin")
+    @Schema(description = "创建用户昵称", example = "admin")
     private String creator;
 
-    @Schema(description = "更新用户的昵称", example = "su_admin")
+    @Schema(description = "更新用户昵称", example = "su_admin")
     private String updater;
 
     @JsonProperty("updated_at")
@@ -42,5 +46,5 @@ public class AnnouncementTinyDetailsResponse {
     private LocalDateTime publishedAt;
 
     @Schema(description = "是否置顶", example = "false")
-    private Boolean sticky;
+    private boolean sticky;
 }
