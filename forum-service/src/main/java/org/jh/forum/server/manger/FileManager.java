@@ -77,4 +77,12 @@ public class FileManager {
         attachment.setTargetId(targetId);
         attachmentMapper.updateById(attachment);
     }
+
+    public String getFileUrl(Long fileId) {
+        File file = fileMapper.selectById(fileId);
+        if (file == null) {
+            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        return cubeService.getFileUrl(file.getObjectKey());
+    }
 }

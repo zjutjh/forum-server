@@ -18,13 +18,13 @@ public class AutoFillHandler implements MetaObjectHandler {
      */
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "createUid", Long.class, getCurrentUserId());
-        this.strictInsertFill(metaObject, "createdAt", LocalDateTime.class, LocalDateTime.now());
+        this.setFieldValByName("createUid", getCurrentUserId(), metaObject);
+        this.setFieldValByName("createdAt", LocalDateTime.now(), metaObject);
 
-        this.strictInsertFill(metaObject, "updateUid", Long.class, getCurrentUserId());
-        this.strictInsertFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
+        this.setFieldValByName("updateUid", getCurrentUserId(), metaObject);
+        this.setFieldValByName("updatedAt", LocalDateTime.now(), metaObject);
 
-        this.strictInsertFill(metaObject, "deleted", Boolean.class, false);
+        this.setFieldValByName("deleted", Boolean.FALSE, metaObject);
     }
 
     /**
@@ -32,8 +32,8 @@ public class AutoFillHandler implements MetaObjectHandler {
      */
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.strictUpdateFill(metaObject, "updateUid", Long.class, getCurrentUserId());
-        this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
+        this.setFieldValByName("updateUid", getCurrentUserId(), metaObject);
+        this.setFieldValByName("updatedAt", LocalDateTime.now(), metaObject);
     }
 
     /**

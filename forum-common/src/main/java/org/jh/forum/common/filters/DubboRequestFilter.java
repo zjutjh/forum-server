@@ -6,11 +6,8 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.*;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
@@ -38,8 +35,6 @@ public class DubboRequestFilter implements Filter {
         }
     }
 
-    private final Map<String, Method> methodCache = new ConcurrentHashMap<>();
-
     private static void logError(String serviceName, String methodName, String jsonArgs, Throwable e) {
         String sb = ipHost +
                 LOG_DELIMITER +
@@ -57,7 +52,7 @@ public class DubboRequestFilter implements Filter {
         String methodName = invocation.getMethodName();
         // 转成 jsonString 来避免后续执行过程中因修改入参而给排查问题带来可能的误导
         String jsonArgs = JSON.toJSONString(invocation.getArguments());
-        Long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         Result result = invoker.invoke(invocation);
         Result appResponse = ((AsyncRpcResult) result).getAppResponse();
         Long rt = System.currentTimeMillis() - startTime;

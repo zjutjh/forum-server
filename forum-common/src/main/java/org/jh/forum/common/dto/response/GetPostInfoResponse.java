@@ -7,8 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -49,5 +51,8 @@ public class GetPostInfoResponse {
 
     @Schema(description = "发帖时间")
     @JsonProperty("created_at")
-    private String createdAt;
+    private LocalDateTime createdAt;
+
+    @Schema(description = "帖子附件列表")
+    private List<AttachmentInfoDTO> attachments;
 }

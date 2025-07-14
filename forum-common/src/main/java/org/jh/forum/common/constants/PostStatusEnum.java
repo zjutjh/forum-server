@@ -6,16 +6,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author MangoGovo
+ * @author SugarMGP
  */
 @Getter
 @AllArgsConstructor
-public enum UserTypeEnum {
-    STUDENT("student"),
-    ADMIN("admin"),
-    SUPER_ADMIN("super_admin");
+public enum PostStatusEnum {
+    NORMAL("normal", "正常"),
+    PENDING("pending", "待审"),
+    DELETED("deleted", "已删");
 
     @EnumValue
     @JsonValue
     private final String value;
+
+    private final String desc;
 }

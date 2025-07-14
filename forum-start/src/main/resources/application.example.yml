@@ -3,6 +3,8 @@ server:
 api:
   prefix: /api
 spring:
+  jackson:
+    time-zone: Asia/Shanghai
   servlet:
     multipart:
       max-file-size: 20MB
