@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostStatusEnum;
 
 /**
  * @author SugarMGP
@@ -27,4 +28,8 @@ public class Post extends BaseEntity {
     private Boolean isPinned;
 
     private Boolean isTopped;
+
+    private Integer viewCount;
+
+    private PostStatusEnum status;
 }

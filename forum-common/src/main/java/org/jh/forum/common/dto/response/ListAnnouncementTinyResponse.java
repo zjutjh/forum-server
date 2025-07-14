@@ -2,10 +2,11 @@ package org.jh.forum.common.dto.response;
 
 import org.jh.forum.common.constants.AnnouncementTypeEnum;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * 查询公告列表响应最小DTO（用户版本）
@@ -13,10 +14,21 @@ import lombok.EqualsAndHashCode;
  * @author SituChengiang
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
 @Schema(description = "查询公告列表响应")
-public class ListAnnouncementTinyResponse
-        extends BaseListResponse<ListAnnouncementTinyResponse.AnnouncementItemResponse> {
+public class ListAnnouncementTinyResponse {
+    
+    @Schema(description = "页码")
+    private Integer page;
+
+    @JsonProperty("page_size")
+    @Schema(description = "每页数量")
+    private Integer pageSize;
+
+    @Schema(description = "总数")
+    private Long total;
+
+    @Schema(description = "列表")
+    private List<AnnouncementItemResponse> list;
 
     @Data
     @Schema(description = "公告列表项")

@@ -37,7 +37,7 @@ public class PublishPostRequest {
     @NotNull
     private List<@Length(min = 1, max = 30) String> topics;
 
-    @Schema(description = "帖子附件ID列表")
+    @Schema(description = "要绑定的附件ID列表")
     @NotNull
     @JsonProperty("attachment_ids")
     private List<Long> attachmentIds;

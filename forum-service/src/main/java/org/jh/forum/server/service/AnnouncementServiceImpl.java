@@ -30,7 +30,6 @@ import org.jh.forum.server.manager.AnnouncementManager;
 import org.jh.forum.server.utils.CacheUtil;
 
 import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -363,7 +362,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
             // 构建分页响应
             ListAnnouncementTinyResponse response = new ListAnnouncementTinyResponse();
-            response.setTotal(pageResult.getTotal().intValue());
+            response.setTotal(pageResult.getTotal());
             response.setPage(request.getPage());
             response.setPageSize(request.getPageSize());
             response.setList(itemList);
@@ -503,7 +502,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
             // 构建分页响应
             ListAnnouncementResponse response = new ListAnnouncementResponse();
-            response.setTotal(pageResult.getTotal().intValue());
+            response.setTotal(pageResult.getTotal());
             response.setPage(request.getPage());
             response.setPageSize(request.getPageSize());
             response.setList(itemList);

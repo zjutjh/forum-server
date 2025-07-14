@@ -2,6 +2,7 @@ package org.jh.forum.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
  * @author MangoGovo
  */
 @Data
+@Builder
 public class BaseListResponse<T> {
     @Schema(description = "页码")
     private Integer page;
@@ -22,7 +24,7 @@ public class BaseListResponse<T> {
     private Integer pageSize;
 
     @Schema(description = "总数")
-    private Integer total;
+    private Long total;
 
     @Schema(description = "列表")
     private List<T> list;

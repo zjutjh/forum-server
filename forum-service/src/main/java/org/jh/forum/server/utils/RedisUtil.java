@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.server.config.service.ForumSwitchService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
@@ -36,7 +35,6 @@ public class RedisUtil {
     private final RedisProperties redisProperties;
     private JedisPool jedisPool;
 
-    @Autowired
     public RedisUtil(RedisProperties redisProperties) {
         this.redisProperties = redisProperties;
     }
@@ -74,7 +72,6 @@ public class RedisUtil {
                 redisProperties.getHost(),
                 redisProperties.getPort(),
                 2000,
-                redisProperties.getUsername(),
                 redisProperties.getPassword(),
                 redisProperties.getDatabase()
         );

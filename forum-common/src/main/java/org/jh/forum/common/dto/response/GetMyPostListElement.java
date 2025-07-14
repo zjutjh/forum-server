@@ -7,7 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostStatusEnum;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -47,9 +49,12 @@ public class GetMyPostListElement {
 
     @Schema(description = "发帖时间")
     @JsonProperty("created_at")
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     @Schema(description = "是否置顶（个人主页）")
     @JsonProperty("is_topped")
     private Boolean isTopped;
+
+    @Schema(description = "帖子状态（此处不会是deleted）")
+    private PostStatusEnum status;
 }

@@ -30,11 +30,13 @@ public class LoginServiceImpl implements LoginService {
 
     /**
      * 学生登录
-     *  TODO 接入用户中心
-     *  TODO 处理统一密码修改之后数据库同步问题
+     * TODO 接入用户中心
+     * TODO 处理统一密码修改之后数据库同步问题
+     *
+     * @return 用户类型
      */
     @Override
-    public String login(String username, String password, Integer loginType) {
+    public UserTypeEnum login(String username, String password, Integer loginType) {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, username));
         if (Objects.isNull(user)) {
             // 首次登录, 数据库创建对象
@@ -54,6 +56,6 @@ public class LoginServiceImpl implements LoginService {
             throw new ForumServiceException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
         }
         StpUtil.login(user.getId());
-        return user.getRole().getValue();
+        return user.getRole();
     }
 }

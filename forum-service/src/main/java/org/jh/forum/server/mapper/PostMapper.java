@@ -1,6 +1,8 @@
 package org.jh.forum.server.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 import org.jh.forum.common.entity.Post;
 
 /**
@@ -10,7 +12,8 @@ import org.jh.forum.common.entity.Post;
  * @Entity org.jh.forum.common.entity.Post
  */
 public interface PostMapper extends BaseMapper<Post> {
-
+    @Update("UPDATE post SET view_count = view_count + 1 WHERE id = #{postId}")
+    void incrementViewCount(@Param("postId") Long postId);
 }
 
 
