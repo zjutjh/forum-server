@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.constants.ReportTargetTypeEnum;
+import org.jh.forum.common.constants.ReportTypeEnum;
 
 import java.time.LocalDateTime;
 
@@ -20,13 +22,17 @@ public class GetReportListElement {
     @Schema(description = "举报ID")
     private Long id;
 
+    @Schema(description = "处理状态")
+    @JsonProperty("status")
+    private String status;
+
     @Schema(description = "举报目标类型 评论/帖子/用户")
     @JsonProperty("target_type")
-    private String targetType;
+    private ReportTargetTypeEnum targetType;
 
     @Schema(description = "举报类型")
     @JsonProperty("type")
-    private String type;
+    private ReportTypeEnum type;
 
     @Schema(description = "举报描述")
     @JsonProperty("reason")
@@ -35,6 +41,10 @@ public class GetReportListElement {
     @Schema(description = "被举报用户ID")
     @JsonProperty("user_id")
     private Long userId;
+
+    @Schema(description = "被举报用户名称")
+    @JsonProperty("nickname")
+    private String nickname;
 
     @Schema(description = "举报时间")
     @JsonProperty("created_at")
