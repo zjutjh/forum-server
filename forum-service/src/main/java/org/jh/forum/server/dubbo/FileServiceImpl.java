@@ -12,7 +12,7 @@ import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
-import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.FileMapper;
 
@@ -67,7 +67,7 @@ public class FileServiceImpl implements FileService {
     public AttachmentInfoDTO getAttachmentInfo(Long attachmentId) {
         Attachment attachment = attachmentMapper.selectById(attachmentId);
         if (attachment == null) {
-            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         File file = fileMapper.selectById(attachment.getFileId());
         return AttachmentInfoDTO.builder()

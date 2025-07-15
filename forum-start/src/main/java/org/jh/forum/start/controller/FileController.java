@@ -12,7 +12,6 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.response.UploadPictureResponse;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.BlakeUtils;
 import org.springframework.http.MediaType;
@@ -48,11 +47,7 @@ public class FileController {
     @Operation(summary = "获取附件信息")
     @GetMapping("/info")
     public AjaxResult<AttachmentInfoDTO> getAttachmentInfo(@RequestParam("attachment_id") Long attachmentId) {
-        try {
-            return AjaxResult.success(fileService.getAttachmentInfo(attachmentId));
-        } catch (ForumServiceException e) {
-            throw new ApiException(e);
-        }
+        return AjaxResult.success(fileService.getAttachmentInfo(attachmentId));
     }
 
     private Long uploadFile(MultipartFile file, AttachmentTypeEnum type) {

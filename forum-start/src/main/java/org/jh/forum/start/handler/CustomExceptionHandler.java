@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.cube.CubeException;
 import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.exceptions.BaseException;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
@@ -30,9 +30,9 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequiredArgsConstructor
 public class CustomExceptionHandler {
 
-    @ExceptionHandler(BaseException.class)
+    @ExceptionHandler(ApiException.class)
     @ResponseBody
-    public AjaxResult<Object> handleAppException(BaseException e, HttpServletRequest request) {
+    public AjaxResult<Object> handleAppException(ApiException e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
         return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
     }

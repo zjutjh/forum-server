@@ -19,7 +19,7 @@ import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.PostTopicRelation;
 import org.jh.forum.common.entity.User;
-import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.mapper.PostTopicRelationMapper;
@@ -166,10 +166,10 @@ public class PostManager {
     public GetPostInfoResponse getPostInfo(Long postId, Long userId) {
         Post post = postMapper.selectById(postId);
         if (post == null || post.getStatus() == PostStatusEnum.DELETED) {
-            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         if (post.getStatus() == PostStatusEnum.PENDING && !Objects.equals(post.getUserId(), userId)) {
-            throw new ForumServiceException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         updateViewCount(postId, userId);
         return GetPostInfoResponse.builder()
@@ -189,14 +189,14 @@ public class PostManager {
     public void deletePost(Long id) {
         Post post = postMapper.selectById(id);
         if (post == null || post.getStatus() == PostStatusEnum.DELETED) {
-            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         if (
                 !post.getUserId().equals(StpUtil.getLoginIdAsLong())
                         && !StpUtil.hasRole("admin")
                         && !StpUtil.hasRole("super_admin")
         ) {
-            throw new ForumServiceException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         post.setStatus(PostStatusEnum.DELETED);
         postMapper.updateById(post);
@@ -257,7 +257,7 @@ public class PostManager {
     public GetAdminPostInfoResponse getAdminPostInfo(Long id) {
         Post post = postMapper.selectById(id);
         if (post == null) {
-            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         return GetAdminPostInfoResponse.builder()
                 .publisherInfo(userManager.getUserInfo(post.getUserId()))
