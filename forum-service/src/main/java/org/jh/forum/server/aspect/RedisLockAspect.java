@@ -7,8 +7,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.jh.forum.common.annotation.WithLock;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.server.config.service.ForumSwitchService;
 import org.jh.forum.server.utils.RedisUtil;
 import org.springframework.core.Ordered;
@@ -40,7 +38,7 @@ public class RedisLockAspect {
         try {
             if (StringUtils.isEmpty(lockKey)) {
                 log.error("[RedisLockAspect] cannot get lock key for point: {}", point);
-                throw new ForumServiceException(ExceptionEnum.INVALID_PARAMETER);
+                throw new IllegalArgumentException("lock key cannot be empty");
             }
             int lockCount = 0;
             // 防止未来变更导致无穷循环，禁止 while(true) 语法
@@ -56,7 +54,7 @@ public class RedisLockAspect {
                 int weight = iter + 1;
                 Thread.sleep(weight * ForumSwitchService.forumSwitch.redisLockRetryInterval);
                 if (lockCount > ForumSwitchService.forumSwitch.redisLockMaxRetryCount) {
-                    throw new ForumServiceException(ExceptionEnum.EXCEED_MAX_GET_LOCK_COUNT);
+                    throw new IllegalStateException("failed to acquire lock");
                 }
             }
             return point.proceed();

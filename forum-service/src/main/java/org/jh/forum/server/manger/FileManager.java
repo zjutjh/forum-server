@@ -11,7 +11,7 @@ import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
 import org.jh.forum.common.entity.Post;
-import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.FileMapper;
 import org.jh.forum.server.mapper.PostMapper;
@@ -56,18 +56,18 @@ public class FileManager {
     public void bindAttachment(Long attachmentId, TargetTypeEnum targetType, Long targetId) {
         Attachment attachment = attachmentMapper.selectById(attachmentId);
         if (attachment == null) {
-            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         if (attachment.getTargetId() != -1L || attachment.getUserId() != StpUtil.getLoginIdAsLong()) {
-            throw new ForumServiceException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         if (targetType == TargetTypeEnum.POST) {
             Post post = postMapper.selectById(targetId);
             if (post == null) {
-                throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
             }
             if (!post.getUserId().equals(attachment.getUserId())) {
-                throw new ForumServiceException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+                throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
             }
         } else if (targetType == TargetTypeEnum.COMMENT) {
             // TODO: 评论绑定
@@ -81,7 +81,7 @@ public class FileManager {
     public String getFileUrl(Long fileId) {
         File file = fileMapper.selectById(fileId);
         if (file == null) {
-            throw new ForumServiceException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         return cubeService.getFileUrl(file.getObjectKey());
     }
