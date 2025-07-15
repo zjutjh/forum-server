@@ -12,12 +12,12 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ExceptionEnum {
     INVALID_PARAMETER(200000, "参数错误"),
-    RESOURCE_NOT_FOUND(200004, "资源不存在"),
-    NOT_LOGIN(200005, "当前未登录或登录过期, 请重新登录"),
-    WRONG_USERNAME_OR_PASSWORD(200006, "用户名或密码错误"),
-    PERMISSION_NOT_ALLOWED(200007, "权限不足"),
-    FILE_NOT_PICTURE(200008, "该文件不是图片"),
-    FILE_UPLOAD_ERROR(200009, "文件上传失败"),
+    RESOURCE_NOT_FOUND(200001, "资源不存在"),
+    NOT_LOGIN(200002, "当前未登录或登录过期, 请重新登录"),
+    WRONG_USERNAME_OR_PASSWORD(200003, "用户名或密码错误"),
+    PERMISSION_NOT_ALLOWED(200004, "权限不足"),
+    FILE_NOT_PICTURE(200005, "该文件不是图片"),
+    FILE_UPLOAD_ERROR(200006, "文件上传失败"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试"),
