@@ -1,7 +1,6 @@
 package org.jh.forum.start.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -68,8 +67,6 @@ public class FileController {
                 fileId = fileService.createFile(objectKey, hash);
             }
             return fileService.createAttachment(fileId, type, file.getOriginalFilename());
-        } catch (InvalidProtocolBufferException e) {
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR, e);
         } catch (IOException e) {
             log.error("文件上传失败", e);
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR, e);

@@ -15,13 +15,13 @@ public class ApiException extends RuntimeException {
     private final String errorMsg;
 
     public ApiException(Integer errorCode, String errorMsg) {
-        super();
+        super(errorMsg);
         this.errorCode = errorCode;
         this.errorMsg = errorMsg;
     }
 
     public ApiException(Integer errorCode, String errorMsg, Throwable cause) {
-        super(cause);
+        super(errorMsg, cause);
         this.errorCode = errorCode;
         this.errorMsg = errorMsg;
     }

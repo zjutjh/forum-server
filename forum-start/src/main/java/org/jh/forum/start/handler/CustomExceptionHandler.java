@@ -54,7 +54,7 @@ public class CustomExceptionHandler {
         if (e instanceof NotRoleException) {
             return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
-        return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
     }
 
     @ExceptionHandler(CubeException.class)
@@ -64,6 +64,6 @@ public class CustomExceptionHandler {
         if (e.getCode() == 200504) {
             return AjaxResult.fail(ExceptionEnum.FILE_NOT_PICTURE);
         }
-        return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
     }
 }
