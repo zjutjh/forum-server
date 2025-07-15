@@ -238,7 +238,7 @@ public class AnnouncementManager {
         List<Announcement> expiredAnnouncements = announcementMapper.selectList(
                 new LambdaQueryWrapper<Announcement>()
                         // 待发布状态
-                        .eq(Announcement::getStatus, 2)
+                        .eq(Announcement::getStatus, AnnouncementStatusEnum.SCHEDULED.getCode())
                         // 预定时间 <= 当前时间
                         .le(Announcement::getScheduledAt, currentTime)
                         // 是否包括被删除的

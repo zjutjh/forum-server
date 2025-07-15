@@ -1,6 +1,6 @@
 package org.jh.forum.common.dto.request;
 
-import com.alibaba.nacos.shaded.javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

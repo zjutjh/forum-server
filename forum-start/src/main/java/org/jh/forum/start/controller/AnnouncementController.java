@@ -106,13 +106,8 @@ public class AnnouncementController {
         log.info("收到更新公告请求, ID: {}, 标题: {}, 类型: {}, 操作人id: {}",
                 request.getId(), request.getTitle(), request.getType(), currentUid);
         try {
-            // TODO :带回权限管理
-//            if (!announcementService.checkPermission(request.getId(), currentUid, isSuperAdmin)) {
-//                log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", request.getId(), currentUid);
-//                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
-//            }
-
-            AnnouncementOperationResponse response = announcementService.editAnnouncement(request, currentUid, isSuperAdmin);
+            AnnouncementOperationResponse response = announcementService.editAnnouncement(request, currentUid,
+                    isSuperAdmin);
 
             log.info("公告更新成功, ID: {}", response.getAnnouncementId());
             return AjaxResult.success("updated", response);
@@ -145,13 +140,6 @@ public class AnnouncementController {
 
         log.info("收到置顶/取消置顶公告请求, ID: {}, 置顶状态: {}", request.getId(), request.getSticky());
         try {
-
-            // TODO :带回权限管理
-//            if (!announcementService.checkPermission(request.getId(), currentUid, isSuperAdmin)) {
-//                log.warn("用户无权限置顶/取消置顶公告, ID: {}, 用户ID: {}", request.getId(), currentUid);
-//                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
-//            }
-
             AnnouncementOperationResponse response = announcementService.stickyAnnouncement(
                     request.getId(), request.getSticky(), currentUid, isSuperAdmin);
 
@@ -185,12 +173,6 @@ public class AnnouncementController {
 
         try {
             log.info("收到删除公告请求, ID: {}", id);
-
-            // TODO :带回权限管理
-//            if (!announcementService.checkPermission(id, currentUid, isSuperAdmin)) {
-//                log.warn("用户无权限删除该公告, 公告ID: {}, 用户ID: {}", id, currentUid);
-//                return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
-//            }
 
             AnnouncementOperationResponse result = announcementService.deleteAnnouncement(id, currentUid, isSuperAdmin);
 
@@ -271,12 +253,15 @@ public class AnnouncementController {
      */
     @Operation(summary = "用户公告列表", description = "查询用户可见的公告列表, 按 updated_at 升序( 最后发布的在最下面 )")
     @GetMapping("/list")
-    public AjaxResult<BaseListResponse<ListAnnouncementTinyItemResponse>> listAnnouncements(@Valid UserQueryAnnouncementRequest request) {
+    public AjaxResult<BaseListResponse<ListAnnouncementTinyItemResponse>> listAnnouncements(
+            @Valid UserQueryAnnouncementRequest request) {
         try {
-            log.debug("收到查询公告列表请求, 页码: {}, 大小: {}, 类型: {}", request.getPage(), request.getPageSize(), request.getType());
+            log.debug("收到查询公告列表请求, 页码: {}, 大小: {}, 类型: {}", request.getPage(), request.getPageSize(),
+                    request.getType());
 
             // 只查询已发布的公告并转换为 ListAnnouncementTinyResponse
-            BaseListResponse<ListAnnouncementTinyItemResponse> response = announcementService.userListAnnouncements(request);
+            BaseListResponse<ListAnnouncementTinyItemResponse> response = announcementService
+                    .userListAnnouncements(request);
 
             log.debug("查询公告列表成功, 总数: {}", response.getTotal());
             return AjaxResult.success(response);
@@ -309,7 +294,8 @@ public class AnnouncementController {
                     request.getPage(), request.getPageSize(), request.getStatus(), request.getType(),
                     request.orderType(), request.getDeleted());
 
-            BaseListResponse<ListAnnouncementItemResponse> response = announcementService.adminQueryAnnouncements(request);
+            BaseListResponse<ListAnnouncementItemResponse> response = announcementService
+                    .adminQueryAnnouncements(request);
 
             log.info("管理员查询公告列表成功, 总数: {}", response.getTotal());
             return AjaxResult.success(response);
@@ -323,7 +309,7 @@ public class AnnouncementController {
         }
     }
 
-    /**
+    /*
      * 手动触发定时发布任务接口( 测试用 )
      * HTTP方法: POST
      * 请求路径: /announcements/trigger-publish，目前是用不聊的，因为定时服务目前还没弄完
@@ -333,7 +319,7 @@ public class AnnouncementController {
      */
     // @Deprecated
     // @Operation(summary = "手动触发定时发布", description = "手动触发定时发布任务( 测试用, 管理员权限 )")
-    // @SaCheckLogin
+
     // @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     // @PostMapping("/trigger-publish")
     // public AjaxResult<String> triggerScheduledPublish() {
