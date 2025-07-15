@@ -3,7 +3,6 @@ package org.jh.forum.server.manger;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.common.annotation.WithLock;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author SugarMGP
@@ -23,13 +22,16 @@ public class PostRankManager {
     public final String ACTIVE_POSTS_KEY = "active_posts";
     public final String HOT_RANK_KEY = "hot_rank";
     public final String HOT_RANK_TEMP_KEY = "hot_rank_temp";
+    public final String LAST_COMPUTE_TIME_KEY = "hot_rank:last_compute_time";
+    public final String LAST_CLEANUP_HOUR_KEY = "hot_rank:last_cleanup_hour";
     public final String LIKE = "like";
     public final String COMMENT = "comment";
     public final String VIEW = "view";
-    private final RedisTemplate<String, Object> redisTemplate;
 
-    // 上次清理的小时戳（单位：小时）
-    private final AtomicLong lastCleanupHour = new AtomicLong(-1);
+    // 热榜计算间隔（单位：秒）
+    public final long COMPUTE_INTERVAL_SECONDS = 15 * 60;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public void recordAction(Long postId, String type) {
         long currentTime = System.currentTimeMillis() / 1000;
@@ -47,19 +49,27 @@ public class PostRankManager {
         redisTemplate.opsForZSet().add(ACTIVE_POSTS_KEY, postId.toString(), currentTime);
     }
 
-    @WithLock(prefix = "post_rank")
-    @Scheduled(cron = "0 */15 * * * *")
+    @Scheduled(fixedRate = COMPUTE_INTERVAL_SECONDS * 1000)
     public void computeHotRank() {
-        log.info("[PostRankManager] 开始计算帖子热度值");
         long currentTime = System.currentTimeMillis() / 1000;
+
+        Boolean lockAcquired = redisTemplate.opsForValue()
+                .setIfAbsent(LAST_COMPUTE_TIME_KEY, currentTime, COMPUTE_INTERVAL_SECONDS - 5, TimeUnit.SECONDS);
+        if (lockAcquired == null || !lockAcquired) {
+            log.info("[PostRankManager] 未获取到分布式锁，跳过热榜计算");
+            return;
+        }
+
+        log.info("[PostRankManager] 开始计算帖子热度值");
         long currentHour = currentTime / 3600;
         long threshold = currentTime - 86400;
 
         // 清理24小时外的帖子（每小时执行一次）
-        if (lastCleanupHour.get() != currentHour) {
+        lockAcquired = redisTemplate.opsForValue()
+                .setIfAbsent(LAST_CLEANUP_HOUR_KEY, currentHour, 1, TimeUnit.HOURS);
+        if (Boolean.TRUE.equals(lockAcquired)) {
             log.info("[PostRankManager] 清理过期帖子");
             redisTemplate.opsForZSet().removeRangeByScore(ACTIVE_POSTS_KEY, 0, threshold - 1);
-            lastCleanupHour.set(currentHour);
         }
 
         // 获取24小时内活跃帖子
@@ -117,6 +127,11 @@ public class PostRankManager {
         return new PageResult<>(postIds, total);
     }
 
+    public void removePost(Long postId) {
+        redisTemplate.opsForZSet().remove(ACTIVE_POSTS_KEY, postId.toString());
+        redisTemplate.opsForZSet().remove(HOT_RANK_KEY, postId.toString());
+        redisTemplate.opsForZSet().remove(HOT_RANK_TEMP_KEY, postId.toString());
+    }
 
     private int toInt(Object value) {
         return value == null ? 0 : Integer.parseInt(value.toString());

@@ -198,6 +198,7 @@ public class PostManager {
         ) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
+        postRankManager.removePost(id);
         post.setStatus(PostStatusEnum.DELETED);
         postMapper.updateById(post);
     }
