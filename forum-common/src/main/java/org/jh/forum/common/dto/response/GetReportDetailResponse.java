@@ -6,8 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jh.forum.common.constants.ReportTargetTypeEnum;
+import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
+import org.jh.forum.common.constants.TargetTypeEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,7 +39,7 @@ public class GetReportDetailResponse {
 
     @Schema(description = "举报对象类型")
     @JsonProperty("target_type")
-    private ReportTargetTypeEnum targetType;
+    private TargetTypeEnum targetType;
 
     @Schema(description = "举报对象ID")
     @JsonProperty("target_id")
@@ -55,7 +56,7 @@ public class GetReportDetailResponse {
     private List<String> attachImages;
 
     @Schema(description = "处理状态")
-    private String status;
+    private ReportStatusEnum status;
 
     @Schema(description = "处理结论")
     private String result;

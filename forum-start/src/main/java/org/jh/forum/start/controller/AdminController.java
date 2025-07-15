@@ -13,8 +13,6 @@ import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
-import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,11 +48,7 @@ public class AdminController {
     @Operation(summary = "处理举报")
     @PostMapping("/report/handle")
     public AjaxResult<Void> handleReport(@Valid @RequestBody HandleReportRequest request) {
-        try {
-            reportService.handleReport(request);
-        } catch (ForumServiceException e) {
-            throw new ApiException(e);
-        }
+        reportService.handleReport(request);
         return AjaxResult.success();
     }
 
@@ -68,11 +62,7 @@ public class AdminController {
     @GetMapping("/report/detail")
     public AjaxResult<GetReportDetailResponse> getReportDetail(@RequestParam(value = "report_id", required = true) Long id) {
         GetReportDetailResponse response;
-        try {
-            response = reportService.getReportDetail(id);
-        } catch (ForumServiceException e) {
-            throw new ApiException(e);
-        }
+        response = reportService.getReportDetail(id);
         return AjaxResult.success(response);
     }
 }

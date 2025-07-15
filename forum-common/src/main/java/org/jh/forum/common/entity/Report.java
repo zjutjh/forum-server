@@ -2,8 +2,9 @@ package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
-import org.jh.forum.common.constants.ReportTargetTypeEnum;
+import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
+import org.jh.forum.common.constants.TargetTypeEnum;
 
 /**
  * @author zzb
@@ -18,7 +19,7 @@ import org.jh.forum.common.constants.ReportTypeEnum;
 public class Report extends BaseEntity {
     private Long userId;
 
-    private ReportTargetTypeEnum targetType;
+    private TargetTypeEnum targetType;
 
     private Long targetId;
 
@@ -26,7 +27,7 @@ public class Report extends BaseEntity {
 
     private String reason;
 
-    private String status;
+    private ReportStatusEnum status;
 
     private String result;
 }

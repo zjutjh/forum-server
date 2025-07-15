@@ -6,8 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jh.forum.common.constants.ReportTargetTypeEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
+import org.jh.forum.common.constants.TargetTypeEnum;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -21,7 +21,7 @@ import jakarta.validation.constraints.NotNull;
 public class ReportContentRequest {
     @Schema(description = "举报对象类型 post-帖子 comment-评论")
     @NotNull
-    private ReportTargetTypeEnum target;
+    private TargetTypeEnum target;
 
     @Schema(description = "举报类型 other-其他 pornography-色情低俗 cyberbullying-网络暴力 content_infringement-内容侵权 " +
             "illegal_activity-违法违规 politics_related-政治相关 troll_behavior-恶意引战 rumor_spreading-造谣传谣")

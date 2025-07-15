@@ -12,9 +12,9 @@ import org.jh.forum.common.dto.response.GetReportListElement;
  * @author zzb
  */
 public interface ReportService {
-    Long reportUser(ReportUserRequest request);
+    void reportUser(ReportUserRequest request);
 
-    Long reportContent(ReportContentRequest request);
+    void reportContent(ReportContentRequest request);
 
     void handleReport(HandleReportRequest request);
 

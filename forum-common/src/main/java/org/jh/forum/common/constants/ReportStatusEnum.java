@@ -10,16 +10,14 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum ReportTargetTypeEnum {
-    POST("post", "帖子"),
-    COMMENT("comment", "评论"),
-    USER("user", "用户");
-
+public enum ReportStatusEnum {
+    PENDING("pending", "未处理"),
+    SUCCESS("success", "举报成功"),
+    FAILURE("failure", "举报失败");
 
     @EnumValue
     @JsonValue
     private final String value;
 
     private final String desc;
-
 }
