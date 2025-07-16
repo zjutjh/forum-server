@@ -15,8 +15,9 @@ public enum TargetTypeEnum {
 
     COMMENT("comment", "评论"),
 
-    // 仅在 Report 中被使用
-    USER("user", "用户");
+    USER("user", "用户"),
+
+    REPORT("report", "举报");
 
     @EnumValue
     @JsonValue

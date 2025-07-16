@@ -1,5 +1,6 @@
 package org.jh.forum.server.manger;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -9,12 +10,15 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
+import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.mapper.ReportMapper;
 import org.springframework.stereotype.Service;
@@ -31,27 +35,34 @@ import java.util.List;
 public class ReportManager {
     private final ReportMapper reportMapper;
     private final PostMapper postMapper;
+    private final AttachmentMapper attachmentMapper;
     private final UserManager userManager;
+    private final FileManager fileManager;
 
-    public void reportUser(ReportTypeEnum type, String reason, Long userId, TargetTypeEnum target) {
+    public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, TargetTypeEnum target, List<Long> attachmentIds) {
         Report report = Report.builder()
                 .type(type)
-                .userId(userId)
+                .userId(StpUtil.getLoginIdAsLong())
+                .targetUserId(targetUserId)
                 .reason(reason)
-                .targetId(userId)
+                .targetId(targetUserId)
                 .targetType(target)
                 .status(ReportStatusEnum.PENDING)
                 .result("")
                 .build();
         reportMapper.insert(report);
+
+        for (Long attachmentId : attachmentIds) {
+            fileManager.bindAttachment(attachmentId, TargetTypeEnum.REPORT, report.getId());
+        }
     }
 
-    public void reportContent(ReportTypeEnum type, String reason, Long targetId, TargetTypeEnum target) {
-        Long userId = -1L;
+    public void reportContent(ReportTypeEnum type, String reason, Long targetId, TargetTypeEnum target, List<Long> attachmentIds) {
+        Long targetUserId = -1L;
         try {
             switch (target) {
                 case POST:
-                    userId = postMapper.selectById(targetId).getUserId();
+                    targetUserId = postMapper.selectById(targetId).getUserId();
                     break;
                 case COMMENT:
                     // todo 根据评论id获取被举报用户id
@@ -64,7 +75,8 @@ public class ReportManager {
         }
         Report report = Report.builder()
                 .type(type)
-                .userId(userId)
+                .userId(StpUtil.getLoginIdAsLong())
+                .targetUserId(targetUserId)
                 .reason(reason)
                 .targetId(targetId)
                 .targetType(target)
@@ -72,6 +84,10 @@ public class ReportManager {
                 .result("")
                 .build();
         reportMapper.insert(report);
+
+        for (Long attachmentId : attachmentIds) {
+            fileManager.bindAttachment(attachmentId, TargetTypeEnum.REPORT, report.getId());
+        }
     }
 
     public void handleReport(HandleReportRequest request) {
@@ -133,8 +149,8 @@ public class ReportManager {
                     .targetType(report.getTargetType())
                     .type(report.getType())
                     .reason(report.getReason())
-                    .userId(report.getUserId())
-                    .nickname(userManager.getUserInfo(report.getUserId()).getNickname())
+                    .userId(report.getTargetUserId())
+                    .nickname(userManager.getUserInfo(report.getTargetUserId()).getNickname())
                     .createdAt(report.getCreatedAt())
                     .build());
         }
@@ -153,18 +169,34 @@ public class ReportManager {
         }
 
         return GetReportDetailResponse.builder()
-                .createUid(report.getCreateUid())
-                .userId(report.getUserId())
-                .nickname(userManager.getUserInfo(report.getUserId()).getNickname())
+                .createUid(report.getUserId())
+                .userId(report.getTargetUserId())
+                .nickname(userManager.getUserInfo(report.getTargetUserId()).getNickname())
                 .createdAt(report.getCreatedAt())
                 .targetType(report.getTargetType())
                 .targetId(report.getTargetId())
                 .type(report.getType())
                 .reason(report.getReason())
-                // todo 获取附件
-                .attachImages(new ArrayList<>())
                 .status(report.getStatus())
                 .result(report.getResult())
+                .attachments(getReportAttachments(report.getId()))
                 .build();
+    }
+
+    private List<AttachmentInfoDTO> getReportAttachments(Long reportId) {
+        List<Attachment> attachments = attachmentMapper.selectList(new LambdaQueryWrapper<Attachment>()
+                .eq(Attachment::getTargetId, reportId)
+                .eq(Attachment::getTargetType, TargetTypeEnum.REPORT)
+        );
+        List<AttachmentInfoDTO> attachmentInfoList = new ArrayList<>();
+        for (Attachment attachment : attachments) {
+            attachmentInfoList.add(AttachmentInfoDTO.builder()
+                    .url(fileManager.getFileUrl(attachment.getFileId()))
+                    .type(attachment.getType())
+                    .filename(attachment.getFilename())
+                    .build()
+            );
+        }
+        return attachmentInfoList;
     }
 }

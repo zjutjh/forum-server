@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.ReportTypeEnum;
 
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author zzb
@@ -29,4 +30,9 @@ public class ReportUserRequest {
     @JsonProperty("user_id")
     @NotNull
     private Long userId;
+
+    @Schema(description = "要绑定的附件ID列表")
+    @NotNull
+    @JsonProperty("attachment_ids")
+    private List<Long> attachmentIds;
 }

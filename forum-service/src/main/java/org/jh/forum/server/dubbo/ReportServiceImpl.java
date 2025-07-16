@@ -26,13 +26,14 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public void reportUser(ReportUserRequest request) {
-        reportManager.reportUser(request.getType(), request.getReason(), request.getUserId(), TargetTypeEnum.USER);
+        reportManager.reportUser(request.getType(), request.getReason(),
+                request.getUserId(), TargetTypeEnum.USER, request.getAttachmentIds());
     }
 
     @Override
     public void reportContent(ReportContentRequest request) {
         reportManager.reportContent(request.getType(), request.getReason(),
-                request.getTargetId(), request.getTarget());
+                request.getTargetId(), request.getTarget(), request.getAttachmentIds());
     }
 
     @Override

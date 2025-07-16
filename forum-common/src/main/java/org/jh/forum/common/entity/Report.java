@@ -19,6 +19,8 @@ import org.jh.forum.common.constants.TargetTypeEnum;
 public class Report extends BaseEntity {
     private Long userId;
 
+    private Long targetUserId;
+
     private TargetTypeEnum targetType;
 
     private Long targetId;

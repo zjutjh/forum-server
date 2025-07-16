@@ -10,6 +10,7 @@ import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author zzb
@@ -35,4 +36,9 @@ public class ReportContentRequest {
     @JsonProperty("target_id")
     @NotNull
     private Long targetId;
+
+    @Schema(description = "要绑定的附件ID列表")
+    @NotNull
+    @JsonProperty("attachment_ids")
+    private List<Long> attachmentIds;
 }
