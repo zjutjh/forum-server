@@ -15,7 +15,7 @@ import org.jh.forum.common.dto.request.EditAnnouncementRequest;
 import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
 import org.jh.forum.common.dto.response.AnnouncementOperationResponse;
 import org.jh.forum.common.entity.Announcement;
-import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AnnouncementMapper;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +49,7 @@ public class AnnouncementManager {
                 .scheduledAt(request.getScheduledAt())
                 .publishedAt(publishedAt)
                 .status(AnnouncementStatusEnum.fromCode(request.getStatus()))
-                .attribute(convertAttributeToString(request.getAttribute()))
+                .attribute(request.getAttribute())
                 .sticky(request.getSticky() != null ? request.getSticky() : false)
                 .build();
         announcementMapper.insert(newEntity);
@@ -71,7 +71,7 @@ public class AnnouncementManager {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .type(AnnouncementTypeEnum.fromCode(request.getType()))
-                .attribute(convertAttributeToString(request.getAttribute()))
+                .attribute((request.getAttribute()))
                 .sticky(request.getSticky())
                 .build();
 
@@ -100,7 +100,7 @@ public class AnnouncementManager {
                 .status(AnnouncementStatusEnum.fromCode(request.getStatus()))
                 .scheduledAt(request.getScheduledAt())
                 .publishedAt(publishedAt)
-                .attribute(convertAttributeToString(request.getAttribute()))
+                .attribute((request.getAttribute()))
                 .sticky(request.getSticky() != null ? request.getSticky() : false)
                 .build();
 
@@ -160,9 +160,9 @@ public class AnnouncementManager {
         LambdaQueryWrapper<Announcement> queryWrapper = buildQueryConditions(
                 false, AnnouncementStatusEnum.PUBLISHED.getCode(), request.getType(), false, request.getKeywords());
 
-        // 用户排序：置顶优先，然后按发布时间升序
+        // 用户排序：置顶优先，然后按发布时间降序（最近发布的在最上面）
         queryWrapper.orderByDesc(Announcement::getSticky)
-                .orderByAsc(Announcement::getPublishedAt);
+                .orderByDesc(Announcement::getPublishedAt);
 
         // 执行分页查询
         return announcementMapper.selectPage(pageParam, queryWrapper);
@@ -216,7 +216,7 @@ public class AnnouncementManager {
         int result = announcementMapper.updateById(updateEntity);
 
         if (result <= 0) {
-            throw new ForumServiceException(ExceptionEnum.DATABASE_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
 
         log.info("置顶状态更新成功, ID: {}, sticky: {}", id, isSticky);
@@ -348,16 +348,6 @@ public class AnnouncementManager {
                 .eq(Announcement::getDeleted, false));
     }
 
-    /**
-     * 将Object类型的attribute转换为String
-     * 如果是null则返回null, 如果是String则直接返回, 否则转换为JSON字符串
-     */
-    private String convertAttributeToString(Object attribute) {
-        if (attribute == null) {
-            return null;
-        }
-        return (String) attribute;
-    }
 
     /**
      * 根据ID检查公告是否存在（MyBatis-Plus 的 exists 方法）

@@ -48,7 +48,7 @@ public class CreateAnnouncementRequest {
 
     @Nullable
     @Schema(description = "附加属性", example = "{\"test\": true}", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Object attribute;
+    private String attribute;
 
     @Nullable
     @Schema(description = "是否置顶", allowableValues = {"true",

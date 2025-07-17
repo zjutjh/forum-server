@@ -30,5 +30,5 @@ public class AnnouncementDetailResponse extends AnnouncementTinyDetailsResponse 
     private LocalDateTime scheduledAt;
 
     @Schema(description = "附加属性", example = "{\"test\": true}")
-    private Object attribute;
+    private String attribute;
 }

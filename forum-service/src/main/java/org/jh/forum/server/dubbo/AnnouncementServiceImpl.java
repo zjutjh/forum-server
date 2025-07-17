@@ -14,7 +14,6 @@ import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Announcement;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.common.exceptions.ForumServiceException;
 import org.jh.forum.common.filters.MarkdownMathJaxHtmlFilter;
 import org.jh.forum.server.manager.AnnouncementManager;
 import org.jh.forum.server.manager.UserManager;
@@ -78,7 +77,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             // 标题和内容基本校验
             validateTitleAndContent(request.getTitle(), request.getContent());
 
-            // 标题Trim、XSS过滤、查重校验（XSS过滤会把内容也给过滤掉）
+            // 标题Trim、XSS过滤、查重校验（XSS过滤会把内容也给过滤好）
             request.setTitle(request.getTitle().trim());
             safeFilter(request);
             if (announcementManager.checkTitleDuplicate(request.getTitle())) {
@@ -100,7 +99,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
             // 如果设置为置顶, 检查置顶公告数量限制 (最多3个)
-            if (request.getSticky() && !announcementManager.canStickyAnnouncement()) {
+            if (Boolean.TRUE.equals(request.getSticky()) && !announcementManager.canStickyAnnouncement()) {
                 throw new IllegalArgumentException("置顶公告数量已达上限");
             }
 
@@ -111,16 +110,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return response;
         } catch (IllegalArgumentException e) {
             // 包装参数错误
-            log.warn("参数校验失败: {}", e.getMessage());
-            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
-        } catch (ForumServiceException e) {
+            log.warn("创建公告参数校验失败: {}", e.getMessage());
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (ApiException e) {
             // Manager的异常
             log.warn("创建公告异常:{}", e.getMessage());
-            throw new ApiException(e);
+            throw e;
         } catch (Exception e) {
             // 别的异常
             log.error("创建公告未知异常", e);
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -139,7 +138,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
             if (!announcementManager.isExist(request.getId())) {
-                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
+                throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
             // 校验标题和内容
@@ -169,7 +168,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
             // 是否存在
             if (!announcementManager.isExist(request.getId())) {
-                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
+                throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
             Announcement originAnnouncement = announcementManager.getAnnouncementEntityById(request.getId());
@@ -195,14 +194,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
         } catch (IllegalArgumentException e) {
-            log.warn("参数校验失败: {}", e.getMessage());
-            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
-        } catch (ForumServiceException e) {
+            log.warn("编辑公告参数校验失败: {}", e.getMessage());
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (ApiException e) {
             log.warn("编辑公告异常:{}", e.getMessage());
-            throw new ApiException(e);
+            throw e;
         } catch (Exception e) {
             log.error("编辑公告异常", e);
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -221,13 +220,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
 
             if (!checkPermission(id, currentUid, isSuperAdmin)) {
-                log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", id, currentUid);
+                log.warn("用户无权限修改公告置顶状态, 公告ID: {}, 用户ID: {}", id, currentUid);
                 throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
             }
 
             // 校验ID并检查公告是否存在且未被删除
             if (!announcementManager.isExist(id)) {
-                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
+                throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
             // 如果置顶, 检查置顶公告数量限制 (最多3个)
@@ -238,14 +237,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return announcementManager.stickyAnnouncement(id, sticky);
 
         } catch (IllegalArgumentException e) {
-            log.warn("参数校验失败: {}", e.getMessage());
-            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
-        } catch (ForumServiceException e) {
+            log.warn("修改置顶状态参数校验失败: {}", e.getMessage());
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (ApiException e) {
             log.warn("manager-置顶/取消置顶失败:{}", e.getMessage());
-            throw new ApiException(e);
+            throw e;
         } catch (Exception e) {
             log.error("置顶/取消公告异常", e);
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -257,24 +256,24 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         try {
 
             if (!checkPermission(id, currentUid, isSuperAdmin)) {
-                log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", id, currentUid);
+                log.warn("用户无权限删除公告, 公告ID: {}, 用户ID: {}", id, currentUid);
                 throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
             }
 
             log.info("删除公告, ID:{}", id);
             if (!announcementManager.isExist(id)) {
-                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
+                throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
             }
             return announcementManager.deleteAnnouncement(id);
         } catch (IllegalArgumentException e) {
-            log.warn("参数校验失败: {}", e.getMessage());
-            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
-        } catch (ForumServiceException e) {
+            log.warn("删除公告参数校验失败: {}", e.getMessage());
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (ApiException e) {
             log.warn("删除公告失败:{}", e.getMessage());
-            throw new ApiException(e);
+            throw e;
         } catch (Exception e) {
             log.error("删除公告异常", e);
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -287,7 +286,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             log.info("查询公告详情, ID:{}", id);
 
             if (!announcementManager.isExist(id)) {
-                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
+                throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
             AnnouncementDetailResponse response = new AnnouncementDetailResponse();
@@ -311,13 +310,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return response;
         } catch (IllegalArgumentException e) {
             log.warn("admin查询公告详情校验失败: {}", e.getMessage());
-            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
-        } catch (ForumServiceException e) {
-            log.warn("查询公告详情-manager:{}", e.getMessage());
-            throw new ApiException(e);
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (ApiException e) {
+            log.warn("查询公告详情异常: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("查询公告详情未知异常", e);
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -330,20 +329,18 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             log.info("查询公告详情 (用户版) , ID:{}", id);
 
             if (!announcementManager.isExist(id)) {
-                throw new ForumServiceException(ExceptionEnum.NOT_FOUND_ERROR);
+                throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
             }
 
             AnnouncementTinyDetailsResponse response = new AnnouncementTinyDetailsResponse();
             Announcement raw = announcementManager.getAnnouncementEntityById(id);
 
             // 检查公告状态
-            if (raw.getDeleted()) {
+            if (raw.getDeleted() || raw.getStatus().equals(AnnouncementStatusEnum.DRAFT)) {
                 throw new IllegalArgumentException("公告状态异常");
-            } else {
-                if (raw.getStatus() == AnnouncementStatusEnum.SCHEDULED
-                        && (raw.getScheduledAt() == null || raw.getScheduledAt().isBefore(LocalDateTime.now()))) {
+            } else if (raw.getStatus().equals(AnnouncementStatusEnum.SCHEDULED)
+                    && (raw.getScheduledAt() == null || raw.getScheduledAt().isBefore(LocalDateTime.now()))){
                     throw new IllegalArgumentException("公告状态异常");
-                }
             }
 
             response.setId(id);
@@ -363,13 +360,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return response;
         } catch (IllegalArgumentException e) {
             log.warn("user查询公告详情校验失败: {}", e.getMessage());
-            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
-        } catch (ForumServiceException e) {
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (ApiException e) {
             log.error("查询公告详情数据库操作异常", e);
-            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+            throw e;
         } catch (Exception e) {
             log.error("查询公告详情未知异常", e);
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -446,13 +443,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return response;
         } catch (IllegalArgumentException e) {
             log.warn("查询公告列表校验失败: {}", e.getMessage());
-            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
-        } catch (ForumServiceException e) {
-            log.warn("sys-查询公告列表异常-manager:{}", e.getMessage());
-            throw new ApiException(e);
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (ApiException e) {
+            log.warn("sys-查询公告列表异常:{}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("查询公告列表未知异常", e);
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -482,7 +479,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             throw e;
         } catch (Exception e) {
             log.error("用户版实体到列表失败, 异常: {}", e.getMessage(), e);
-            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -590,13 +587,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         } catch (IllegalArgumentException e) {
             log.warn("管理员查询公告列表校验失败: {}", e.getMessage());
-            throw new ApiException(200, ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
-        } catch (ForumServiceException e) {
-            log.warn("查询公告列表异常-manager:{}", e.getMessage());
-            throw new ApiException(e);
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER.getErrorCode(), e.getMessage());
+        } catch (ApiException e) {
+            log.warn("查询公告列表异常:{}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("查询公告列表未知异常", e);
-            throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -629,7 +626,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             throw e;
         } catch (Exception e) {
             log.error("管理员版实体到列表失败, 异常: {}", e.getMessage(), e);
-            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -662,7 +659,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         } catch (Exception e) {
             log.error("获取首页公告失败, 异常: {}", e.getMessage(), e);
-            throw new ForumServiceException(ExceptionEnum.UNKNOWN_ERROR);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -676,7 +673,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 return announcementManager.isAnnouncementCreator(announcementId, userId);
             } catch (Exception e) {
                 log.error("检查公告创建者异常", e);
-                throw new ApiException(ExceptionEnum.UNKNOWN_ERROR);
+                throw new ApiException(ExceptionEnum.SERVER_ERROR);
             }
         } else {
             return true;

@@ -58,13 +58,13 @@ public class Announcement extends BaseEntity {
     private LocalDateTime publishedAt;
 
     /**
-     * 状态 - 必填：0:草稿、1:已发布、2:待发布
+     * 状态 - 必填：draft:草稿、published:已发布、scheduled:待发布
      */
     @TableField("status")
     private AnnouncementStatusEnum status;
 
     /**
-     * 是否置顶 - 默认false
+     * 是否置顶 - 可空，默认false
      */
     @TableField("sticky")
     private Boolean sticky;

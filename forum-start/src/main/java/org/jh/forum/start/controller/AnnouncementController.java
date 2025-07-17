@@ -71,16 +71,16 @@ public class AnnouncementController {
 
             AnnouncementOperationResponse response = announcementService.createAnnouncement(request);
 
-            log.info("公告创建成功, ID: {}", response.getAnnouncementId());
-            return AjaxResult.success("created", response);
+            log.debug("公告创建成功, ID: {}", response.getAnnouncementId());
+            return AjaxResult.success(response);
         } catch (ApiException e) {
             // 处理 ApiException( Service层包装的异常 )
             log.warn("创建公告失败: {}", e.getErrorMsg());
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             // 处理未知异常
-            log.error("创建公告失败, 未知错误: {}", e.getMessage(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            log.error("创建公告失败, 内部错误: {}", e.getMessage(), e);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -109,14 +109,14 @@ public class AnnouncementController {
             AnnouncementOperationResponse response = announcementService.editAnnouncement(request, currentUid,
                     isSuperAdmin);
 
-            log.info("公告更新成功, ID: {}", response.getAnnouncementId());
-            return AjaxResult.success("updated", response);
+            log.debug("公告更新成功, ID: {}", response.getAnnouncementId());
+            return AjaxResult.success(response);
         } catch (ApiException e) {
             log.warn("更新公告失败: {}", e.getErrorMsg());
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
-            log.error("更新公告失败, 未知错误, ID: {}, 异常: {}", request.getId(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            log.error("更新公告失败, 内部错误, ID: {}, 异常: {}", request.getId(), e);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -143,14 +143,14 @@ public class AnnouncementController {
             AnnouncementOperationResponse response = announcementService.stickyAnnouncement(
                     request.getId(), request.getSticky(), currentUid, isSuperAdmin);
 
-            log.info("公告{}成功, ID: {}", request.getSticky() ? "置顶" : "取消置顶", response.getAnnouncementId());
-            return AjaxResult.success(request.getSticky() ? "stickied" : "unstick", response);
+            log.debug("公告{}成功, ID: {}", request.getSticky() ? "置顶" : "取消置顶", response.getAnnouncementId());
+            return AjaxResult.success(response);
         } catch (ApiException e) {
-            log.error("置顶/取消公告异常 {}", e.getMessage(), e);
+            log.warn("置顶/取消公告异常 {}", e.getMessage(), e);
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             log.error("置顶/取消置顶公告未知异常, ID: {}, 未知错误: {}", request.getId(), e.getMessage(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -176,14 +176,14 @@ public class AnnouncementController {
 
             AnnouncementOperationResponse result = announcementService.deleteAnnouncement(id, currentUid, isSuperAdmin);
 
-            log.info("删除公告成功, ID: {}", id);
-            return AjaxResult.success("deleted", result);
+            log.debug("删除公告成功, ID: {}", id);
+            return AjaxResult.success(result);
         } catch (ApiException e) {
-            log.error("删除公告异常: {}", e.getErrorMsg());
+            log.warn("删除公告异常: {}", e.getErrorMsg());
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             log.error("删除公告失败, ID: {}, 未知错误: {}", id, e.getMessage(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -200,16 +200,16 @@ public class AnnouncementController {
     @GetMapping
     public AjaxResult<AnnouncementTinyDetailsResponse> getAnnouncementTinyDetail(@RequestParam("id") Long id) {
         try {
-            log.info("收到查询公告详情请求, ID: {}", id);
+            log.debug("收到查询公告详情请求, ID: {}", id);
             AnnouncementTinyDetailsResponse response = announcementService.getAnnouncementTinyDetailsById(id);
 
             return AjaxResult.success(response);
         } catch (ApiException e) {
-            log.error("获取公告异常: {}", e.getErrorMsg());
+            log.warn("获取公告异常: {}", e.getErrorMsg());
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             log.error("获取公告失败, ID: {}, 未知错误: {}", id, e.getMessage(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -227,16 +227,16 @@ public class AnnouncementController {
     @GetMapping("/see")
     public AjaxResult<AnnouncementDetailResponse> getAnnouncementDetail(@RequestParam("id") Long id) {
         try {
-            log.info("收到admin查询公告详情请求, ID: {}", id);
+            log.debug("收到管理员查询公告详情请求, ID: {}", id);
             AnnouncementDetailResponse response = announcementService.getAnnouncementById(id);
 
             return AjaxResult.success(response);
         } catch (ApiException e) {
-            log.error("收到admin获取公告异常: {}", e.getErrorMsg());
+            log.warn("收到admin获取公告异常: {}", e.getErrorMsg());
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             log.error("获取公告失败, ID: {}, 未知错误: {}", id, e.getMessage(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -266,11 +266,11 @@ public class AnnouncementController {
             log.debug("查询公告列表成功, 总数: {}", response.getTotal());
             return AjaxResult.success(response);
         } catch (ApiException e) {
-            log.error("查询公告列表异常: {}", e.getErrorMsg());
+            log.warn("查询公告列表异常: {}", e.getErrorMsg());
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             log.error("查询公告列表失败, 未知错误: {}", e.getMessage(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
 
@@ -290,48 +290,24 @@ public class AnnouncementController {
     public AjaxResult<BaseListResponse<ListAnnouncementItemResponse>> adminAnnouncementQueryRequest(
             @Valid AdminQueryAnnouncementRequest request) {
         try {
-            log.info("收到管理员查询公告列表请求, 页码: {}, 页大小: {}, 状态: {}, 类型: {}, 排序方向: {}, 是否查询已删除: {}",
+            log.debug("收到管理员查询公告列表请求, 页码: {}, 页大小: {}, 状态: {}, 类型: {}, 排序方向: {}, 是否查询已删除: {}",
                     request.getPage(), request.getPageSize(), request.getStatus(), request.getType(),
                     request.orderType(), request.getDeleted());
 
             BaseListResponse<ListAnnouncementItemResponse> response = announcementService
                     .adminQueryAnnouncements(request);
 
-            log.info("管理员查询公告列表成功, 总数: {}", response.getTotal());
+            log.debug("管理员查询公告列表成功, 总数: {}", response.getTotal());
             return AjaxResult.success(response);
         } catch (ApiException e) {
             // 处理 ApiException( Service层包装的异常 )
-            log.error("管理员查询公告列表异常: {}", e.getErrorMsg());
+            log.warn("管理员查询公告列表异常: {}", e.getErrorMsg());
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             log.error("管理员查询公告列表失败, 未知错误: {}", e.getMessage(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
-
-    /*
-     * 手动触发定时发布任务接口( 测试用 )
-     * HTTP方法: POST
-     * 请求路径: /announcements/trigger-publish，目前是用不聊的，因为定时服务目前还没弄完
-     * 权限: 管理员
-     *
-     * @return 触发结果
-     */
-    // @Deprecated
-    // @Operation(summary = "手动触发定时发布", description = "手动触发定时发布任务( 测试用, 管理员权限 )")
-
-    // @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
-    // @PostMapping("/trigger-publish")
-    // public AjaxResult<String> triggerScheduledPublish() {
-    // try {
-    // log.info("收到手动触发定时发布请求");
-    // scheduleService.manualTriggerPublish();
-    // return AjaxResult.success("定时发布任务已触发");
-    // } catch (Exception e) {
-    // log.error("手动触发定时发布失败", e);
-    // return AjaxResult.fail(500, "触发定时发布失败: " + e.getMessage());
-    // }
-    // }
 
     /**
      * 获取置顶的三条公告，不够的话最新更新的来凑
@@ -349,11 +325,11 @@ public class AnnouncementController {
             ListAnnouncementMinorResponse response = announcementService.getTopAnnouncements();
             return AjaxResult.success(response);
         } catch (ApiException e) {
-            log.error("获取置顶公告异常: {}", e.getErrorMsg());
+            log.warn("获取置顶公告异常: {}", e.getErrorMsg());
             return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
         } catch (Exception e) {
             log.error("获取置顶公告失败, 未知错误: {}", e.getMessage(), e);
-            return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+            return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
         }
     }
 }

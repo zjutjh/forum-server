@@ -8,11 +8,11 @@ create table announcement (
     updated_at  timestamp                            not null on update CURRENT_TIMESTAMP comment '更新时间',
     scheduled_at timestamp                          null comment '定时发布时间，如果为空则立即发布',
     published_at timestamp                          null comment '实际发布时间',
-    status int                                      not null comment '状态（draft、published、scheduled）',
+    status      varchar(40)                         not null comment '状态（draft、published、scheduled）',
     create_uid  bigint                              not null comment '创建用户ID',
     update_uid  bigint                              not null comment '更新用户ID',
     deleted     boolean                             not null comment '是否被删除',
-    attribute   text                                null comment '属性列（json string）'
+    attribute   text                                null comment '属性列（json string）',
     sticky      boolean default false               not null comment '是否置顶',
 );
 

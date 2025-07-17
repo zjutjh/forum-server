@@ -54,7 +54,7 @@ public class EditAnnouncementRequest {
 
     @Nullable
     @Schema(description = "附加属性", example = "{\"test\": true}", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Object attribute;
+    private String attribute;
 
     @NotNull(message = "是否置顶不能为空")
     @Schema(description = "是否置顶", allowableValues = {"true", "false"}, example = "false", defaultValue = "false", requiredMode = Schema.RequiredMode.REQUIRED)

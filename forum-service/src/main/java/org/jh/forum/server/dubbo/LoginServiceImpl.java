@@ -12,7 +12,7 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
 import org.jh.forum.common.entity.User;
-import org.jh.forum.common.exceptions.ForumServiceException;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.manager.UserManager;
 import org.jh.forum.server.mapper.UserMapper;
 
@@ -53,7 +53,7 @@ public class LoginServiceImpl implements LoginService {
             userManager.insertUserDetail(user.getId());
         } else if (!BCrypt.checkpw(password, user.getPassword())) {
             // 数据库密码校验错误, 再尝试统一登录
-            throw new ForumServiceException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
+            throw new ApiException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
         }
         StpUtil.login(user.getId());
         return user.getRole();

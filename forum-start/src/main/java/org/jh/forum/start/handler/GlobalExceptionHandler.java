@@ -2,6 +2,7 @@ package org.jh.forum.start.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
@@ -26,6 +27,6 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public AjaxResult<Object> handleGlobalException(Exception e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
-        return AjaxResult.fail();
+        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
     }
 }
