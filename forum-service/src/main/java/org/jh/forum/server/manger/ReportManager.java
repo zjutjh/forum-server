@@ -15,6 +15,7 @@ import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
+import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.exceptions.ApiException;
@@ -23,6 +24,7 @@ import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.mapper.ReportMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,18 +101,18 @@ public class ReportManager {
             }
             if (request.getDelete() == 1) {
                 TargetTypeEnum targetType = report.getTargetType();
-                    switch (targetType) {
-                        case POST:
-                            postMapper.deleteById(report.getTargetId());
-                            break;
-                        case COMMENT:
-                            // todo 根据评论id删除评论
-                            break;
-                        case USER:
-                            break;
-                        default:
-                            throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
-                    }
+                switch (targetType) {
+                    case POST:
+                        postMapper.deleteById(report.getTargetId());
+                        break;
+                    case COMMENT:
+                        // todo 根据评论id删除评论
+                        break;
+                    case USER:
+                        break;
+                    default:
+                        throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+                }
             }
         } catch (Exception e) {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
@@ -121,6 +123,8 @@ public class ReportManager {
         report.setStatus(request.getStatus() == 1 ? ReportStatusEnum.SUCCESS : ReportStatusEnum.FAILURE);
         report.setResult(request.getResult());
         reportMapper.updateById(report);
+
+        // todo 发送举报结果给举报人和被举报人
     }
 
     public BaseListResponse<GetReportListElement> getReportList(Integer status, Integer order, Integer page, Integer pageSize) {
@@ -198,5 +202,43 @@ public class ReportManager {
             );
         }
         return attachmentInfoList;
+    }
+
+    public UserHistoryStatsResponse getUserHistoryStats(Long userId) {
+        List<Report> reports = reportMapper.selectList(new LambdaQueryWrapper<Report>()
+                .eq(Report::getTargetUserId, userId)
+                .orderByDesc(Report::getCreatedAt));
+
+        List<Report> postReports = reports.stream()
+                .filter(report -> report.getTargetType() == TargetTypeEnum.POST)
+                .toList();
+
+        List<Report> commentReports = reports.stream()
+                .filter(report -> report.getTargetType() == TargetTypeEnum.COMMENT)
+                .toList();
+
+        List<Report> userReports = reports.stream()
+                .filter(report -> report.getTargetType() == TargetTypeEnum.USER)
+                .toList();
+
+        return UserHistoryStatsResponse.builder()
+                .post(calculateStats(postReports))
+                .comment(calculateStats(commentReports))
+                .user(calculateStats(userReports))
+                .total(calculateStats(reports))
+                .build();
+    }
+
+    private UserHistoryStatsResponse.StatDetail calculateStats(List<Report> reports) {
+        return UserHistoryStatsResponse.StatDetail.builder()
+                .reportCount(reports.size())
+                .establishedCount((int) reports.stream()
+                        .filter(report -> report.getStatus() == ReportStatusEnum.SUCCESS)
+                        .count())
+                .recentEstablishedCount((int) reports.stream()
+                        .filter(report -> report.getStatus() == ReportStatusEnum.SUCCESS)
+                        .filter(report -> report.getUpdatedAt().isAfter(LocalDateTime.now().minusDays(60)))
+                        .count())
+                .build();
     }
 }

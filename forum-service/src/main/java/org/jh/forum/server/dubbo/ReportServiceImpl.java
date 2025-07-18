@@ -11,6 +11,7 @@ import org.jh.forum.common.dto.request.ReportUserRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
+import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
 import org.jh.forum.server.manger.ReportManager;
 
 import jakarta.annotation.Resource;
@@ -43,16 +44,17 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public BaseListResponse<GetReportListElement> getReportList(GetReportListRequest request) {
-        BaseListResponse<GetReportListElement> reportList;
-        reportList = reportManager.getReportList(request.getStatus(), request.getOrder(),
+        return reportManager.getReportList(request.getStatus(), request.getOrder(),
                 request.getPage(), request.getPageSize());
-        return reportList;
     }
 
     @Override
     public GetReportDetailResponse getReportDetail(Long id) {
-        GetReportDetailResponse response;
-        response = reportManager.getReportDetail(id);
-        return response;
+        return reportManager.getReportDetail(id);
+    }
+
+    @Override
+    public UserHistoryStatsResponse getUserHistoryStats(Long userId) {
+        return reportManager.getUserHistoryStats(userId);
     }
 }

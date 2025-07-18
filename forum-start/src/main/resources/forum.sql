@@ -208,7 +208,7 @@ create table report
     id          bigint                              not null comment '举报ID'
         primary key,
     user_id     bigint                              not null comment '用户ID',
-    target_user_id bigint                              null comment '被举报用户ID',
+    target_user_id bigint                           not null comment '被举报用户ID',
     target_type varchar(50)                         not null comment '对象类型(用户/帖子/评论)',
     target_id   bigint                              not null comment '对象ID',
     type        varchar(50)                         not null comment '举报类型(色情/暴力/侵权/违法/涉政/引战/谣言/其他)',

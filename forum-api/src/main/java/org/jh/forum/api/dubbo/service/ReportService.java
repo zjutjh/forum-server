@@ -7,6 +7,7 @@ import org.jh.forum.common.dto.request.ReportUserRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
+import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
 
 /**
  * @author zzb
@@ -21,4 +22,6 @@ public interface ReportService {
     BaseListResponse<GetReportListElement> getReportList(GetReportListRequest request);
 
     GetReportDetailResponse getReportDetail(Long id);
+
+    UserHistoryStatsResponse getUserHistoryStats(Long userId);
 }

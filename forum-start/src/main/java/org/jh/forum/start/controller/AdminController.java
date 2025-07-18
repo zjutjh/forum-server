@@ -13,6 +13,7 @@ import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
+import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,8 +62,12 @@ public class AdminController {
     @Operation(summary = "获取举报详情")
     @GetMapping("/report/detail")
     public AjaxResult<GetReportDetailResponse> getReportDetail(@RequestParam(value = "report_id", required = true) Long id) {
-        GetReportDetailResponse response;
-        response = reportService.getReportDetail(id);
-        return AjaxResult.success(response);
+        return AjaxResult.success(reportService.getReportDetail(id));
+    }
+
+    @Operation(summary = "获取被举报用户历史统计")
+    @GetMapping("/report/history")
+    public AjaxResult<UserHistoryStatsResponse> getUserHistoryStats(@RequestParam(value = "user_id", required = true) Long userId) {
+        return AjaxResult.success(reportService.getUserHistoryStats(userId));
     }
 }
