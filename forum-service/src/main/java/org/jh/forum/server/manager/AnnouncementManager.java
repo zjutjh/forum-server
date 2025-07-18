@@ -205,7 +205,7 @@ public class AnnouncementManager {
 
 
     public AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean isSticky) {
-        log.info("置顶/取消置顶公告, ID: {}, 置顶状态: {}", id, isSticky);
+        log.debug("置顶/取消置顶公告, ID: {}, 置顶状态: {}", id, isSticky);
 
         Announcement updateEntity = Announcement.builder()
                 .id(id)
@@ -270,7 +270,7 @@ public class AnnouncementManager {
             int result = announcementMapper.publishAnnouncementManually(id);
             if (result > 0) {
                 successCount++;
-                log.info("定时发布公告成功, ID: {}", id);
+                log.debug("定时发布公告成功, ID: {}", id);
             } else {
                 failCount++;
                 log.warn("定时发布公告失败, ID: {}, 可能已被删除或状态已改变", id);
@@ -448,57 +448,4 @@ public class AnnouncementManager {
 
         return queryWrapper;
     }
-
-    /**
-     * 通用分页查询模板
-     *
-     * @param isAdmin        是否为管理员查询
-     * @param status         状态筛选
-     * @param type           类型筛选
-     * @param includeDeleted 是否包含已删除
-     * @param keywords       关键词搜索
-     * @param isDesc         是否降序(默认状态: 最近的在最上面)
-     * @param offset         偏移量
-     * @param limit          限制数量
-     */
-    @Deprecated
-    private List<Announcement> queryAnnouncements(boolean isAdmin, String status, String type,
-                                                  Boolean includeDeleted, String keywords, Boolean isDesc, Integer offset, Integer limit) {
-
-        LambdaQueryWrapper<Announcement> queryWrapper = buildQueryConditions(isAdmin, status, type, includeDeleted,
-                keywords);
-
-        if (isAdmin) {
-            // 管理员排序：根据状态选择不同的排序字段
-            if (AnnouncementStatusEnum.SCHEDULED.getCode().equals(status)) {
-                queryWrapper.orderByDesc(Announcement::getSticky);
-                queryWrapper.orderBy(true, isDesc, Announcement::getScheduledAt);
-            } else if (AnnouncementStatusEnum.PUBLISHED.getCode().equals(status)) {
-                queryWrapper.orderByDesc(Announcement::getSticky);
-                queryWrapper.orderBy(true, isDesc, Announcement::getPublishedAt);
-            } else {
-                queryWrapper.orderBy(true, isDesc, Announcement::getUpdatedAt);
-            }
-        } else {
-            // 用户排序：按发布时间升序
-            queryWrapper.orderByAsc(Announcement::getPublishedAt);
-        }
-
-        // 分页
-        queryWrapper.last("LIMIT " + offset + ", " + limit);
-
-        return announcementMapper.selectList(queryWrapper);
-    }
-
-    /**
-     * 通用计数查询模板
-     */
-    @Deprecated
-    private Long countAnnouncements(boolean isAdmin, String status, String type,
-                                    Boolean includeDeleted, String keywords) {
-        LambdaQueryWrapper<Announcement> queryWrapper = buildQueryConditions(isAdmin, status, type, includeDeleted,
-                keywords);
-        return announcementMapper.selectCount(queryWrapper);
-    }
-
 }

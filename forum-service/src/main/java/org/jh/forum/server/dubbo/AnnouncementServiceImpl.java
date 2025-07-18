@@ -49,7 +49,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private static final int MIN_CONTENT_LENGTH = 2;
     private static final String NO_CONDITION = "all";
 
-    private final MarkdownMathJaxHtmlFilter filter = new MarkdownMathJaxHtmlFilter();
+    private static final MarkdownMathJaxHtmlFilter filter = new MarkdownMathJaxHtmlFilter();
     @Resource
     private AnnouncementManager announcementManager;
     @Resource
@@ -326,7 +326,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public AnnouncementTinyDetailsResponse getAnnouncementTinyDetailsById(Long id) {
         try {
-            log.info("查询公告详情 (用户版) , ID:{}", id);
+            log.debug("查询公告详情 (用户版) , ID:{}", id);
 
             if (!announcementManager.isExist(id)) {
                 throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
@@ -336,11 +336,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             Announcement raw = announcementManager.getAnnouncementEntityById(id);
 
             // 检查公告状态
-            if (raw.getDeleted() || raw.getStatus().equals(AnnouncementStatusEnum.DRAFT)) {
+            if (raw.getDeleted() || raw.getStatus().equals(AnnouncementStatusEnum.DRAFT)) { // 被删除或者草稿公告 一定不可见
                 throw new IllegalArgumentException("公告状态异常");
-            } else if (raw.getStatus().equals(AnnouncementStatusEnum.SCHEDULED)
-                    && (raw.getScheduledAt() == null || raw.getScheduledAt().isBefore(LocalDateTime.now()))){
-                    throw new IllegalArgumentException("公告状态异常");
+            } else if (raw.getStatus().equals(AnnouncementStatusEnum.SCHEDULED) // 状态为待发布且预定发布时间在当前时间之后的（一定是未发布的）不可见
+                    && (raw.getScheduledAt() == null || raw.getScheduledAt().isAfter(LocalDateTime.now()))) {
+                throw new IllegalArgumentException("公告状态异常");
             }
 
             response.setId(id);
@@ -490,7 +490,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     public BaseListResponse<ListAnnouncementItemResponse> adminQueryAnnouncements(
             AdminQueryAnnouncementRequest request) {
         try {
-            log.info("管理员查询公告列表, 页码:{}, 状态:{},类型:{}, 排序方向:{}",
+            log.debug("管理员查询公告列表, 页码:{}, 状态:{},类型:{}, 排序方向:{}",
                     request.getPage(), request.getStatus(), request.getType(), request.orderType());
 
             // page：不传或 <1 时都设为 1
@@ -738,7 +738,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     /**
-     * 辅助方法-根据id获取用户昵称（直接查MySQL）
+     * 辅助方法-根据id批量获取用户昵称（使用缓存）
      */
     private Map<Long, String> getUsernamesByIds(Set<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
@@ -748,7 +748,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     /**
-     * 获取单个用户名（直接查UserManager.getUserInfo）
+     * 获取单个用户名（使用缓存）
      */
     private String getUsernameById(Long userId) {
         if (userId == null) {

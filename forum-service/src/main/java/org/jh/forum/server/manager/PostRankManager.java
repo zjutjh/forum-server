@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -38,6 +37,8 @@ public class PostRankManager {
     public final long ANNOUNCEMENT_REFRESH = 60 * 60;
 
     private final RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private AnnouncementManager announcementManager;
 
     public void recordAction(Long postId, String type) {
         long currentTime = System.currentTimeMillis() / 1000;
@@ -143,15 +144,7 @@ public class PostRankManager {
         return value == null ? 0 : Integer.parseInt(value.toString());
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class PageResult<T> {
-        private List<T> records;
-        private long total;
-    }
-
-    @Resource
-    private AnnouncementManager announcementManager;
+    // 蹭一下定时任务的定时公告发布
 
     /**
      * 定时检查并发布到期的公告
@@ -187,5 +180,12 @@ public class PostRankManager {
         } catch (Exception e) {
             log.error("定时发布公告任务执行失败", e);
         }
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class PageResult<T> {
+        private List<T> records;
+        private long total;
     }
 }

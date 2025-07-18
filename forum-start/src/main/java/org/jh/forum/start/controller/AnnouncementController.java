@@ -44,7 +44,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/announcements")
 @Tag(name = "公告管理接口", description = "公告的创建、发布、查询等功能")
 public class AnnouncementController {
-    private final String superAdminRole = "super_admin";
+    private final String SUPER_ADMIN = "super_admin";
 
     @Resource
     private AnnouncementService announcementService;
@@ -101,7 +101,7 @@ public class AnnouncementController {
             @Valid @RequestBody EditAnnouncementRequest request) {
 
         Long currentUid = StpUtil.getLoginIdAsLong();
-        boolean isSuperAdmin = StpUtil.hasRole(superAdminRole);
+        boolean isSuperAdmin = StpUtil.hasRole(SUPER_ADMIN);
 
         log.info("收到更新公告请求, ID: {}, 标题: {}, 类型: {}, 操作人id: {}",
                 request.getId(), request.getTitle(), request.getType(), currentUid);
@@ -136,7 +136,7 @@ public class AnnouncementController {
     public AjaxResult<AnnouncementOperationResponse> stickyAnnouncement(
             @Valid @RequestBody StickyAnnouncementRequest request) {
         Long currentUid = StpUtil.getLoginIdAsLong();
-        boolean isSuperAdmin = StpUtil.hasRole(superAdminRole);
+        boolean isSuperAdmin = StpUtil.hasRole(SUPER_ADMIN);
 
         log.info("收到置顶/取消置顶公告请求, ID: {}, 置顶状态: {}", request.getId(), request.getSticky());
         try {
@@ -169,7 +169,7 @@ public class AnnouncementController {
     @DeleteMapping
     public AjaxResult<AnnouncementOperationResponse> deleteAnnouncement(@RequestParam("id") Long id) {
         Long currentUid = StpUtil.getLoginIdAsLong();
-        boolean isSuperAdmin = StpUtil.hasRole(superAdminRole);
+        boolean isSuperAdmin = StpUtil.hasRole(SUPER_ADMIN);
 
         try {
             log.info("收到删除公告请求, ID: {}", id);
