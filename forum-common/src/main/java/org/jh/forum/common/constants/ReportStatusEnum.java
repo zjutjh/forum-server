@@ -6,18 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author SugarMGP
+ * @author zzb
  */
 @Getter
 @AllArgsConstructor
-public enum TargetTypeEnum {
-    POST("post", "帖子"),
-
-    COMMENT("comment", "评论"),
-
-    USER("user", "用户"),
-
-    REPORT("report", "举报");
+public enum ReportStatusEnum {
+    PENDING("pending", "未处理"),
+    SUCCESS("success", "举报成功"),
+    FAILURE("failure", "举报失败");
 
     @EnumValue
     @JsonValue
