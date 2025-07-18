@@ -9,6 +9,9 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 /**
+ * 枚举转换器
+ * 用于设置 SpringBoot 转换枚举时优先使用 getValue()
+ *
  * @author SugarMGP
  */
 @Component

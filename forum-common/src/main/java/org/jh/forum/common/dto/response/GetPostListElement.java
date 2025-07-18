@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.dto.UserInfoDTO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -46,11 +47,7 @@ public class GetPostListElement {
     @JsonProperty("comment_count")
     private Integer commentCount;
 
-    @Schema(description = "帖子浏览数")
-    @JsonProperty("view_count")
-    private Integer viewCount;
-
     @Schema(description = "发帖时间")
     @JsonProperty("created_at")
-    private String createdAt;
+    private LocalDateTime createdAt;
 }

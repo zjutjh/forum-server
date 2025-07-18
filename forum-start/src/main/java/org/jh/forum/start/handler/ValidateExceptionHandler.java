@@ -52,7 +52,7 @@ public class ValidateExceptionHandler {
     @ResponseBody
     public AjaxResult<Object> validationBodyException(SQLIntegrityConstraintViolationException e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
-        return AjaxResult.fail(ExceptionEnum.DATABASE_ERROR);
+        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
     }
 
     /**

@@ -13,17 +13,17 @@ import jakarta.validation.constraints.NotNull;
  */
 @Data
 public class LoginRequest {
-    @NotBlank(message = "用户名不能为空")
+    @NotBlank
     @Schema(description = "用户名")
     private String username;
 
-    @NotBlank(message = "密码不能为空")
+    @NotBlank
     @Schema(description = "密码")
     private String password;
 
     @NotNull
     @Schema(description = "用户类型 (1,学生) (2,管理员)")
-    @Max(value = 2, message = "用户类型错误")
-    @Min(value = 1, message = "用户类型错误")
+    @Max(value = 2)
+    @Min(value = 1)
     private Integer loginType;
 }

@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jh.cube.CubeException;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.common.exceptions.BaseException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
@@ -31,14 +30,11 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequiredArgsConstructor
 public class CustomExceptionHandler {
 
-    @ExceptionHandler(BaseException.class)
+    @ExceptionHandler(ApiException.class)
     @ResponseBody
-    public AjaxResult<Object> handleAppException(BaseException e, HttpServletRequest request) {
+    public AjaxResult<Object> handleAppException(ApiException e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
-        if (e instanceof ApiException) {
-            return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
-        }
-        return AjaxResult.fail();
+        return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
@@ -58,7 +54,7 @@ public class CustomExceptionHandler {
         if (e instanceof NotRoleException) {
             return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
-        return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
     }
 
     @ExceptionHandler(CubeException.class)
@@ -68,6 +64,6 @@ public class CustomExceptionHandler {
         if (e.getCode() == 200504) {
             return AjaxResult.fail(ExceptionEnum.FILE_NOT_PICTURE);
         }
-        return AjaxResult.fail(ExceptionEnum.UNKNOWN_ERROR);
+        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
     }
 }

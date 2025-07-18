@@ -1,4 +1,4 @@
-package org.jh.forum.common.dto.response;
+package org.jh.forum.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import org.jh.forum.common.constants.AttachmentTypeEnum;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetAttachmentInfoResponse {
+public class AttachmentInfoDTO {
     @Schema(description = "附件URL")
     String url;
 

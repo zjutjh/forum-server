@@ -25,20 +25,11 @@ public class AjaxResult<T> {
         return new AjaxResult<>(HttpStatus.OK.value(), SUCCESS_MSG, data);
     }
 
-    public static <N> AjaxResult<N> success(String msg, N data) {
-        return new AjaxResult<>(HttpStatus.OK.value(), msg, data);
-    }
-
     public static <N> AjaxResult<N> fail(Integer code, String msg) {
         return new AjaxResult<>(code, msg, null);
     }
 
     public static <N> AjaxResult<N> fail(ExceptionEnum error) {
         return new AjaxResult<>(error.getErrorCode(), error.getErrorMsg(), null);
-    }
-
-    public static <N> AjaxResult<N> fail() {
-        ExceptionEnum exception = ExceptionEnum.UNKNOWN_ERROR;
-        return new AjaxResult<>(exception.getErrorCode(), exception.getErrorMsg(), null);
     }
 }

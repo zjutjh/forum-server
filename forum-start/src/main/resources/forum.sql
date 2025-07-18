@@ -181,11 +181,13 @@ create table post
     category   varchar(20)                            not null comment '板块归属',
     is_pinned  boolean                                not null comment '是否置顶（管理员）',
     is_topped  boolean                                not null comment '是否置顶（个人主页）',
+    view_count int          default 0                 not null comment '浏览次数',
+    status     varchar(20)                            not null comment '帖子状态（normal/pending/deleted）',
     created_at timestamp    default CURRENT_TIMESTAMP not null comment '创建时间',
     updated_at timestamp                              not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid bigint                                 not null comment '创建用户',
     update_uid bigint                                 not null comment '更新用户',
-    deleted    boolean                                not null comment '是否被删除',
+    deleted    boolean                                not null comment '是否被删除（在该表中废弃，与其他表保持统一）',
     attribute  text                                   null comment '属性列（json string）'
 );
 
