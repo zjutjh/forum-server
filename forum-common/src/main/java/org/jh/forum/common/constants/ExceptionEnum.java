@@ -18,6 +18,8 @@ public enum ExceptionEnum {
     PERMISSION_NOT_ALLOWED(200004, "权限不足"),
     FILE_NOT_PICTURE(200005, "该文件不是图片"),
     FILE_UPLOAD_ERROR(200006, "文件上传失败"),
+    ANNOUNCEMENT_STICKY_LIMIT_REACHED(200007, "公告置顶达到上限"),
+    ANNOUNCEMENT_NOT_PUBLISHED(200008, "该公告还未发布"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试"),

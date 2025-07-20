@@ -25,12 +25,8 @@ public class SaTokenConfig implements StpInterface, WebMvcConfigurer {
 
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
-        try {
-            Long userId = Long.valueOf((String) loginId);
-            return userManager.getRoleList(userId);
-        } catch (Exception e) {
-            return List.of();
-        }
+        Long userId = Long.valueOf(loginId.toString());
+        return userManager.getRoleList(userId);
     }
 
     @Override

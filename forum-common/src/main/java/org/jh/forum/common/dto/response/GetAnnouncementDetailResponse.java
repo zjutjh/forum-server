@@ -2,22 +2,19 @@ package org.jh.forum.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Data;
 import org.jh.forum.common.constants.AnnouncementTypeEnum;
 
 import java.time.LocalDateTime;
 
 /**
- * 公告详情响应DTO（用户版本）
- *
  * @author SituChengxiang
  */
 @Data
-@Schema(description = "公告详情响应")
-public class AnnouncementTinyDetailsResponse {
-    @Schema(description = "公告ID", example = "1")
-    private Long id;
-
+@Builder
+@Schema(description = "用户公告详情响应")
+public class GetAnnouncementDetailResponse {
     @Schema(description = "公告标题", example = "重要系统维护通知")
     private String title;
 
@@ -27,20 +24,13 @@ public class AnnouncementTinyDetailsResponse {
     @Schema(description = "公告类型", example = "system")
     private AnnouncementTypeEnum type;
 
-    @Schema(description = "创建用户的昵称", example = "admin")
-    private String creator;
-
-    @Schema(description = "更新用户的昵称", example = "su_admin")
-    private String updater;
-
-    @JsonProperty("updated_at")
-    @Schema(description = "更新时间", example = "2025-06-07T09:00:00.000Z")
-    private LocalDateTime updatedAt;
+    @Schema(description = "发布人", example = "admin")
+    private String publisher;
 
     @JsonProperty("published_at")
-    @Schema(description = "实际发布时间", example = "2025-06-07T09:00:00.000Z")
+    @Schema(description = "发布时间", example = "2025-06-07T09:00:00")
     private LocalDateTime publishedAt;
 
-    @Schema(description = "是否置顶", example = "false")
+    @Schema(description = "是否置顶")
     private Boolean sticky;
 }

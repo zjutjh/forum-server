@@ -12,7 +12,7 @@ import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
 import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
-import org.jh.forum.server.manger.ReportManager;
+import org.jh.forum.server.manager.ReportManager;
 
 import jakarta.annotation.Resource;
 

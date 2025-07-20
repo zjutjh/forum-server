@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
 
+
 /**
  * @author O v O
  * @TableName user
@@ -74,5 +75,4 @@ public class User extends BaseEntity {
      * 用户角色
      */
     private UserTypeEnum role;
-
 }

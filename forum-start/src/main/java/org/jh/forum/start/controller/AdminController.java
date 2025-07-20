@@ -61,13 +61,13 @@ public class AdminController {
 
     @Operation(summary = "获取举报详情")
     @GetMapping("/report/detail")
-    public AjaxResult<GetReportDetailResponse> getReportDetail(@RequestParam(value = "report_id", required = true) Long id) {
+    public AjaxResult<GetReportDetailResponse> getReportDetail(@RequestParam(value = "report_id") Long id) {
         return AjaxResult.success(reportService.getReportDetail(id));
     }
 
     @Operation(summary = "获取被举报用户历史统计")
     @GetMapping("/report/history")
-    public AjaxResult<UserHistoryStatsResponse> getUserHistoryStats(@RequestParam(value = "user_id", required = true) Long userId) {
+    public AjaxResult<UserHistoryStatsResponse> getUserHistoryStats(@RequestParam(value = "user_id") Long userId) {
         return AjaxResult.success(reportService.getUserHistoryStats(userId));
     }
 }

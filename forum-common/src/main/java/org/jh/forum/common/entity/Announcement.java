@@ -40,33 +40,26 @@ public class Announcement extends BaseEntity {
     private String content;
 
     /**
-     * 公告类型 - 必填：0(系统公告)/1(学校公告)
+     * 公告类型
      */
-    @TableField(value = "type")
+    @TableField("type")
     private AnnouncementTypeEnum type;
 
     /**
-     * 预定发布时间 - 可空
-     */
-    @TableField("scheduled_at")
-    private LocalDateTime scheduledAt;
-
-    /**
-     * 实际发布时间 - 可空
+     * 发布时间
      */
     @TableField("published_at")
     private LocalDateTime publishedAt;
 
     /**
-     * 状态 - 必填：draft:草稿、published:已发布、scheduled:待发布
+     * 公告状态
      */
     @TableField("status")
     private AnnouncementStatusEnum status;
 
     /**
-     * 是否置顶 - 可空，默认false
+     * 是否置顶
      */
     @TableField("sticky")
     private Boolean sticky;
-
 }
