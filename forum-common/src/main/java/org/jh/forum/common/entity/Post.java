@@ -1,7 +1,11 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.constants.PostStatusEnum;
 
@@ -12,9 +16,9 @@ import org.jh.forum.common.constants.PostStatusEnum;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "post")
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 public class Post extends BaseEntity {
     private Long userId;
 
