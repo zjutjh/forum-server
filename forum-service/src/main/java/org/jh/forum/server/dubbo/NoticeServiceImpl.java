@@ -5,6 +5,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.NoticeService;
+import org.jh.forum.common.dto.request.CreateNoticeRequest;
 import org.jh.forum.common.dto.request.GetNoticeListRequest;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.server.manger.NoticeManager;
@@ -24,5 +25,9 @@ public class NoticeServiceImpl implements NoticeService {
         return noticeManager.getNoticeList(StpUtil.getLoginIdAsLong(), request.getPage(), request.getPageSize(), request.getType());
     }
 
+    @Override
+    public void createNotice(CreateNoticeRequest request) {
+        noticeManager.createNotice(request);
+    }
 
 }

@@ -17,6 +17,9 @@ import org.jh.forum.common.dto.response.GetNoticeListElement;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author lyyzzz
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -68,8 +71,8 @@ public class NoticeManager {
                 .commentId(request.getCommentId())
                 .attribute(request.getAttribute())
                 .deleted(false)
-                .createUid(StpUtil.getLoginIdAsInt())
-                .updateUid(StpUtil.getLoginIdAsInt())
+                .createUid(StpUtil.getLoginIdAsLong())
+                .updateUid(StpUtil.getLoginIdAsLong())
                 .build();
         noticeMapper.insert(notice);
     }
