@@ -1,10 +1,13 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
-import lombok.experimental.SuperBuilder;
 
 /**
  * @author O v O

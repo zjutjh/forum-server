@@ -1,5 +1,6 @@
 package org.jh.forum.server.dubbo;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -14,7 +15,6 @@ import org.jh.forum.common.dto.request.UserQueryAnnouncementRequest;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Announcement;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.common.filters.MarkdownMathJaxHtmlFilter;
 import org.jh.forum.server.manager.AnnouncementManager;
 import org.jh.forum.server.manager.UserManager;
 import org.springframework.stereotype.Service;
@@ -49,24 +49,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private static final int MIN_CONTENT_LENGTH = 2;
     private static final String NO_CONDITION = "all";
 
-    private static final MarkdownMathJaxHtmlFilter filter = new MarkdownMathJaxHtmlFilter();
     @Resource
     private AnnouncementManager announcementManager;
     @Resource
     private UserManager userManager;
-
-    /**
-     * 防止标题和内容SQL、XSS注入(理论上来说应该没这个问题，但是谁知道呢)
-     */
-    public void safeFilter(CreateAnnouncementRequest request) {
-        request.setTitle(filter.filterTitle(request.getTitle()));
-        request.setContent(filter.filterContent(request.getContent()));
-    }
-
-    public void safeFilter(EditAnnouncementRequest request) {
-        request.setTitle(filter.filterTitle(request.getTitle()));
-        request.setContent(filter.filterContent(request.getContent()));
-    }
 
     /**
      * 创建公告
@@ -74,15 +60,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public AnnouncementOperationResponse createAnnouncement(CreateAnnouncementRequest request) {
         try {
+
+            if (!StpUtil.hasRole("super_admin") && !StpUtil.hasRole("admin")) {
+                log.warn("用户无权限创建公告, 用户ID: {}", StpUtil.getLoginIdAsLong());
+                throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            }
+
             // 标题和内容基本校验
             validateTitleAndContent(request.getTitle(), request.getContent());
-
-            // 标题Trim、XSS过滤、查重校验（XSS过滤会把内容也给过滤好）
-            request.setTitle(request.getTitle().trim());
-            safeFilter(request);
-            if (announcementManager.checkTitleDuplicate(request.getTitle())) {
-                throw new IllegalArgumentException("公告标题已存在, 请使用其他标题");
-            }
 
             // 校验公告类型
             validateAnnouncementType(request.getType());
@@ -127,30 +112,26 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 编辑公告
      */
     @Override
-    public AnnouncementOperationResponse editAnnouncement(EditAnnouncementRequest request, Long currentUid,
-                                                          boolean isSuperAdmin) {
+    public AnnouncementOperationResponse editAnnouncement(EditAnnouncementRequest request) {
+        // 从SA-Token获取当前用户信息
+        Long currentUid = StpUtil.getLoginIdAsLong();
+        boolean isSuperAdmin = StpUtil.hasRole("super_admin");
+
         log.info("Service-编辑公告, ID:{}, 标题:{}", request.getId(), request.getTitle());
         try {
+
+            if (!announcementManager.isExist(request.getId())) {
+                throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
+            }
+
 
             if (!checkPermission(request.getId(), currentUid, isSuperAdmin)) {
                 log.warn("用户无权限更新公告, 公告ID: {}, 用户ID: {}", request.getId(), currentUid);
                 throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
             }
 
-            if (!announcementManager.isExist(request.getId())) {
-                throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
-            }
-
             // 校验标题和内容
-            request.setTitle(request.getTitle().trim());
-            safeFilter(request);
             validateTitleAndContent(request.getTitle(), request.getContent());
-
-            // 标题查重校验 (编辑时排除当前公告ID)
-            String trimmedTitle = request.getTitle().trim();
-            if (announcementManager.checkTitleDuplicate(trimmedTitle, request.getId())) {
-                throw new IllegalArgumentException("公告标题已存在, 请使用其他标题");
-            }
 
             // 校验公告类型
             validateAnnouncementType(request.getType());
@@ -209,8 +190,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 置顶/取消置顶公告
      */
     @Override
-    public AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean sticky, Long currentUid,
-                                                            boolean isSuperAdmin) {
+    public AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean sticky) {
+        // 从SA-Token获取当前用户信息
+        Long currentUid = StpUtil.getLoginIdAsLong();
+        boolean isSuperAdmin = StpUtil.hasRole("super_admin");
+
         try {
             log.info("置顶/取消置顶公告, ID:{}, 置顶状态:{}", id, sticky);
 
@@ -252,7 +236,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      * 删除公告
      */
     @Override
-    public AnnouncementOperationResponse deleteAnnouncement(Long id, Long currentUid, boolean isSuperAdmin) {
+    public AnnouncementOperationResponse deleteAnnouncement(Long id) {
+        // 从SA-Token获取当前用户信息
+        Long currentUid = StpUtil.getLoginIdAsLong();
+        boolean isSuperAdmin = StpUtil.hasRole("super_admin");
+
         try {
 
             if (!checkPermission(id, currentUid, isSuperAdmin)) {
@@ -336,10 +324,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             Announcement raw = announcementManager.getAnnouncementEntityById(id);
 
             // 检查公告状态
-            if (raw.getDeleted() || raw.getStatus().equals(AnnouncementStatusEnum.DRAFT)) { // 被删除或者草稿公告 一定不可见
+            // 被删除或者草稿公告 一定不可见
+            if (raw.getDeleted() || raw.getStatus().equals(AnnouncementStatusEnum.DRAFT)) {
                 throw new IllegalArgumentException("公告状态异常");
-            } else if (raw.getStatus().equals(AnnouncementStatusEnum.SCHEDULED) // 状态为待发布且预定发布时间在当前时间之后的（一定是未发布的）不可见
+            } else if (raw.getStatus().equals(AnnouncementStatusEnum.SCHEDULED)
                     && (raw.getScheduledAt() == null || raw.getScheduledAt().isAfter(LocalDateTime.now()))) {
+                // 状态为待发布且预定发布时间在当前时间之后的（一定是未发布的）不可见
                 throw new IllegalArgumentException("公告状态异常");
             }
 

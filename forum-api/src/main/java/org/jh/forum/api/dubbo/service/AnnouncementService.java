@@ -25,35 +25,27 @@ public interface AnnouncementService {
     /**
      * 编辑公告
      *
-     * @param request      编辑公告请求
-     * @param currentUid   当前用户ID
-     * @param isSuperAdmin 是否是超级管理员
+     * @param request 编辑公告请求
      * @return 编辑结果
      */
-    AnnouncementOperationResponse editAnnouncement(EditAnnouncementRequest request, Long currentUid,
-                                                   boolean isSuperAdmin);
+    AnnouncementOperationResponse editAnnouncement(EditAnnouncementRequest request);
 
     /**
      * 删除公告
      *
-     * @param id           公告ID
-     * @param currentUid   当前用户ID
-     * @param isSuperAdmin 是否是超级管理员
+     * @param id 公告ID
      * @return 删除结果
      */
-    AnnouncementOperationResponse deleteAnnouncement(Long id, Long currentUid, boolean isSuperAdmin);
+    AnnouncementOperationResponse deleteAnnouncement(Long id);
 
     /**
      * 置顶/取消置顶公告
      *
-     * @param id           公告ID
-     * @param sticky       true表示置顶，false表示取消置顶
-     * @param currentUid   当前用户ID
-     * @param isSuperAdmin 是否是超级管理员
+     * @param id     公告ID
+     * @param sticky true表示置顶，false表示取消置顶
      * @return 操作结果
      */
-    AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean sticky, Long currentUid,
-                                                     boolean isSuperAdmin);
+    AnnouncementOperationResponse stickyAnnouncement(Long id, Boolean sticky);
 
     /**
      * 根据ID查询公告详情

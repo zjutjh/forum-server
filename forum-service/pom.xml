@@ -52,7 +52,7 @@
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
         </dependency>
-        
+
     </dependencies>
     <dependencyManagement>
         <dependencies>

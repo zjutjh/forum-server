@@ -328,28 +328,6 @@ public class AnnouncementManager {
     // ====================以下部分为辅助方法====================//
 
     /**
-     * 检查标题是否重复（创建时使用,已排除软删除公告）
-     * 使用 MyBatis-Plus 的 exists 方法优化
-     */
-    public boolean checkTitleDuplicate(String title) {
-        return announcementMapper.exists(new LambdaQueryWrapper<Announcement>()
-                .eq(Announcement::getTitle, title)
-                .eq(Announcement::getDeleted, false));
-    }
-
-    /**
-     * 检查标题是否重复（编辑时使用, 排除当前公告ID, 已排除软删除, 后如无特殊情况不再注明）
-     * 使用 MyBatis-Plus 的 exists 方法优化
-     */
-    public boolean checkTitleDuplicate(String title, Long excludeId) {
-        return announcementMapper.exists(new LambdaQueryWrapper<Announcement>()
-                .eq(Announcement::getTitle, title)
-                .ne(Announcement::getId, excludeId)
-                .eq(Announcement::getDeleted, false));
-    }
-
-
-    /**
      * 根据ID检查公告是否存在（MyBatis-Plus 的 exists 方法）
      * 存在时返回true，不存在false， 目前基本都是反转引用
      */

@@ -1,9 +1,10 @@
 package org.jh.forum.common.dto.request;
 
-import jakarta.annotation.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import jakarta.annotation.Nullable;
 
 /**
  * 用户公告列表查询请求DTO
