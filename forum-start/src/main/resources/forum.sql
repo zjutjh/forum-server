@@ -1,18 +1,20 @@
 create table announcement
 (
-    id         bigint                              not null comment '公告ID'
+    id           bigint                              not null comment '公告ID'
         primary key,
-    title      varchar(100)                        not null comment '公告标题',
-    content    text                                not null comment '正文',
-    target_id  bigint                              null comment '目标用户ID（为空则全体用户）',
-    type       varchar(20)                         not null comment '公告类型（系统公告、学校公告）',
-    sender     varchar(10)                         not null comment '发送人署名',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    title        varchar(100)                        not null comment '公告标题',
+    content      text                                not null comment '正文',
+    type         varchar(40)                         not null comment '公告类型（systematic、scholastic）',
+    created_at   timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
+    updated_at   timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    scheduled_at timestamp                           null comment '定时发布时间，如果为空则立即发布',
+    published_at timestamp                           null comment '实际发布时间',
+    status       varchar(40)                         not null comment '状态（draft、published、scheduled）',
+    create_uid   bigint                              not null comment '创建用户ID',
+    update_uid   bigint                              not null comment '更新用户ID',
+    deleted      boolean                             not null comment '是否被删除',
+    attribute    text                                null comment '属性列（json string）',
+    sticky       boolean   default false             not null comment '是否置顶',
 );
 
 create table attachment
@@ -289,5 +291,4 @@ create table user_detail
     college_visible  boolean     default true not null comment '学院可见性',
     realname_visible boolean     default true not null comment '实名可见性'
 );
-
 

@@ -9,7 +9,7 @@ import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
-import org.jh.forum.server.manger.PostManager;
+import org.jh.forum.server.manager.PostManager;
 
 import jakarta.annotation.Resource;
 
