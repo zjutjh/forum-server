@@ -8,13 +8,15 @@ import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.response.UploadPictureResponse;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.BlakeUtils;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Resource;
@@ -41,12 +43,6 @@ public class FileController {
     public AjaxResult<UploadPictureResponse> uploadPicture(@RequestParam("picture") MultipartFile picture) {
         Long attachmentId = uploadFile(picture, AttachmentTypeEnum.PICTURE);
         return AjaxResult.success(new UploadPictureResponse(attachmentId));
-    }
-
-    @Operation(summary = "获取附件信息")
-    @GetMapping("/info")
-    public AjaxResult<AttachmentInfoDTO> getAttachmentInfo(@RequestParam("attachment_id") Long attachmentId) {
-        return AjaxResult.success(fileService.getAttachmentInfo(attachmentId));
     }
 
     private Long uploadFile(MultipartFile file, AttachmentTypeEnum type) {
