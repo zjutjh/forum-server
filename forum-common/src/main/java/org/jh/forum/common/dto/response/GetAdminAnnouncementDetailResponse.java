@@ -16,20 +16,20 @@ import java.time.LocalDateTime;
 @Builder
 @Schema(description = "管理员公告详情响应")
 public class GetAdminAnnouncementDetailResponse {
-    @Schema(description = "公告标题", example = "重要系统维护通知")
+    @Schema(description = "公告标题")
     private String title;
 
-    @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...")
+    @Schema(description = "公告内容")
     private String content;
 
-    @Schema(description = "公告类型", example = "system")
+    @Schema(description = "公告类型")
     private AnnouncementTypeEnum type;
 
-    @Schema(description = "发布人", example = "admin")
+    @Schema(description = "发布人")
     private String publisher;
 
     @JsonProperty("updated_at")
-    @Schema(description = "最后编辑时间", example = "2025-06-07T09:00:00")
+    @Schema(description = "最后编辑时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
     @Schema(description = "是否置顶")
@@ -39,6 +39,6 @@ public class GetAdminAnnouncementDetailResponse {
     private AnnouncementStatusEnum status;
 
     @JsonProperty("published_at")
-    @Schema(description = "发布时间", example = "2025-06-07T09:00:00")
+    @Schema(description = "发布时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime publishedAt;
 }

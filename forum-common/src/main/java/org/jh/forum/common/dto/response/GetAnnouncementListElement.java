@@ -21,22 +21,22 @@ import java.time.LocalDateTime;
 @Data
 @Schema(description = "公告列表项（用户版）")
 public class GetAnnouncementListElement {
-    @Schema(description = "公告ID", example = "1")
+    @Schema(description = "公告ID")
     private Long id;
 
-    @Schema(description = "公告标题", example = "重要系统维护通知")
+    @Schema(description = "公告标题")
     private String title;
 
-    @Schema(description = "类型", example = "systematic")
+    @Schema(description = "类型")
     private AnnouncementTypeEnum type;
 
-    @Schema(description = "发布人", example = "admin")
+    @Schema(description = "发布人")
     private String publisher;
 
     @JsonProperty("published_at")
-    @Schema(description = "实际发布时间", example = "2025-06-07T09:00:00")
+    @Schema(description = "发布时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime publishedAt;
 
-    @Schema(description = "是否置顶", example = "false")
+    @Schema(description = "是否置顶")
     private boolean sticky;
 }

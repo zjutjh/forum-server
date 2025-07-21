@@ -63,13 +63,13 @@ public class AnnouncementController {
     }
 
     /**
-     * 更新公告接口
+     * 编辑公告接口
      * HTTP方法: PUT
      * 请求路径: /announcements
      * 请求体: JSON格式 { id, title, content, type, scheduledAt, status }
      * 权限: 管理员
      */
-    @Operation(summary = "更新公告")
+    @Operation(summary = "编辑公告", description = "注意：若公告已发布，则对status和publishedAt的修改不会生效！！！")
     @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @Tag(name = "管理员")
     @PutMapping

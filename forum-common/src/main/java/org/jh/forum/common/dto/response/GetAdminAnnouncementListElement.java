@@ -24,26 +24,26 @@ import java.time.LocalDateTime;
 @Builder
 @Schema(description = "公告列表项（管理员版）")
 public class GetAdminAnnouncementListElement {
-    @Schema(description = "公告ID", example = "1")
+    @Schema(description = "公告ID")
     private Long id;
 
-    @Schema(description = "公告标题", example = "重要系统维护通知")
+    @Schema(description = "公告标题")
     private String title;
 
-    @Schema(description = "类型", example = "systematic")
+    @Schema(description = "类型")
     private AnnouncementTypeEnum type;
 
     @JsonProperty("published_at")
-    @Schema(description = "发布时间", example = "2025-06-07T09:00:00")
+    @Schema(description = "发布时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime publishedAt;
 
     @JsonProperty("updated_at")
-    @Schema(description = "最后编辑时间", example = "2025-06-07T09:00:00")
+    @Schema(description = "最后编辑时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
-    @Schema(description = "是否置顶", example = "false")
+    @Schema(description = "是否置顶")
     private Boolean sticky;
 
-    @Schema(description = "状态", example = "published")
+    @Schema(description = "状态")
     private AnnouncementStatusEnum status;
 }

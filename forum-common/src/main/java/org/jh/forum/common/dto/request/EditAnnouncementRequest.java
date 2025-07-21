@@ -44,6 +44,6 @@ public class EditAnnouncementRequest {
     private AnnouncementStatusEnum status;
 
     @JsonProperty("published_at")
-    @Schema(description = "定时发布时间(ISO8601格式, 前端发送UTC+8本地时间)")
+    @Schema(description = "定时发布时间(yyyy-MM-dd'T'HH:mm:ss, 前端发送UTC+8本地时间)")
     private LocalDateTime publishedAt;
 }
