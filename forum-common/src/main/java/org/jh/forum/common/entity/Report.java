@@ -1,7 +1,11 @@
 package org.jh.forum.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
@@ -13,7 +17,7 @@ import org.jh.forum.common.constants.TargetTypeEnum;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "report")
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Report extends BaseEntity {

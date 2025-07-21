@@ -4,17 +4,16 @@ create table announcement
         primary key,
     title        varchar(100)                        not null comment '公告标题',
     content      text                                not null comment '正文',
-    type         varchar(40)                         not null comment '公告类型（systematic、scholastic）',
+    type         varchar(40)                         not null comment '公告类型',
+    sticky       boolean   default false             not null comment '是否置顶',
+    published_at timestamp                           null comment '发布时间',
+    status       varchar(40)                         not null comment '公告状态',
     created_at   timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
     updated_at   timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    scheduled_at timestamp                           null comment '定时发布时间，如果为空则立即发布',
-    published_at timestamp                           null comment '实际发布时间',
-    status       varchar(40)                         not null comment '状态（draft、published、scheduled）',
     create_uid   bigint                              not null comment '创建用户ID',
     update_uid   bigint                              not null comment '更新用户ID',
     deleted      boolean                             not null comment '是否被删除',
-    attribute    text                                null comment '属性列（json string）',
-    sticky       boolean   default false             not null comment '是否置顶',
+    attribute    text                                null comment '属性列（json string）'
 );
 
 create table attachment
@@ -207,22 +206,22 @@ create table post_topic_relation
 
 create table report
 (
-    id          bigint                              not null comment '举报ID'
+    id             bigint                              not null comment '举报ID'
         primary key,
-    user_id     bigint                              not null comment '用户ID',
-    target_user_id bigint                           not null comment '被举报用户ID',
-    target_type varchar(50)                         not null comment '对象类型(用户/帖子/评论)',
-    target_id   bigint                              not null comment '对象ID',
-    type        varchar(50)                         not null comment '举报类型(色情/暴力/侵权/违法/涉政/引战/谣言/其他)',
-    reason      varchar(500)                        not null comment '理由',
-    status      varchar(20)                         not null comment '处理状态(未处理/举报失败/举报成功)',
-    result      varchar(300)                        not null comment '处理结论',
-    created_at  timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at  timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid  bigint                              not null comment '创建用户',
-    update_uid  bigint                              not null comment '更新用户',
-    deleted     boolean                             not null comment '是否被删除',
-    attribute   text                                null comment '属性列（json string）'
+    user_id        bigint                              not null comment '用户ID',
+    target_user_id bigint                              not null comment '被举报用户ID',
+    target_type    varchar(50)                         not null comment '对象类型(用户/帖子/评论)',
+    target_id      bigint                              not null comment '对象ID',
+    type           varchar(50)                         not null comment '举报类型(色情/暴力/侵权/违法/涉政/引战/谣言/其他)',
+    reason         varchar(500)                        not null comment '理由',
+    status         varchar(20)                         not null comment '处理状态(未处理/举报失败/举报成功)',
+    result         varchar(300)                        not null comment '处理结论',
+    created_at     timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at     timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid     bigint                              not null comment '创建用户',
+    update_uid     bigint                              not null comment '更新用户',
+    deleted        boolean                             not null comment '是否被删除',
+    attribute      text                                null comment '属性列（json string）'
 );
 
 create table topic

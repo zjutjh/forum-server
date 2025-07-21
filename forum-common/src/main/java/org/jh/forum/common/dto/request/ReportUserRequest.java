@@ -23,7 +23,8 @@ public class ReportUserRequest {
     @NotNull
     private ReportTypeEnum type;
 
-    @Schema(description = "举报内容 选择其他时填写")
+    @Schema(description = "举报原因")
+    @NotNull
     private String reason;
 
     @Schema(description = "被举报的用户ID")

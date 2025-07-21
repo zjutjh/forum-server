@@ -10,7 +10,6 @@ import org.jh.forum.common.dto.request.GetPostListRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
@@ -20,7 +19,6 @@ import jakarta.validation.Valid;
  * @author SugarMGP
  */
 @Slf4j
-@Validated
 @RequestMapping("/post")
 @RestController
 @Tag(name = "帖子", description = "帖子相关接口")

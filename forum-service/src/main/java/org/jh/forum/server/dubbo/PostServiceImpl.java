@@ -50,7 +50,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(Long id) {
-        postManager.deletePost(id);
+        boolean isAdmin = StpUtil.hasRole("admin") || StpUtil.hasRole("super_admin");
+        postManager.deletePost(id, isAdmin);
     }
 
     @Override

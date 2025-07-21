@@ -11,10 +11,12 @@ import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
 import org.jh.forum.common.entity.Post;
+import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.FileMapper;
 import org.jh.forum.server.mapper.PostMapper;
+import org.jh.forum.server.mapper.ReportMapper;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,6 +30,7 @@ public class FileManager {
     private final PostMapper postMapper;
     private final FileMapper fileMapper;
     private final CubeService cubeService;
+    private final ReportMapper reportMapper;
 
     public void deleteAttachment(Long attachmentId) {
         Attachment attachment = attachmentMapper.selectById(attachmentId);
@@ -71,6 +74,14 @@ public class FileManager {
             }
         } else if (targetType == TargetTypeEnum.COMMENT) {
             // TODO: 评论绑定
+        } else if (targetType == TargetTypeEnum.REPORT) {
+            Report report = reportMapper.selectById(targetId);
+            if (report == null) {
+                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            }
+            if (!report.getUserId().equals(attachment.getUserId())) {
+                throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            }
         }
 
         attachment.setTargetType(targetType);

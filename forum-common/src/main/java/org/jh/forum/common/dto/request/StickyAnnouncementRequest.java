@@ -14,13 +14,12 @@ import jakarta.validation.constraints.NotNull;
 @Data
 @Schema(description = "置顶/取消置顶公告请求")
 public class StickyAnnouncementRequest {
-
-    @NotNull(message = "公告ID不能为空")
-    @Min(value = 1, message = "公告ID不能小于1")
-    @Schema(description = "公告ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull
+    @Min(1)
+    @Schema(description = "公告ID")
     private Long id;
 
-    @NotNull(message = "置顶状态不能为空")
-    @Schema(description = "是否置顶", example = "true", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"true", "false"})
+    @NotNull
+    @Schema(description = "是否置顶")
     private Boolean sticky;
 }
