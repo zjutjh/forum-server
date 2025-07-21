@@ -1,12 +1,9 @@
 package org.jh.forum.server.dubbo;
 
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.EnumUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.AnnouncementService;
-import org.jh.forum.common.constants.AnnouncementStatusEnum;
-import org.jh.forum.common.constants.AnnouncementTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
@@ -27,8 +24,6 @@ import java.util.List;
 @Service
 @DubboService
 public class AnnouncementServiceImpl implements AnnouncementService {
-    private static final String ALL = "all";
-
     @Resource
     private AnnouncementManager announcementManager;
 
@@ -100,11 +95,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      */
     @Override
     public BaseListResponse<GetAnnouncementListElement> userListAnnouncements(GetAnnouncementListRequest request) {
-        AnnouncementTypeEnum type = null;
-        if (!request.getType().equals(ALL)) {
-            type = EnumUtil.getBy(AnnouncementTypeEnum::getValue, request.getType());
-        }
-        return announcementManager.userListAnnouncements(request.getPage(), request.getPageSize(), type);
+        return announcementManager.userListAnnouncements(request.getPage(), request.getPageSize(), request.getType());
     }
 
     /**
@@ -112,19 +103,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      */
     @Override
     public BaseListResponse<GetAdminAnnouncementListElement> adminQueryAnnouncements(GetAdminAnnouncementListRequest request) {
-        AnnouncementTypeEnum type = null;
-        if (!request.getType().equals(ALL)) {
-            type = EnumUtil.getBy(AnnouncementTypeEnum::getValue, request.getType());
-        }
-        AnnouncementStatusEnum status = null;
-        if (!request.getStatus().equals(ALL)) {
-            status = EnumUtil.getBy(AnnouncementStatusEnum::getValue, request.getStatus());
-        }
         return announcementManager.adminQueryAnnouncements(
                 request.getPage(),
                 request.getPageSize(),
-                type,
-                status,
+                request.getType(),
+                request.getStatus(),
                 request.getOrder(),
                 request.getKeyword()
         );

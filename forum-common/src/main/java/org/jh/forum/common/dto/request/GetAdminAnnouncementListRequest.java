@@ -3,6 +3,8 @@ package org.jh.forum.common.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.jh.forum.common.constants.AnnouncementStatusEnum;
+import org.jh.forum.common.constants.AnnouncementTypeEnum;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -16,13 +18,11 @@ import jakarta.validation.constraints.NotNull;
 @Data
 @Schema(description = "管理员公告列表查询请求")
 public class GetAdminAnnouncementListRequest extends BaseListRequest {
-    @NotNull
-    @Schema(description = "类型筛选", allowableValues = {"systematic", "scholastic", "all"})
-    private String type;
+    @Schema(description = "类型筛选 (空则全部)")
+    private AnnouncementTypeEnum type;
 
-    @NotNull
-    @Schema(description = "状态筛选", allowableValues = {"draft", "published", "scheduled", "all"})
-    private String status;
+    @Schema(description = "状态筛选 (空则全部)")
+    private AnnouncementStatusEnum status;
 
     @NotNull
     @Schema(description = "排序方向（desc：从新到旧，asc：从旧到新）", allowableValues = {"desc", "asc"})
