@@ -33,7 +33,9 @@ public class CustomExceptionHandler {
     @ExceptionHandler(ApiException.class)
     @ResponseBody
     public AjaxResult<Object> handleAppException(ApiException e, HttpServletRequest request) {
-        HandlerUtils.logException(e, request);
+        if (e.getCause() != null) {
+            HandlerUtils.logException(e.getCause(), request);
+        }
         return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
     }
 

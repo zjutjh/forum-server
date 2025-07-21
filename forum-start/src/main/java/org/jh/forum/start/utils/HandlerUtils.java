@@ -17,7 +17,7 @@ public class HandlerUtils {
      * @param e       错误异常
      * @param request Http请求对象
      */
-    public static void logException(Exception e, HttpServletRequest request) {
+    public static void logException(Throwable e, HttpServletRequest request) {
         log.error("[{}] | {} | {} | request={}", Instant.now(), getRemoteAddr(request), request.getRequestURI(), JSON.toJSONString(request.getParameterMap()), e);
     }
 
