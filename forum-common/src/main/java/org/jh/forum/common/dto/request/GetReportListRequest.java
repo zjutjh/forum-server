@@ -4,9 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * @author zzb
@@ -14,15 +12,11 @@ import jakarta.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class GetReportListRequest extends BaseListRequest {
-    @Schema(description = "处理状态: 1-待处理, 2-已处理")
-    @NotNull
-    @Min(1)
-    @Max(2)
-    private Integer status;
+    @Schema(description = "处理状态: all-全部, pending-待处理, processed-已处理")
+    @NotBlank
+    private String status;
 
-    @Schema(description = "升序/降序: 1-升序, 2-降序")
-    @NotNull
-    @Min(1)
-    @Max(2)
-    private Integer order;
+    @Schema(description = "排序: desc-降序, asc-升序")
+    @NotBlank
+    private String order;
 }

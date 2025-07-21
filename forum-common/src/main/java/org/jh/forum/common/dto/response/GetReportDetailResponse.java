@@ -23,16 +23,16 @@ import java.util.List;
 @Data
 public class GetReportDetailResponse {
     @Schema(description = "举报人ID")
-    @JsonProperty("create_uid")
-    private Long createUid;
-
-    @Schema(description = "被举报人用户ID")
     @JsonProperty("user_id")
     private Long userId;
 
+    @Schema(description = "被举报人ID")
+    @JsonProperty("target_user_id")
+    private Long targetUserId;
+
     @Schema(description = "被举报用户名称")
-    @JsonProperty("nickname")
-    private String nickname;
+    @JsonProperty("target_nickname")
+    private String targetNickname;
 
     @Schema(description = "举报时间")
     @JsonProperty("created_at")

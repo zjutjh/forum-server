@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.HandleReportEnum;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -26,20 +24,17 @@ public class HandleReportRequest {
     @NotNull
     private Long reportId;
 
-    @Schema(description = "判定结果：1-举报成立，2-举报不成立")
+    @Schema(description = "判定结果：success-举报成立，failure-举报不成立", allowableValues = {"success", "failure"})
     @NotNull
-    @Min(1)
-    @Max(2)
-    private Integer status;
+    private String status;
 
-    @Schema(description = "是否删除原帖子/评论：1-删除，2-不删除")
+    @Schema(description = "是否删除原帖子/评论")
     @NotNull
-    @Min(1)
-    @Max(2)
-    private Integer delete;
+    @JsonProperty("should_delete")
+    private Boolean shouldDelete;
 
     @Schema(description = "处罚类型：no_punishment-无处罚，short_mute-短期禁言(1天)，" +
-            "long_mute-长期禁言(7天)，custon_mute-自定义禁言时长，ban_account-封禁账号")
+            "long_mute-长期禁言(7天)，custom_mute-自定义禁言时长，ban_account-封禁账号")
     @NotNull
     private HandleReportEnum type;
 

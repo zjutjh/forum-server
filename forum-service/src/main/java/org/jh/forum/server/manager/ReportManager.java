@@ -1,6 +1,7 @@
 package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.EnumUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,11 +18,13 @@ import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
 import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
 import org.jh.forum.common.entity.Attachment;
+import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.mapper.ReportMapper;
+import org.jh.forum.server.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,20 +43,24 @@ public class ReportManager {
     private final AttachmentMapper attachmentMapper;
     private final UserManager userManager;
     private final FileManager fileManager;
+    private final PostManager postManager;
+    private final UserMapper userMapper;
 
-    public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, TargetTypeEnum target, List<Long> attachmentIds) {
+    public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, List<Long> attachmentIds) {
+        if (targetUserId.equals(StpUtil.getLoginIdAsLong())) {
+            throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
+        }
         Report report = Report.builder()
                 .type(type)
                 .userId(StpUtil.getLoginIdAsLong())
                 .targetUserId(targetUserId)
                 .reason(reason)
                 .targetId(targetUserId)
-                .targetType(target)
+                .targetType(TargetTypeEnum.USER)
                 .status(ReportStatusEnum.PENDING)
                 .result("")
                 .build();
         reportMapper.insert(report);
-
         for (Long attachmentId : attachmentIds) {
             fileManager.bindAttachment(attachmentId, TargetTypeEnum.REPORT, report.getId());
         }
@@ -61,19 +68,19 @@ public class ReportManager {
 
     public void reportContent(ReportTypeEnum type, String reason, Long targetId, TargetTypeEnum target, List<Long> attachmentIds) {
         Long targetUserId = -1L;
-        try {
-            switch (target) {
-                case POST:
-                    targetUserId = postMapper.selectById(targetId).getUserId();
-                    break;
-                case COMMENT:
-                    // todo 根据评论id获取被举报用户id
-                    break;
-                default:
-                    throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+        if (target == TargetTypeEnum.POST) {
+            Post post = postMapper.selectById(targetId);
+            if (post == null) {
+                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
             }
-        } catch (Exception e) {
-            throw new ApiException(ExceptionEnum.SERVER_ERROR);
+            targetUserId = post.getUserId();
+        } else if (target == TargetTypeEnum.COMMENT) {
+            // Todo 根据评论id获取被举报用户id
+        } else {
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+        }
+        if (targetUserId.equals(StpUtil.getLoginIdAsLong())) {
+            throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
         }
         Report report = Report.builder()
                 .type(type)
@@ -86,64 +93,52 @@ public class ReportManager {
                 .result("")
                 .build();
         reportMapper.insert(report);
-
         for (Long attachmentId : attachmentIds) {
             fileManager.bindAttachment(attachmentId, TargetTypeEnum.REPORT, report.getId());
         }
     }
 
     public void handleReport(HandleReportRequest request) {
-        Report report;
-        try {
-            report = reportMapper.selectById(request.getReportId());
-            if (report == null) {
-                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-            }
-            if (request.getDelete() == 1) {
-                TargetTypeEnum targetType = report.getTargetType();
-                switch (targetType) {
-                    case POST:
-                        postMapper.deleteById(report.getTargetId());
-                        break;
-                    case COMMENT:
-                        // todo 根据评论id删除评论
-                        break;
-                    case USER:
-                        break;
-                    default:
-                        throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
-                }
-            }
-        } catch (Exception e) {
-            throw new ApiException(ExceptionEnum.SERVER_ERROR);
+        Report report = reportMapper.selectById(request.getReportId());
+        if (report == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
-        // todo 根据type入参判断禁言时长
-        // todo 根据hours入参判断自定义禁言时长
-        report.setStatus(request.getStatus() == 1 ? ReportStatusEnum.SUCCESS : ReportStatusEnum.FAILURE);
+        ReportStatusEnum status = EnumUtil.getBy(ReportStatusEnum::getValue, request.getStatus());
+        if (status == null) {
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+        }
+
+        if (request.getShouldDelete()) {
+            TargetTypeEnum targetType = report.getTargetType();
+            if (targetType == TargetTypeEnum.POST) {
+                postManager.deletePost(report.getTargetId(), true);
+            } else if (targetType == TargetTypeEnum.COMMENT) {
+                // Todo 删除评论
+            }
+        }
+
+        // Todo 根据type入参判断禁言时长
+        // Todo 根据hours入参判断自定义禁言时长
+        report.setStatus(status);
         report.setResult(request.getResult());
         reportMapper.updateById(report);
 
-        // todo 发送举报结果给举报人和被举报人
+        // Todo 发送举报结果给举报人和被举报人
     }
 
-    public BaseListResponse<GetReportListElement> getReportList(Integer status, Integer order, Integer page, Integer pageSize) {
+    public BaseListResponse<GetReportListElement> getReportList(String status, String order, Integer page, Integer pageSize) {
         IPage<Report> reportPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Report> queryWrapper = new LambdaQueryWrapper<>();
-        if (status != null) {
-            if (status == 1) {
-                queryWrapper.eq(Report::getStatus, ReportStatusEnum.PENDING);
-            } else {
-                queryWrapper.ne(Report::getStatus, ReportStatusEnum.PENDING);
-            }
+        if ("pending".equals(status)) {
+            queryWrapper.eq(Report::getStatus, ReportStatusEnum.PENDING);
         }
-        if (order != null) {
-            if (order == 1) {
-                queryWrapper.orderByAsc(Report::getCreatedAt);
-            } else {
-                queryWrapper.orderByDesc(Report::getCreatedAt);
-            }
+        if ("processed".equals(status)) {
+            queryWrapper.ne(Report::getStatus, ReportStatusEnum.PENDING);
         }
+        boolean isAsc = "asc".equals(order);
+        queryWrapper.orderBy(true, isAsc, Report::getCreatedAt);
+
         reportMapper.selectPage(reportPage, queryWrapper);
         List<GetReportListElement> list = new ArrayList<>();
         for (Report report : reportPage.getRecords()) {
@@ -154,7 +149,7 @@ public class ReportManager {
                     .type(report.getType())
                     .reason(report.getReason())
                     .userId(report.getTargetUserId())
-                    .nickname(userManager.getUserInfo(report.getTargetUserId()).getNickname())
+                    .targetNickname(userMapper.selectById(report.getTargetUserId()).getNickname())
                     .createdAt(report.getCreatedAt())
                     .build());
         }
@@ -171,11 +166,10 @@ public class ReportManager {
         if (report == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
-
         return GetReportDetailResponse.builder()
-                .createUid(report.getUserId())
-                .userId(report.getTargetUserId())
-                .nickname(userManager.getUserInfo(report.getTargetUserId()).getNickname())
+                .userId(report.getUserId())
+                .targetUserId(report.getTargetUserId())
+                .targetNickname(userMapper.selectById(report.getTargetUserId()).getNickname())
                 .createdAt(report.getCreatedAt())
                 .targetType(report.getTargetType())
                 .targetId(report.getTargetId())

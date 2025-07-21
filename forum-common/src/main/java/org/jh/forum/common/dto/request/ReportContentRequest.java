@@ -29,7 +29,8 @@ public class ReportContentRequest {
     @NotNull
     private ReportTypeEnum type;
 
-    @Schema(description = "举报详情")
+    @Schema(description = "举报原因")
+    @NotNull
     private String reason;
 
     @Schema(description = "被举报的帖子/评论ID")

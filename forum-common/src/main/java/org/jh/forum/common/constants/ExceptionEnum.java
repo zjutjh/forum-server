@@ -20,6 +20,7 @@ public enum ExceptionEnum {
     FILE_UPLOAD_ERROR(200006, "文件上传失败"),
     ANNOUNCEMENT_STICKY_LIMIT_REACHED(200007, "公告置顶达到上限"),
     ANNOUNCEMENT_NOT_PUBLISHED(200008, "该公告还未发布"),
+    CANNOT_REPORT_YOURSELF(200009, "不能举报自己"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试"),
