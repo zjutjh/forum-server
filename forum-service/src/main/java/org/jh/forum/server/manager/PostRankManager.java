@@ -3,13 +3,17 @@ package org.jh.forum.server.manager;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @AllArgsConstructor
 @Slf4j
-public class PostRankManager {
+public class PostRankManager implements ApplicationListener<ApplicationReadyEvent> {
     public final String ACTIVE_POSTS_KEY = "active_posts";
     public final String HOT_RANK_KEY = "hot_rank";
     public final String HOT_RANK_TEMP_KEY = "hot_rank_temp";
@@ -32,6 +36,8 @@ public class PostRankManager {
     public final long COMPUTE_INTERVAL_SECONDS = 15 * 60;
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public void recordAction(Long postId, String type) {
         long currentTime = System.currentTimeMillis() / 1000;
@@ -49,8 +55,19 @@ public class PostRankManager {
         redisTemplate.opsForZSet().add(ACTIVE_POSTS_KEY, postId.toString(), currentTime);
     }
 
-    @Scheduled(fixedRate = COMPUTE_INTERVAL_SECONDS * 1000)
-    public void computeHotRank() {
+    @Override
+    public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
+        log.info("[PostRankManager] 应用启动完成，开始调度热榜计算任务");
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                computeHotRank();
+            } catch (Exception e) {
+                log.error("[PostRankManager] 热榜计算异常", e);
+            }
+        }, 5, COMPUTE_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    }
+
+    private void computeHotRank() {
         long currentTime = System.currentTimeMillis() / 1000;
 
         Boolean lockAcquired = redisTemplate.opsForValue()
