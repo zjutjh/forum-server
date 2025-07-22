@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -324,5 +325,13 @@ public class PostManager {
             return content;
         }
         return content.substring(0, 50);
+    }
+
+    public List<Post> getTopFivePosts() {
+        List<Long> postIds = postRankManager.getTopFiveHotPostIds();
+        if (postIds != null && !postIds.isEmpty()) {
+            return postMapper.selectByIds(postIds);
+        }
+        return Collections.emptyList();
     }
 }

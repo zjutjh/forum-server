@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jh.forum.common.constants.AnnouncementStatusEnum;
 import org.jh.forum.common.constants.AnnouncementTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -82,7 +82,7 @@ public class AnnouncementManager {
         if (announcement == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
-        announcementMapper.deleteById(announcement);
+        announcementMapper.deleteById(id);
     }
 
     /**
@@ -192,6 +192,7 @@ public class AnnouncementManager {
         queryWrapper.eq(type != null, Announcement::getType, type)
                 .ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
                 .le(Announcement::getPublishedAt, LocalDateTime.now())
+                .orderByDesc(Announcement::getSticky)
                 .orderByDesc(Announcement::getPublishedAt);
         IPage<Announcement> pageResult = new Page<>(page, pageSize);
         announcementMapper.selectPage(pageResult, queryWrapper);
@@ -223,7 +224,8 @@ public class AnnouncementManager {
 
     public BaseListResponse<GetAdminAnnouncementListElement> adminQueryAnnouncements(Integer page, Integer pageSize, AnnouncementTypeEnum type, AnnouncementStatusEnum status, String order, String keyword) {
         LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(type != null, Announcement::getType, type);
+        queryWrapper.eq(type != null, Announcement::getType, type)
+                .orderByDesc(Announcement::getSticky);
         boolean isAsc = "asc".equals(order);
         if (status == AnnouncementStatusEnum.DRAFT) {
             queryWrapper.eq(Announcement::getStatus, AnnouncementStatusEnum.DRAFT);
