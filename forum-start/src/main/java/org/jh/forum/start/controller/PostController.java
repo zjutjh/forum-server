@@ -1,5 +1,7 @@
 package org.jh.forum.start.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +61,7 @@ public class PostController {
     }
 
     @Operation(summary = "管理员获取帖子列表")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @Tag(name = "管理员")
     @GetMapping("/admin/list")
     public AjaxResult<BaseListResponse<GetAdminPostListElement>> getAdminPostList(@Valid GetAdminPostListRequest request) {
@@ -66,9 +69,16 @@ public class PostController {
     }
 
     @Operation(summary = "管理员获取帖子信息")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @Tag(name = "管理员")
     @GetMapping("/admin/info")
     public AjaxResult<GetAdminPostInfoResponse> getAdminPostInfo(@RequestParam(value = "id") Long id) {
         return AjaxResult.success(postService.getAdminPostInfo(id));
+    }
+
+    @Operation(summary = "获取五大热帖")
+    @GetMapping("/five")
+    public AjaxResult<TopFivePostList> getTopFivePosts() {
+        return AjaxResult.success(postService.getTopFivePosts());
     }
 }

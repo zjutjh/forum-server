@@ -9,9 +9,11 @@ import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
+import org.jh.forum.common.entity.Post;
 import org.jh.forum.server.manager.PostManager;
 
 import jakarta.annotation.Resource;
+import java.util.List;
 
 /**
  * @author SugarMGP
@@ -62,5 +64,18 @@ public class PostServiceImpl implements PostService {
     @Override
     public GetAdminPostInfoResponse getAdminPostInfo(Long id) {
         return postManager.getAdminPostInfo(id);
+    }
+
+    @Override
+    public TopFivePostList getTopFivePosts() {
+        List<Post> list = postManager.getTopFivePosts();
+
+        List<TopFivePostList.TopFivePostListElement> topPosts = list.stream()
+                .map(post -> new TopFivePostList.TopFivePostListElement(
+                        post.getId(),
+                        post.getTitle()))
+                .toList();
+
+        return new TopFivePostList(topPosts);
     }
 }

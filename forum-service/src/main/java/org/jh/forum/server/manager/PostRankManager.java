@@ -116,6 +116,22 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
         redisTemplate.rename(HOT_RANK_TEMP_KEY, HOT_RANK_KEY);
     }
 
+    public List<Long> getTopFiveHotPostIds() {
+        Set<Object> topPosts = redisTemplate.opsForZSet().reverseRange(HOT_RANK_KEY, 0, 4);
+        if (topPosts == null || topPosts.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> result = new ArrayList<>();
+        for (Object obj : topPosts) {
+            if (obj != null) {
+                result.add(Long.parseLong(obj.toString()));
+            }
+        }
+        return result;
+    }
+
+
     public PageResult<Long> getHotPostIds(int page, int pageSize) {
         int start = (page - 1) * pageSize;
         int end = start + pageSize - 1;
