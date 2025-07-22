@@ -2,15 +2,23 @@ package org.jh.forum.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * @author qianqianzyk
  */
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class MyCommentElement {
     @Schema(description = "帖子ID")
@@ -26,20 +34,19 @@ public class MyCommentElement {
     @NotBlank
     private String content;
 
-    @Schema(description = "帖子图片")
+    @Schema(description = "帖子附件列表")
     @NotBlank
-    @JsonProperty("image_url")
-    private String imageUrl;
+    private List<AttachmentInfoDTO> attachments;
 
     @Schema(description = "帖子创建时间")
     @NotBlank
-    @JsonProperty("create_at")
-    private String createAt;
+    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
 
     @Schema(description = "帖子更新时间")
     @NotBlank
-    @JsonProperty("update_at")
-    private String updateAt;
+    @JsonProperty("updated_at")
+    private LocalDateTime updatedAt;
 
     @Schema(description = "个人评论列表")
     @NotNull

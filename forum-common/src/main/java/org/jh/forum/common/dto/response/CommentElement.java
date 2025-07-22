@@ -2,16 +2,24 @@ package org.jh.forum.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * @author qianqianzyk
  */
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class CommentElement {
     @Schema(description = "评论ID")
@@ -27,10 +35,9 @@ public class CommentElement {
     @NotBlank
     private String content;
 
-    @Schema(description = "附件链接")
+    @Schema(description = "附件列表")
     @NotBlank
-    @JsonProperty("attachment_url")
-    private String attachmentUrl;
+    private List<AttachmentInfoDTO> attachments;
 
     @Schema(description = "是否置顶")
     @NotNull
@@ -49,8 +56,8 @@ public class CommentElement {
 
     @Schema(description = "创建时间")
     @NotBlank
-    @JsonProperty("create_at")
-    private String createAt;
+    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
 
     @Schema(description = "点赞数")
     @NotNull

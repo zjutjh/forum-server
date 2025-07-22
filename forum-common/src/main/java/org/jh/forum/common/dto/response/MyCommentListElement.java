@@ -2,14 +2,23 @@ package org.jh.forum.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.jh.forum.common.dto.AttachmentInfoDTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author qianqianzyk
  */
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class MyCommentListElement {
     @Schema(description = "评论ID")
@@ -23,13 +32,12 @@ public class MyCommentListElement {
 
     @Schema(description = "附件链接")
     @NotBlank
-    @JsonProperty("attachment_url")
-    private String attachmentUrl;
+    private List<AttachmentInfoDTO> attachments;
 
     @Schema(description = "发表时间")
     @NotBlank
-    @JsonProperty("create_at")
-    private String createAt;
+    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
 
     @Schema(description = "点赞数")
     @NotNull

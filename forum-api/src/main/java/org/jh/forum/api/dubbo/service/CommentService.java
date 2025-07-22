@@ -1,35 +1,29 @@
 package org.jh.forum.api.dubbo.service;
 
-import org.jh.forum.common.dto.CommentListElementDTO;
-import org.jh.forum.common.dto.MyCommentElementDTO;
-import org.jh.forum.common.dto.ReplyListElementDTO;
 import org.jh.forum.common.dto.request.*;
-
-import java.util.List;
+import org.jh.forum.common.dto.response.*;
 
 /**
  * @author qianqianzyk
  */
 public interface CommentService {
-    Long publishComment(PublishCommentRequest request);
+    PublishCommentResponse publishComment(PublishCommentRequest request);
 
-    Boolean upvoteComment(UpvoteCommentRequest request);
+    UpvoteCommentResponse upvoteComment(Long commentId);
 
-    Boolean pinComment(PinCommentRequest request);
+    PinCommentResponse pinComment(Long commentId);
 
-    void removeComment(RemoveCommentRequest request);
+    void removeComment(Long commentId);
 
-    List<CommentListElementDTO> getCommentList(GetCommentListRequest request);
+    GetCommentListResponse getCommentList(GetCommentListRequest request);
 
-    CommentListElementDTO getHighlightCommentElement(GetCommentListRequest request);
+    BaseListResponse<ReplyElement> getReplyList(GetReplyListRequest request);
 
-    List<ReplyListElementDTO> getReplyList(GetReplyListRequest request);
+    BaseListResponse<MyCommentElement> getMyCommentList(BaseListRequest request);
 
-    List<MyCommentElementDTO> getMyCommentList();
+    BaseListResponse<CommentElement> getAdminCommentList(GetCommentListAdminRequest request);
 
-    List<CommentListElementDTO> getAdminCommentList(GetCommentListAdminRequest request);
-
-    List<ReplyListElementDTO> getAdminReplyList(GetReplyListAdminRequest request);
+    BaseListResponse<ReplyElement> getAdminReplyList(GetReplyListAdminRequest request);
 
     void adminChangeCommentStatus(ChangeCommentStatusRequest request);
 }

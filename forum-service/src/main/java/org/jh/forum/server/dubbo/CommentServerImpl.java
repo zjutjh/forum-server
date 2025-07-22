@@ -3,15 +3,11 @@ package org.jh.forum.server.dubbo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.CommentService;
-import org.jh.forum.common.dto.CommentListElementDTO;
-import org.jh.forum.common.dto.MyCommentElementDTO;
-import org.jh.forum.common.dto.ReplyListElementDTO;
 import org.jh.forum.common.dto.request.*;
-import org.jh.forum.common.entity.Comment;
+import org.jh.forum.common.dto.response.*;
 import org.jh.forum.server.manger.CommentManager;
 
 import jakarta.annotation.Resource;
-import java.util.List;
 
 /**
  * @author qianqianzyk
@@ -24,81 +20,60 @@ public class CommentServerImpl implements CommentService {
     private CommentManager commentManager;
 
     @Override
-    public Long publishComment(PublishCommentRequest request) {
-        Long commentId = commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getAttachmentId());
+    public PublishCommentResponse publishComment(PublishCommentRequest request) {
+        PublishCommentResponse response = commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getAttachmentId());
 
         // TODO 发送评论消息
 
-        return commentId;
+        return response;
     }
 
     @Override
-    public Boolean upvoteComment(UpvoteCommentRequest request) {
-        Boolean status = commentManager.upvoteComment(request.getCommentId());
+    public UpvoteCommentResponse upvoteComment(Long commentId) {
+        UpvoteCommentResponse response = commentManager.upvoteComment(commentId);
 
         // TODO 发送点赞消息
 
-        return status;
+        return response;
     }
 
     @Override
-    public Boolean pinComment(PinCommentRequest request) {
-        return commentManager.pinComment(request.getCommentId());
+    public PinCommentResponse pinComment(Long commentId) {
+        return commentManager.pinComment(commentId);
     }
 
     @Override
-    public void removeComment(RemoveCommentRequest request) {
-        commentManager.removeComment(request.getCommentId());
+    public void removeComment(Long commentId) {
+        commentManager.removeComment(commentId);
     }
 
     @Override
-    public List<CommentListElementDTO> getCommentList(GetCommentListRequest request) {
-        return commentManager.getCommentList(request.getPostId(), request.getPage(), request.getPageSize(), request.getSort());
+    public GetCommentListResponse getCommentList(GetCommentListRequest request) {
+        return commentManager.getCommentList(request.getPostId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getHighlightCommentId());
     }
 
     @Override
-    public CommentListElementDTO getHighlightCommentElement(GetCommentListRequest request) {
-        if (request.getHighlightCommentId() == null || request.getHighlightCommentId() == 0) {
-            return null;
-        }
-        Comment highlightComment = commentManager.getCommentById(request.getHighlightCommentId());
-        if (highlightComment == null || highlightComment.getDeleted()) {
-            return null;
-        }
-        if (highlightComment.getParentId() == 0) {
-            return commentManager.convertCommentToElement(highlightComment, null);
-        } else {
-            Comment parentComment = commentManager.getCommentById(highlightComment.getParentId());
-            if (parentComment == null || highlightComment.getDeleted()) {
-                return null;
-            }
-            ReplyListElementDTO replyDto = commentManager.convertReplyToElement(highlightComment);
-            return commentManager.convertCommentToElement(parentComment, replyDto);
-        }
+    public BaseListResponse<ReplyElement> getReplyList(GetReplyListRequest request) {
+        return commentManager.getReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getExcludeCommentIds());
     }
 
     @Override
-    public List<ReplyListElementDTO> getReplyList(GetReplyListRequest request) {
-        return commentManager.getReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getSort());
+    public BaseListResponse<MyCommentElement> getMyCommentList(BaseListRequest request) {
+        return commentManager.getMyComment(request.getPage(), request.getPageSize());
     }
 
     @Override
-    public List<MyCommentElementDTO> getMyCommentList() {
-        return commentManager.getMyComment();
-    }
-
-    @Override
-    public List<CommentListElementDTO> getAdminCommentList(GetCommentListAdminRequest request) {
+    public BaseListResponse<CommentElement> getAdminCommentList(GetCommentListAdminRequest request) {
         return commentManager.getAdminCommentList(request.getPostId(), request.getStatus(), request.getPage(), request.getPageSize());
     }
 
     @Override
-    public List<ReplyListElementDTO> getAdminReplyList(GetReplyListAdminRequest request) {
-        return commentManager.getAdminReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getStatus());
+    public BaseListResponse<ReplyElement> getAdminReplyList(GetReplyListAdminRequest request) {
+        return commentManager.getAdminReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getStatus(), request.getExcludeCommentIds());
     }
 
     @Override
     public void adminChangeCommentStatus(ChangeCommentStatusRequest request) {
-        commentManager.adminChangeCommentStatus(request.getCommentId(), request.getStatus());
+        commentManager.adminChangeCommentStatus(request.getCommentId(), request.getOperation());
     }
 }

@@ -18,5 +18,5 @@ public class ChangeCommentStatusRequest {
 
     @Schema(description = "操作类型，1: 删除，2: 恢复")
     @NotNull
-    private Integer status;
+    private Integer operation;
 }
