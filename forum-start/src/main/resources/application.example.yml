@@ -37,7 +37,7 @@ spring:
   config:
     import: "nacos:nacos-config-example.properties?refresh=true"
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/hotel_db?useSSL=false&autoReconnect=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/hotel_db?useSSL=false&autoReconnect=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: mysql_password

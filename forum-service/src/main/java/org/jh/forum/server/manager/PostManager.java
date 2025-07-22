@@ -1,4 +1,4 @@
-package org.jh.forum.server.manger;
+package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -186,16 +186,12 @@ public class PostManager {
                 .build();
     }
 
-    public void deletePost(Long id) {
+    public void deletePost(Long id, boolean isAdmin) {
         Post post = postMapper.selectById(id);
         if (post == null || post.getStatus() == PostStatusEnum.DELETED) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
-        if (
-                !post.getUserId().equals(StpUtil.getLoginIdAsLong())
-                        && !StpUtil.hasRole("admin")
-                        && !StpUtil.hasRole("super_admin")
-        ) {
+        if (!post.getUserId().equals(StpUtil.getLoginIdAsLong()) && !isAdmin) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         postRankManager.removePost(id);

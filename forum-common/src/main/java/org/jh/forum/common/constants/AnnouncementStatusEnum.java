@@ -6,22 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author SugarMGP
+ * @author SituChengxiang
  */
-@Getter
 @AllArgsConstructor
-public enum TargetTypeEnum {
-    POST("post", "帖子"),
-
-    COMMENT("comment", "评论"),
-
-    USER("user", "用户"),
-
-    REPORT("report", "举报");
+@Getter
+public enum AnnouncementStatusEnum {
+    DRAFT("draft", "草稿"),
+    PUBLISHED("published", "立即发布"),
+    SCHEDULED("scheduled", "定时发布");
 
     @EnumValue
     @JsonValue
     private final String value;
-
     private final String desc;
 }

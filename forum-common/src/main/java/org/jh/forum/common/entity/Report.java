@@ -6,29 +6,34 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.jh.forum.common.constants.AttachmentTypeEnum;
+import org.jh.forum.common.constants.ReportStatusEnum;
+import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
 /**
- * @author SugarMGP
- * @TableName attachment
+ * @author zzb
+ * @TableName report
  */
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "attachment")
+@TableName(value = "report")
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Attachment extends BaseEntity {
+public class Report extends BaseEntity {
     private Long userId;
 
-    private Long fileId;
+    private Long targetUserId;
 
     private TargetTypeEnum targetType;
 
     private Long targetId;
 
-    private AttachmentTypeEnum type;
+    private ReportTypeEnum type;
 
-    private String filename;
+    private String reason;
+
+    private ReportStatusEnum status;
+
+    private String result;
 }

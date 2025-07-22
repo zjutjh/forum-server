@@ -1,0 +1,277 @@
+package org.jh.forum.server.manager;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.jh.forum.common.constants.AnnouncementStatusEnum;
+import org.jh.forum.common.constants.AnnouncementTypeEnum;
+import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.common.constants.UserTypeEnum;
+import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
+import org.jh.forum.common.dto.request.EditAnnouncementRequest;
+import org.jh.forum.common.dto.response.*;
+import org.jh.forum.common.entity.Announcement;
+import org.jh.forum.common.entity.User;
+import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.server.mapper.AnnouncementMapper;
+import org.jh.forum.server.mapper.UserMapper;
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.Resource;
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * 公告业务管理层
+ * 负责处理公告相关的业务逻辑
+ *
+ * @author SituChengxiang
+ */
+@Slf4j
+@Component
+public class AnnouncementManager {
+    @Resource
+    private AnnouncementMapper announcementMapper;
+
+    @Resource
+    private UserMapper userMapper;
+
+    /**
+     * 创建公告
+     */
+    public void createAnnouncement(CreateAnnouncementRequest request) {
+        Announcement announcement = Announcement.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .type(request.getType())
+                .publishedAt(getPublishedAt(request.getStatus(), request.getPublishedAt()))
+                .status(request.getStatus())
+                .sticky(false)
+                .build();
+        announcementMapper.insert(announcement);
+    }
+
+    /**
+     * 编辑公告
+     */
+    public void editAnnouncement(EditAnnouncementRequest request) {
+        Announcement announcement = announcementMapper.selectById(request.getId());
+        if (announcement == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+
+        announcement.setTitle(request.getTitle());
+        announcement.setContent(request.getContent());
+        announcement.setType(request.getType());
+
+        if (announcement.getPublishedAt() == null || announcement.getPublishedAt().isAfter(LocalDateTime.now())) {
+            announcement.setStatus(request.getStatus());
+            announcement.setPublishedAt(getPublishedAt(request.getStatus(), request.getPublishedAt()));
+        }
+
+        announcementMapper.updateById(announcement);
+    }
+
+    /**
+     * 删除公告
+     */
+    public void deleteAnnouncement(Long id) {
+        Announcement announcement = announcementMapper.selectById(id);
+        if (announcement == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        announcementMapper.deleteById(announcement);
+    }
+
+    /**
+     * 设置公告置顶
+     */
+    public void stickyAnnouncement(Long id, Boolean isSticky) {
+        long count = announcementMapper.selectCount(new LambdaQueryWrapper<Announcement>()
+                .ne(Announcement::getId, id)
+                .eq(Announcement::getSticky, true));
+        if (count >= 3 && Boolean.TRUE.equals(isSticky)) {
+            throw new ApiException(ExceptionEnum.ANNOUNCEMENT_STICKY_LIMIT_REACHED);
+        }
+        Announcement announcement = announcementMapper.selectById(id);
+        if (announcement == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        if (announcement.getPublishedAt() == null || announcement.getPublishedAt().isAfter(LocalDateTime.now())) {
+            throw new ApiException(ExceptionEnum.ANNOUNCEMENT_NOT_PUBLISHED);
+        }
+        announcement.setSticky(isSticky);
+        announcementMapper.updateById(announcement);
+    }
+
+    /**
+     * 检查用户是否有权限修改该公告
+     */
+    public boolean hasPermission(Long announcementId, Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user.getRole() == UserTypeEnum.SUPER_ADMIN) {
+            return true;
+        }
+        Announcement announcement = announcementMapper.selectById(announcementId);
+        if (announcement == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        return user.getId().equals(announcement.getCreateUid());
+    }
+
+    /**
+     * 获取置顶公告（不足三个则用最新补充）
+     */
+    public List<Announcement> getTopAnnouncements() {
+        return announcementMapper.selectList(new LambdaQueryWrapper<Announcement>()
+                .ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
+                .le(Announcement::getPublishedAt, LocalDateTime.now())
+                .orderByDesc(Announcement::getSticky)
+                .orderByDesc(Announcement::getUpdatedAt)
+                .last("LIMIT 3"));
+    }
+
+    /*
+     * 校验并获取合法的公告发布时间
+     */
+    private LocalDateTime getPublishedAt(AnnouncementStatusEnum status, LocalDateTime publishedTime) {
+        LocalDateTime publishedAt = null;
+        if (status == AnnouncementStatusEnum.PUBLISHED) {
+            publishedAt = LocalDateTime.now();
+        } else if (status == AnnouncementStatusEnum.SCHEDULED) {
+            if (publishedTime == null || publishedTime.isBefore(LocalDateTime.now())) {
+                throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+            }
+            publishedAt = publishedTime;
+        }
+        return publishedAt;
+    }
+
+    public GetAnnouncementDetailResponse getAnnouncementDetail(Long id) {
+        Announcement announcement = announcementMapper.selectById(id);
+        if (announcement == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        if (announcement.getStatus() == AnnouncementStatusEnum.DRAFT) {
+            throw new ApiException(ExceptionEnum.ANNOUNCEMENT_NOT_PUBLISHED);
+        }
+        if (announcement.getPublishedAt().isAfter(LocalDateTime.now())) {
+            throw new ApiException(ExceptionEnum.ANNOUNCEMENT_NOT_PUBLISHED);
+        }
+        return GetAnnouncementDetailResponse.builder()
+                .title(announcement.getTitle())
+                .content(announcement.getContent())
+                .sticky(announcement.getSticky())
+                .type(announcement.getType())
+                .publishedAt(announcement.getPublishedAt())
+                .publisher(getPublisher(announcement.getCreateUid()))
+                .build();
+    }
+
+    public GetAdminAnnouncementDetailResponse getAdminAnnouncementDetail(Long id) {
+        Announcement announcement = announcementMapper.selectById(id);
+        if (announcement == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        return GetAdminAnnouncementDetailResponse.builder()
+                .title(announcement.getTitle())
+                .content(announcement.getContent())
+                .type(announcement.getType())
+                .status(getTrueStatus(announcement.getPublishedAt(), announcement.getStatus()))
+                .updatedAt(announcement.getUpdatedAt())
+                .sticky(announcement.getSticky())
+                .publishedAt(announcement.getPublishedAt())
+                .publisher(getPublisher(announcement.getCreateUid()))
+                .build();
+    }
+
+    public BaseListResponse<GetAnnouncementListElement> userListAnnouncements(Integer page, Integer pageSize, AnnouncementTypeEnum type) {
+        LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(type != null, Announcement::getType, type)
+                .ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
+                .le(Announcement::getPublishedAt, LocalDateTime.now())
+                .orderByDesc(Announcement::getPublishedAt);
+        IPage<Announcement> pageResult = new Page<>(page, pageSize);
+        announcementMapper.selectPage(pageResult, queryWrapper);
+        List<GetAnnouncementListElement> list = pageResult.getRecords().stream()
+                .map(announcement -> GetAnnouncementListElement.builder()
+                        .id(announcement.getId())
+                        .title(announcement.getTitle())
+                        .type(announcement.getType())
+                        .publisher(getPublisher(announcement.getCreateUid()))
+                        .publishedAt(announcement.getPublishedAt())
+                        .sticky(announcement.getSticky())
+                        .build())
+                .toList();
+        return BaseListResponse.<GetAnnouncementListElement>builder()
+                .list(list)
+                .page(page)
+                .pageSize(pageSize)
+                .total(pageResult.getTotal())
+                .build();
+    }
+
+    /**
+     * 获取发布者昵称
+     */
+    private String getPublisher(Long createUid) {
+        User user = userMapper.selectById(createUid);
+        return user == null ? "" : user.getNickname();
+    }
+
+    public BaseListResponse<GetAdminAnnouncementListElement> adminQueryAnnouncements(Integer page, Integer pageSize, AnnouncementTypeEnum type, AnnouncementStatusEnum status, String order, String keyword) {
+        LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(type != null, Announcement::getType, type);
+        boolean isAsc = "asc".equals(order);
+        if (status == AnnouncementStatusEnum.DRAFT) {
+            queryWrapper.eq(Announcement::getStatus, AnnouncementStatusEnum.DRAFT);
+            queryWrapper.orderBy(true, isAsc, Announcement::getUpdatedAt);
+        }
+        if (status == AnnouncementStatusEnum.PUBLISHED) {
+            queryWrapper.ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
+                    .le(Announcement::getPublishedAt, LocalDateTime.now());
+            queryWrapper.orderBy(true, isAsc, Announcement::getPublishedAt);
+        }
+        if (status == AnnouncementStatusEnum.SCHEDULED) {
+            queryWrapper.ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
+                    .gt(Announcement::getPublishedAt, LocalDateTime.now());
+            queryWrapper.orderBy(true, isAsc, Announcement::getPublishedAt);
+        }
+        if (status == null) {
+            queryWrapper.orderBy(true, isAsc, Announcement::getUpdatedAt);
+        }
+        queryWrapper.like(StringUtils.isNotBlank(keyword), Announcement::getTitle, keyword);
+
+        IPage<Announcement> pageResult = new Page<>(page, pageSize);
+        announcementMapper.selectPage(pageResult, queryWrapper);
+        List<GetAdminAnnouncementListElement> list = pageResult.getRecords().stream()
+                .map(announcement -> GetAdminAnnouncementListElement.builder()
+                        .id(announcement.getId())
+                        .title(announcement.getTitle())
+                        .type(announcement.getType())
+                        .status(getTrueStatus(announcement.getPublishedAt(), announcement.getStatus()))
+                        .publishedAt(announcement.getPublishedAt())
+                        .updatedAt(announcement.getUpdatedAt())
+                        .sticky(announcement.getSticky())
+                        .build()
+                ).toList();
+        return BaseListResponse.<GetAdminAnnouncementListElement>builder()
+                .list(list)
+                .page(page)
+                .pageSize(pageSize)
+                .total(pageResult.getTotal())
+                .build();
+    }
+
+    /**
+     * 获取正确的公告状态
+     */
+    private AnnouncementStatusEnum getTrueStatus(LocalDateTime publishedAt, AnnouncementStatusEnum status) {
+        if (publishedAt == null) {
+            return AnnouncementStatusEnum.DRAFT;
+        }
+        return LocalDateTime.now().isBefore(publishedAt) ? status : AnnouncementStatusEnum.PUBLISHED;
+    }
+}

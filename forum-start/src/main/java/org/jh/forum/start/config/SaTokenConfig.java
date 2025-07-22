@@ -3,7 +3,7 @@ package org.jh.forum.start.config;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpInterface;
 import lombok.AllArgsConstructor;
-import org.jh.forum.server.manger.UserManager;
+import org.jh.forum.server.manager.UserManager;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -25,12 +25,8 @@ public class SaTokenConfig implements StpInterface, WebMvcConfigurer {
 
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
-        try {
-            Long userId = Long.valueOf((String) loginId);
-            return userManager.getRoleList(userId);
-        } catch (Exception e) {
-            return List.of();
-        }
+        Long userId = Long.valueOf(loginId.toString());
+        return userManager.getRoleList(userId);
     }
 
     @Override

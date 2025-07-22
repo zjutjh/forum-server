@@ -2,9 +2,10 @@ package org.jh.forum.start.utils;
 
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ansi.AnsiColor;
+import org.springframework.boot.ansi.AnsiOutput;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.Instant;
 
 /**
  * @author MangoGovo
@@ -17,12 +18,12 @@ public class HandlerUtils {
      * @param e       错误异常
      * @param request Http请求对象
      */
-    public static void logException(Exception e, HttpServletRequest request) {
-        log.error("[{}] | {} | {} | request={}", Instant.now(), getRemoteAddr(request), request.getRequestURI(), JSON.toJSONString(request.getParameterMap()), e);
-    }
-
-    private static String getRemoteAddr(HttpServletRequest request) {
-        String ip = request.getHeader("x-forwarded-for");
-        return ip == null ? request.getRemoteAddr() : ip;
+    public static void logException(Throwable e, HttpServletRequest request) {
+        String query = JSON.toJSONString(request.getParameterMap());
+        String logLine = AnsiOutput.toString(
+                AnsiColor.YELLOW, "⚠️ ERROR",
+                AnsiColor.DEFAULT, " | params = " + query
+        );
+        log.error(logLine, e);
     }
 }
