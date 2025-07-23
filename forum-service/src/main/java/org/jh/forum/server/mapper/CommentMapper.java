@@ -3,6 +3,7 @@ package org.jh.forum.server.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.jh.forum.common.entity.Comment;
 
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.List;
  * @Entity org.jh.forum.common.entity.Comment
  */
 public interface CommentMapper extends BaseMapper<Comment> {
-    // 查询楼中楼的所有子评论ID
     @Select("""
                 WITH RECURSIVE comment_tree AS (
                     SELECT #{targetId} AS id
@@ -26,4 +26,28 @@ public interface CommentMapper extends BaseMapper<Comment> {
                 SELECT id FROM comment_tree
             """)
     List<Long> getCommentIdsByTargetId(@Param("targetId") Long rootId);
+
+    @Select("""
+                WITH RECURSIVE comment_tree AS (
+                    SELECT #{targetId} AS id
+                    UNION ALL
+                    SELECT c.id FROM comment c
+                    INNER JOIN comment_tree ct ON c.target_id = ct.id
+                )
+                SELECT id FROM comment_tree
+            """)
+    List<Long> getAllCommentIdsByTargetId(@Param("targetId") Long rootId);
+
+    @Update("""
+                <script>
+                    UPDATE comment
+                    SET deleted = false
+                    WHERE id IN
+                    <foreach collection="commentIds" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                    AND deleted = true
+                </script>
+            """)
+    void restoreComments(@Param("commentIds") List<Long> commentIds);
 }

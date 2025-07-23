@@ -5,7 +5,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.CommentService;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
-import org.jh.forum.server.manger.CommentManager;
+import org.jh.forum.server.manager.CommentManager;
 
 import jakarta.annotation.Resource;
 

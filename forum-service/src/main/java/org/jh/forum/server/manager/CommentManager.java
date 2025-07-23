@@ -1,4 +1,4 @@
-package org.jh.forum.server.manger;
+package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jh.forum.common.annotation.IgnoreLogicDelete;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.dto.AttachmentInfoDTO;
@@ -197,9 +198,8 @@ public class CommentManager {
 
         // 删除评论
         if (!commentIds.isEmpty()) {
-            Comment update = new Comment();
-            update.setDeleted(true);
-            commentMapper.update(update, new LambdaQueryWrapper<Comment>().in(Comment::getId, commentIds));
+            commentMapper.delete(new LambdaQueryWrapper<Comment>()
+                    .in(Comment::getId, commentIds));
         }
     }
 
@@ -210,7 +210,6 @@ public class CommentManager {
                         .eq(Comment::getPostId, postId)
                         .eq(Comment::getParentId, 0)
                         .eq(Comment::getIsPinned, true)
-                        .eq(Comment::getDeleted, false)
                         .orderByDesc(Comment::getCreatedAt)
         );
 
@@ -232,8 +231,7 @@ public class CommentManager {
         QueryWrapper<Comment> wrapper = new QueryWrapper<Comment>()
                 .eq("post_id", postId)
                 .eq("parent_id", 0)
-                .eq("is_pinned", false)
-                .eq("deleted", false);
+                .eq("is_pinned", false);
         if (excludeId != null) {
             wrapper.ne("id", excludeId);
         }
@@ -267,7 +265,6 @@ public class CommentManager {
         for (Comment comment : allComments) {
             List<Comment> hottestReplyList = commentMapper.selectList(new QueryWrapper<Comment>()
                     .eq("parent_id", comment.getId())
-                    .eq("deleted", false)
                     .orderByDesc("upvote_count + reply_count * 2")
                     .orderByDesc("created_at")
                     .last("limit 1"));
@@ -297,7 +294,6 @@ public class CommentManager {
         if (highlight.getParentId() == 0) {
             List<Comment> replyList = commentMapper.selectList(new QueryWrapper<Comment>()
                     .eq("parent_id", highlight.getId())
-                    .eq("deleted", false)
                     .orderByDesc("upvote_count + reply_count * 2")
                     .orderByDesc("created_at")
                     .last("limit 1"));
@@ -323,8 +319,7 @@ public class CommentManager {
     public BaseListResponse<ReplyElement> getReplyList(Long commentId, Integer page, Integer pageSize, Integer sort, Long[] excludeCommentIds) {
         Page<Comment> pageParam = new Page<>(page, pageSize);
         QueryWrapper<Comment> wrapper = new QueryWrapper<>();
-        wrapper.eq("parent_id", commentId)
-                .eq("deleted", false);
+        wrapper.eq("parent_id", commentId);
         if (excludeCommentIds != null && excludeCommentIds.length > 0) {
             wrapper.notIn("id", Arrays.asList(excludeCommentIds));
         }
@@ -372,7 +367,6 @@ public class CommentManager {
                 pageParam,
                 new LambdaQueryWrapper<Comment>()
                         .eq(Comment::getUserId, userId)
-                        .eq(Comment::getDeleted, false)
                         .orderByDesc(Comment::getCreatedAt)
         );
         List<Comment> commentList = commentPage.getRecords();
@@ -439,6 +433,7 @@ public class CommentManager {
                 .build();
     }
 
+    @IgnoreLogicDelete
     public BaseListResponse<CommentElement> getAdminCommentList(Long postId, Integer status, Integer page, Integer pageSize) {
         // 根据状态筛选评论
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
@@ -488,6 +483,7 @@ public class CommentManager {
                 .build();
     }
 
+    @IgnoreLogicDelete
     public BaseListResponse<ReplyElement> getAdminReplyList(Long commentId, Integer page, Integer pageSize, Integer status, Long[] excludeCommentIds) {
         Page<Comment> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
@@ -530,23 +526,36 @@ public class CommentManager {
                 .build();
     }
 
+    @IgnoreLogicDelete
     public void adminChangeCommentStatus(Long commentId, Integer status) {
-        if (status == 1) {
-            Comment update = new Comment();
-            update.setDeleted(true);
-            update.setId(commentId);
-            commentMapper.updateById(update);
-        } else {
-            Comment comment = commentMapper.selectOne(
+        Comment comment = commentMapper.selectOne(
+                new LambdaQueryWrapper<Comment>()
+                        .eq(Comment::getId, commentId)
+        );
+        if (comment == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+
+        List<Long> commentIds;
+        if (comment.getParentId() == 0) {
+            commentIds = commentMapper.selectList(
                     new LambdaQueryWrapper<Comment>()
-                            .eq(Comment::getId, commentId)
-                            .eq(Comment::getDeleted, true)
-                            .last("limit 1")
-            );
-            if (comment != null) {
-                comment.setDeleted(false);
-                commentMapper.updateById(comment);
-            }
+                            .eq(Comment::getParentId, commentId)
+                            .select(Comment::getId)
+            ).stream().map(Comment::getId).collect(Collectors.toList());
+            commentIds.add(commentId);
+        } else {
+            commentIds = commentMapper.getAllCommentIdsByTargetId(commentId);
+        }
+        if (commentIds.isEmpty()) {
+            return;
+        }
+
+        if (status == 1) {
+            commentMapper.delete(new LambdaQueryWrapper<Comment>()
+                    .in(Comment::getId, commentIds));
+        } else if (status == 2) {
+            commentMapper.restoreComments(commentIds);
         }
     }
 
