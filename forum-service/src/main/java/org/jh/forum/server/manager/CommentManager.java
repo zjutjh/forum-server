@@ -359,20 +359,21 @@ public class CommentManager {
                 .build();
     }
 
-    public BaseListResponse<MyCommentElement> getMyComment(Integer page, Integer pageSize) {
-        Long userId = StpUtil.getLoginIdAsLong();
+    public BaseListResponse<PersonalCommentElement> getPersonalComment(Integer page, Integer pageSize, Long userId) {
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+        Long realUserId = (userId == null || userId.equals(currentUserId)) ? currentUserId : userId;
 
         // 按时间降序查询当前用户的评论
         Page<Comment> pageParam = new Page<>(page, pageSize);
         Page<Comment> commentPage = commentMapper.selectPage(
                 pageParam,
                 new LambdaQueryWrapper<Comment>()
-                        .eq(Comment::getUserId, userId)
+                        .eq(Comment::getUserId, realUserId)
                         .orderByDesc(Comment::getCreatedAt)
         );
         List<Comment> commentList = commentPage.getRecords();
         if (commentList.isEmpty()) {
-            return BaseListResponse.<MyCommentElement>builder()
+            return BaseListResponse.<PersonalCommentElement>builder()
                     .page(page)
                     .pageSize(pageSize)
                     .total(0L)
@@ -385,7 +386,7 @@ public class CommentManager {
                 .map(Comment::getPostId)
                 .collect(Collectors.toSet());
         if (postIds.isEmpty()) {
-            return BaseListResponse.<MyCommentElement>builder()
+            return BaseListResponse.<PersonalCommentElement>builder()
                     .page(page)
                     .pageSize(pageSize)
                     .total(0L)
@@ -400,13 +401,13 @@ public class CommentManager {
         Map<Long, Post> postMap = posts.stream()
                 .collect(Collectors.toMap(Post::getId, p -> p));
 
-        List<MyCommentElement> resultList = commentList.stream().map(comment -> {
+        List<PersonalCommentElement> resultList = commentList.stream().map(comment -> {
             Post post = postMap.get(comment.getPostId());
             if (post == null) {
                 return null;
             }
 
-            return MyCommentElement.builder()
+            return PersonalCommentElement.builder()
                     .postId(post.getId())
                     .title(post.getTitle())
                     .content(truncateContent(post.getContent()))
@@ -414,7 +415,7 @@ public class CommentManager {
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
                     .personalCommentList(Collections.singletonList(
-                            MyCommentListElement.builder()
+                            PersonalCommentListElement.builder()
                                     .commentId(comment.getId())
                                     .content(comment.getContent())
                                     .attachments(getAttachments(comment.getId(), TargetTypeEnum.COMMENT))
@@ -426,7 +427,7 @@ public class CommentManager {
                     .build();
         }).filter(Objects::nonNull).collect(Collectors.toList());
 
-        return BaseListResponse.<MyCommentElement>builder()
+        return BaseListResponse.<PersonalCommentElement>builder()
                 .page(page)
                 .pageSize(pageSize)
                 .total(commentPage.getTotal())

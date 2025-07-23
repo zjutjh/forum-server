@@ -20,36 +20,32 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class MyCommentElement {
-    @Schema(description = "帖子ID")
+public class PersonalCommentListElement {
+    @Schema(description = "评论ID")
     @NotNull
-    @JsonProperty("post_id")
-    private Long postId;
+    @JsonProperty("comment_id")
+    private Long commentId;
 
-    @Schema(description = "帖子标题")
-    @NotBlank
-    private String title;
-
-    @Schema(description = "帖子正文（截取50字）")
+    @Schema(description = "评论内容")
     @NotBlank
     private String content;
 
-    @Schema(description = "帖子附件列表")
+    @Schema(description = "附件链接")
     @NotBlank
     private List<AttachmentInfoDTO> attachments;
 
-    @Schema(description = "帖子创建时间")
+    @Schema(description = "发表时间")
     @NotBlank
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
-    @Schema(description = "帖子更新时间")
-    @NotBlank
-    @JsonProperty("updated_at")
-    private LocalDateTime updatedAt;
-
-    @Schema(description = "个人评论列表")
+    @Schema(description = "点赞数")
     @NotNull
-    @JsonProperty("personal_comment_list")
-    private List<MyCommentListElement> personalCommentList;
+    @JsonProperty("upvote_count")
+    private Integer upvoteCount;
+
+    @Schema(description = "回复数")
+    @NotNull
+    @JsonProperty("reply_count")
+    private Integer replyCount;
 }

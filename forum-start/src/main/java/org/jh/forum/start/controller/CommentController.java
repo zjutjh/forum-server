@@ -91,8 +91,8 @@ public class CommentController {
             如果存在多条评论，单独显示一个评论列表，不存在楼层分级情况
             """)
     @GetMapping("/personal")
-    public AjaxResult<BaseListResponse<MyCommentElement>> getPersonalComment(@Valid BaseListRequest request) {
-        return AjaxResult.success(commentService.getMyCommentList(request));
+    public AjaxResult<BaseListResponse<PersonalCommentElement>> getPersonalComment(@Valid GetPersonalCommentRequest request) {
+        return AjaxResult.success(commentService.getPersonalCommentList(request));
     }
 
     @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
