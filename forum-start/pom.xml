@@ -65,7 +65,6 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>org.jh.forum.start.ForumStartApplication</mainClass>
-<!--                    <skip>true</skip>-->
                 </configuration>
                 <executions>
                     <execution>
