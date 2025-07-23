@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.annotation.IgnoreLogicDelete;
+import org.jh.forum.common.constants.CommentStatusEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.dto.AttachmentInfoDTO;
@@ -434,15 +435,15 @@ public class CommentManager {
     }
 
     @IgnoreLogicDelete
-    public BaseListResponse<CommentElement> getAdminCommentList(Long postId, Integer status, Integer page, Integer pageSize) {
+    public BaseListResponse<CommentElement> getAdminCommentList(Long postId, CommentStatusEnum status, Integer page, Integer pageSize) {
         // 根据状态筛选评论
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Comment::getPostId, postId)
                 .eq(Comment::getParentId, 0)
                 .orderByDesc(Comment::getCreatedAt);
-        if (status == 2) {
+        if (status == CommentStatusEnum.DELETED) {
             wrapper.eq(Comment::getDeleted, true);
-        } else if (status == 3) {
+        } else if (status == CommentStatusEnum.NORMAL) {
             wrapper.eq(Comment::getDeleted, false);
         }
 
@@ -460,9 +461,9 @@ public class CommentManager {
             replyWrapper.eq(Comment::getParentId, comment.getId())
                     .orderByDesc(Comment::getCreatedAt)
                     .last("limit 5");
-            if (status == 2) {
+            if (status == CommentStatusEnum.DELETED) {
                 replyWrapper.eq(Comment::getDeleted, true);
-            } else if (status == 3) {
+            } else if (status == CommentStatusEnum.NORMAL) {
                 replyWrapper.eq(Comment::getDeleted, false);
             }
             List<Comment> replies = commentMapper.selectList(replyWrapper);
@@ -484,7 +485,7 @@ public class CommentManager {
     }
 
     @IgnoreLogicDelete
-    public BaseListResponse<ReplyElement> getAdminReplyList(Long commentId, Integer page, Integer pageSize, Integer status, Long[] excludeCommentIds) {
+    public BaseListResponse<ReplyElement> getAdminReplyList(Long commentId, Integer page, Integer pageSize, CommentStatusEnum status, Long[] excludeCommentIds) {
         Page<Comment> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Comment::getParentId, commentId)
@@ -492,9 +493,9 @@ public class CommentManager {
         if (excludeCommentIds != null && excludeCommentIds.length > 0) {
             wrapper.notIn(Comment::getId, Arrays.asList(excludeCommentIds));
         }
-        if (status == 2) {
+        if (status == CommentStatusEnum.DELETED) {
             wrapper.eq(Comment::getDeleted, true);
-        } else if (status == 3) {
+        } else if (status == CommentStatusEnum.NORMAL) {
             wrapper.eq(Comment::getDeleted, false);
         }
 

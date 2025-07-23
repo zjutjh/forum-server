@@ -3,6 +3,7 @@ package org.jh.forum.common.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.jh.forum.common.constants.CommentStatusEnum;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -16,7 +17,7 @@ public class GetCommentListAdminRequest extends BaseListRequest {
     @NotNull
     private Long postId;
 
-    @Schema(description = "评论状态，1: 全部，2: 已删，3: 未删")
+    @Schema(description = "评论状态")
     @NotNull
-    private Integer status;
+    private CommentStatusEnum status;
 }
