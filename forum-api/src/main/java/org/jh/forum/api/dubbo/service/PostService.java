@@ -24,4 +24,6 @@ public interface PostService {
     BaseListResponse<GetAdminPostListElement> getAdminPostList(GetAdminPostListRequest request);
 
     GetAdminPostInfoResponse getAdminPostInfo(Long id);
+
+    TopFivePostList getTopFivePosts();
 }
