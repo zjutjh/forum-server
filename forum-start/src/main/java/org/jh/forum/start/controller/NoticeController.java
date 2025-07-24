@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.NoticeService;
+import org.jh.forum.common.constants.NoticeTypeEnum;
+import org.jh.forum.common.dto.request.CreateNoticeRequest;
 import org.jh.forum.common.dto.request.GetNoticeListRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;
@@ -15,9 +17,12 @@ import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
 
+/**
+ * @author lyyzzz
+ */
 @Slf4j
 @RestController
-@RequestMapping("/api/notices")
+@RequestMapping("/notices")
 @Tag(name = "通知模块")
 public class NoticeController {
     @DubboReference(version = "1.0.0")
@@ -28,4 +33,5 @@ public class NoticeController {
     public AjaxResult<BaseListResponse<GetNoticeListElement>> getNoticeHistory(@Valid GetNoticeListRequest request) {
         return AjaxResult.success(noticeService.getNoticeList(request));
     }
+
 }

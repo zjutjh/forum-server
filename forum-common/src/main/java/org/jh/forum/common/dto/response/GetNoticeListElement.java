@@ -9,14 +9,18 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.NoticeTypeEnum;
 import org.jh.forum.common.dto.UserInfoDTO;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
+/**
+ * @author lyyzzz
+ */
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetNoticeListElement {
+public class GetNoticeListElement implements Serializable {
     @Schema(description = "通知ID")
     private Long id;
 
@@ -38,6 +42,10 @@ public class GetNoticeListElement {
     @Schema(description = "关联评论ID（若有）")
     @JsonProperty("comment_id")
     private Long commentId;
+
+    @Schema(description = "是否已读")
+    @JsonProperty("is_read")
+    private Boolean isRead;
 
     @Schema(description = "创建时间")
     @JsonProperty("created_at")

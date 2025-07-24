@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.NoticeTypeEnum;
 
+/**
+ * @author lyyzzz
+ */
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,6 +37,5 @@ public class CreateNoticeRequest {
 
     @Schema(description = "附加属性信息（JSON格式字符串）")
     private String attribute;
-
 
 }
