@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.common.constants.NoticeTypeEnum;
 import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.dto.request.CreateNoticeRequest;
 import org.jh.forum.server.mapper.NoticeMapper;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;

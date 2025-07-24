@@ -3,7 +3,7 @@ package org.jh.forum.common.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.jh.forum.common.constants.NoticeTypeEnum;
+
 
 import java.io.Serializable;
 

@@ -8,8 +8,6 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.NoticeService;
-import org.jh.forum.common.constants.NoticeTypeEnum;
-import org.jh.forum.common.dto.request.CreateNoticeRequest;
 import org.jh.forum.common.dto.request.GetNoticeListRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;

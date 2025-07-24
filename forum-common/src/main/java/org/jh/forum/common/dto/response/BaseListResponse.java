@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ import java.util.List;
  */
 @Data
 @Builder
-public class BaseListResponse<T> {
+public class BaseListResponse<T> implements Serializable {
     @Schema(description = "页码")
     private Integer page;
 
