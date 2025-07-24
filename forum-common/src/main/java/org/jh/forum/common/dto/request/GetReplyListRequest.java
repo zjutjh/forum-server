@@ -14,7 +14,7 @@ import jakarta.validation.constraints.NotNull;
 public class GetReplyListRequest extends BaseListRequest {
     @Schema(description = "父评论ID")
     @NotNull
-    private Long commentId;
+    private Long id;
 
     @Schema(description = "排序方式，1: 按最热，2: 按时间")
     private Integer sortType;

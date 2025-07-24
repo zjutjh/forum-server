@@ -15,7 +15,7 @@ import jakarta.validation.constraints.NotNull;
 public class GetCommentListAdminRequest extends BaseListRequest {
     @Schema(description = "帖子ID")
     @NotNull
-    private Long postId;
+    private Long id;
 
     @Schema(description = "评论状态")
     @NotNull

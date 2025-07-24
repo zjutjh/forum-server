@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.annotation.IgnoreLogicDelete;
+import org.jh.forum.common.constants.CommentOperationEnum;
 import org.jh.forum.common.constants.CommentStatusEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
@@ -42,7 +43,7 @@ public class CommentManager {
     private final FileManager fileManager;
     private final UserManager userManager;
 
-    public PublishCommentResponse publishComment(Long postId, Long parentId, Long targetId, String content, Long attachmentId) {
+    public void publishComment(Long postId, Long parentId, Long targetId, String content, Long attachmentId) {
         // 检查 post_id 合法性
         Post post = postMapper.selectById(postId);
         if (post == null) {
@@ -99,10 +100,6 @@ public class CommentManager {
                 commentMapper.updateById(targetComment);
             }
         }
-
-        return PublishCommentResponse.builder()
-                .commentId(comment.getId())
-                .build();
     }
 
     public UpvoteCommentResponse upvoteComment(Long commentId) {
@@ -126,18 +123,16 @@ public class CommentManager {
                     .status(true)
                     .build();
             upvoteMapper.insert(upvote);
-            comment.setUpvoteCount(comment.getUpvoteCount() + 1);
-            commentMapper.updateById(comment);
+            commentMapper.incrementUpvoteCount(commentId);
         } else {
-            upvote.setStatus(!upvote.getStatus());
+            boolean newStatus = !upvote.getStatus();
+            upvote.setStatus(newStatus);
             upvoteMapper.updateById(upvote);
-            int upvoteCount = comment.getUpvoteCount();
-            if (upvote.getStatus()) {
-                comment.setUpvoteCount(upvoteCount + 1);
+            if (newStatus) {
+                commentMapper.incrementUpvoteCount(commentId);
             } else {
-                comment.setUpvoteCount(Math.max(0, upvoteCount - 1));
+                commentMapper.decrementUpvoteCount(commentId);
             }
-            commentMapper.updateById(comment);
         }
 
         return UpvoteCommentResponse.builder()
@@ -442,9 +437,9 @@ public class CommentManager {
         wrapper.eq(Comment::getPostId, postId)
                 .eq(Comment::getParentId, 0)
                 .orderByDesc(Comment::getCreatedAt);
-        if (status == CommentStatusEnum.DELETED) {
+        if (CommentStatusEnum.DELETED.equals(status)) {
             wrapper.eq(Comment::getDeleted, true);
-        } else if (status == CommentStatusEnum.NORMAL) {
+        } else if (CommentStatusEnum.NORMAL.equals(status)) {
             wrapper.eq(Comment::getDeleted, false);
         }
 
@@ -462,9 +457,9 @@ public class CommentManager {
             replyWrapper.eq(Comment::getParentId, comment.getId())
                     .orderByDesc(Comment::getCreatedAt)
                     .last("limit 5");
-            if (status == CommentStatusEnum.DELETED) {
+            if (CommentStatusEnum.DELETED.equals(status)) {
                 replyWrapper.eq(Comment::getDeleted, true);
-            } else if (status == CommentStatusEnum.NORMAL) {
+            } else if (CommentStatusEnum.NORMAL.equals(status)) {
                 replyWrapper.eq(Comment::getDeleted, false);
             }
             List<Comment> replies = commentMapper.selectList(replyWrapper);
@@ -494,9 +489,9 @@ public class CommentManager {
         if (excludeCommentIds != null && excludeCommentIds.length > 0) {
             wrapper.notIn(Comment::getId, Arrays.asList(excludeCommentIds));
         }
-        if (status == CommentStatusEnum.DELETED) {
+        if (CommentStatusEnum.DELETED.equals(status)) {
             wrapper.eq(Comment::getDeleted, true);
-        } else if (status == CommentStatusEnum.NORMAL) {
+        } else if (CommentStatusEnum.NORMAL.equals(status)) {
             wrapper.eq(Comment::getDeleted, false);
         }
 
@@ -529,7 +524,7 @@ public class CommentManager {
     }
 
     @IgnoreLogicDelete
-    public void adminChangeCommentStatus(Long commentId, Integer status) {
+    public void adminChangeCommentStatus(Long commentId, CommentOperationEnum operation) {
         Comment comment = commentMapper.selectOne(
                 new LambdaQueryWrapper<Comment>()
                         .eq(Comment::getId, commentId)
@@ -553,10 +548,10 @@ public class CommentManager {
             return;
         }
 
-        if (status == 1) {
+        if (CommentOperationEnum.DELETE.equals(operation)) {
             commentMapper.delete(new LambdaQueryWrapper<Comment>()
                     .in(Comment::getId, commentIds));
-        } else if (status == 2) {
+        } else {
             commentMapper.restoreComments(commentIds);
         }
     }

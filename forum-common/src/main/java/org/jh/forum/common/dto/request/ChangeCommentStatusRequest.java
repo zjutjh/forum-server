@@ -1,8 +1,8 @@
 package org.jh.forum.common.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.jh.forum.common.constants.CommentOperationEnum;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -11,12 +11,11 @@ import jakarta.validation.constraints.NotNull;
  */
 @Data
 public class ChangeCommentStatusRequest {
-    @Schema(description = "评论ID")
+    @Schema(description = "评论或回复ID")
     @NotNull
-    @JsonProperty("comment_id")
-    private Long commentId;
+    private Long id;
 
-    @Schema(description = "操作类型，1: 删除，2: 恢复")
+    @Schema(description = "操作类型")
     @NotNull
-    private Integer operation;
+    private CommentOperationEnum operation;
 }

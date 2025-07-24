@@ -20,17 +20,15 @@ public class CommentServerImpl implements CommentService {
     private CommentManager commentManager;
 
     @Override
-    public PublishCommentResponse publishComment(PublishCommentRequest request) {
-        PublishCommentResponse response = commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getAttachmentId());
+    public void publishComment(PublishCommentRequest request) {
+        commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getAttachmentId());
 
         // TODO 发送评论消息
-
-        return response;
     }
 
     @Override
-    public UpvoteCommentResponse upvoteComment(Long commentId) {
-        UpvoteCommentResponse response = commentManager.upvoteComment(commentId);
+    public UpvoteCommentResponse upvoteComment(Long id) {
+        UpvoteCommentResponse response = commentManager.upvoteComment(id);
 
         // TODO 发送点赞消息
 
@@ -38,42 +36,42 @@ public class CommentServerImpl implements CommentService {
     }
 
     @Override
-    public PinCommentResponse pinComment(Long commentId) {
-        return commentManager.pinComment(commentId);
+    public PinCommentResponse pinComment(Long id) {
+        return commentManager.pinComment(id);
     }
 
     @Override
-    public void removeComment(Long commentId) {
-        commentManager.removeComment(commentId);
+    public void removeComment(Long id) {
+        commentManager.removeComment(id);
     }
 
     @Override
     public GetCommentListResponse getCommentList(GetCommentListRequest request) {
-        return commentManager.getCommentList(request.getPostId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getHighlightCommentId());
+        return commentManager.getCommentList(request.getId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getHighlightCommentId());
     }
 
     @Override
     public BaseListResponse<ReplyElement> getReplyList(GetReplyListRequest request) {
-        return commentManager.getReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getExcludeCommentIds());
+        return commentManager.getReplyList(request.getId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getExcludeCommentIds());
     }
 
     @Override
     public BaseListResponse<PersonalCommentElement> getPersonalCommentList(GetPersonalCommentRequest request) {
-        return commentManager.getPersonalComment(request.getPage(), request.getPageSize(), request.getUserId());
+        return commentManager.getPersonalComment(request.getPage(), request.getPageSize(), request.getId());
     }
 
     @Override
     public BaseListResponse<CommentElement> getAdminCommentList(GetCommentListAdminRequest request) {
-        return commentManager.getAdminCommentList(request.getPostId(), request.getStatus(), request.getPage(), request.getPageSize());
+        return commentManager.getAdminCommentList(request.getId(), request.getStatus(), request.getPage(), request.getPageSize());
     }
 
     @Override
     public BaseListResponse<ReplyElement> getAdminReplyList(GetReplyListAdminRequest request) {
-        return commentManager.getAdminReplyList(request.getCommentId(), request.getPage(), request.getPageSize(), request.getStatus(), request.getExcludeCommentIds());
+        return commentManager.getAdminReplyList(request.getId(), request.getPage(), request.getPageSize(), request.getStatus(), request.getExcludeCommentIds());
     }
 
     @Override
     public void adminChangeCommentStatus(ChangeCommentStatusRequest request) {
-        commentManager.adminChangeCommentStatus(request.getCommentId(), request.getOperation());
+        commentManager.adminChangeCommentStatus(request.getId(), request.getOperation());
     }
 }

@@ -11,5 +11,5 @@ import lombok.EqualsAndHashCode;
 @Data
 public class GetPersonalCommentRequest extends BaseListRequest {
     @Schema(description = "若是他人视角，则传他人用户ID；若是本人视角，则可以不传或者传本人ID")
-    private Long userId;
+    private Long id;
 }

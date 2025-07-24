@@ -15,6 +15,7 @@ import java.util.List;
  * @Entity org.jh.forum.common.entity.Comment
  */
 public interface CommentMapper extends BaseMapper<Comment> {
+    // 根据回复评论 ID，递归获取其所有未被删除的子回复 ID
     @Select("""
                 WITH RECURSIVE comment_tree AS (
                     SELECT #{targetId} AS id
@@ -27,6 +28,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
             """)
     List<Long> getCommentIdsByTargetId(@Param("targetId") Long rootId);
 
+    // 根据回复评论 ID，递归获取其所有子回复 ID（包括已删除的）
     @Select("""
                 WITH RECURSIVE comment_tree AS (
                     SELECT #{targetId} AS id
@@ -50,4 +52,10 @@ public interface CommentMapper extends BaseMapper<Comment> {
                 </script>
             """)
     void restoreComments(@Param("commentIds") List<Long> commentIds);
+
+    @Update("UPDATE comment SET upvote_count = upvote_count + 1 WHERE id = #{commentId}")
+    void incrementUpvoteCount(@Param("commentId") Long commentId);
+
+    @Update("UPDATE comment SET upvote_count = upvote_count - 1 WHERE id = #{commentId} AND upvote_count > 0")
+    void decrementUpvoteCount(@Param("commentId") Long commentId);
 }

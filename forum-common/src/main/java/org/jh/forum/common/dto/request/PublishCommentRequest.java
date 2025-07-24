@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,17 +19,14 @@ import jakarta.validation.constraints.NotNull;
 public class PublishCommentRequest {
     @Schema(description = "帖子ID")
     @NotNull
-    @JsonProperty("post_id")
     private Long postId;
 
     @Schema(description = "父评论ID，即最顶层评论ID，无值即传0")
     @NotNull
-    @JsonProperty("parent_id")
     private Long parentId;
 
     @Schema(description = "回复评论ID，无值即传0")
     @NotNull
-    @JsonProperty("target_id")
     private Long targetId;
 
     @Schema(description = "评论内容，禁止发空评论")
@@ -38,7 +34,6 @@ public class PublishCommentRequest {
     private String content;
 
     @Schema(description = "评论附件ID，无值即传0")
-    @JsonProperty("attachment_id")
     @NotNull
     private Long attachmentId;
 }

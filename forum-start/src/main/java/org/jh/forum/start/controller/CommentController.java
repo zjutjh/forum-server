@@ -29,29 +29,30 @@ public class CommentController {
 
     @Operation(summary = "发布评论/回复")
     @PostMapping("/publish")
-    public AjaxResult<PublishCommentResponse> publishComment(@RequestBody PublishCommentRequest request) {
-        return AjaxResult.success(commentService.publishComment(request));
+    public AjaxResult<Void> publishComment(@RequestBody PublishCommentRequest request) {
+        commentService.publishComment(request);
+        return AjaxResult.success();
     }
 
     @Operation(summary = "删除评论/回复", description = "仅发布人可删\n级联删除")
     @DeleteMapping("/remove")
-    public AjaxResult<Void> deleteComment(@RequestParam(value = "comment_id") Long commentId) {
-        commentService.removeComment(commentId);
+    public AjaxResult<Void> deleteComment(@RequestParam(value = "id") Long id) {
+        commentService.removeComment(id);
         return AjaxResult.success();
     }
 
     @Operation(summary = "点赞评论/回复")
     @PostMapping("/upvote")
-    public AjaxResult<UpvoteCommentResponse> upvoteComment(@RequestParam(value = "comment_id") Long commentId) {
-        return AjaxResult.success(commentService.upvoteComment(commentId));
+    public AjaxResult<UpvoteCommentResponse> upvoteComment(@RequestParam(value = "id") Long id) {
+        return AjaxResult.success(commentService.upvoteComment(id));
     }
 
     @Operation(summary = "置顶评论/回复", description = """
             仅帖主设置
             仅允许置顶楼主评论""")
     @PostMapping("/pin")
-    public AjaxResult<PinCommentResponse> pinComment(@RequestParam(value = "comment_id") Long commentId) {
-        return AjaxResult.success(commentService.pinComment(commentId));
+    public AjaxResult<PinCommentResponse> pinComment(@RequestParam(value = "id") Long id) {
+        return AjaxResult.success(commentService.pinComment(id));
     }
 
     @Operation(summary = "获取评论", description = """

@@ -7,13 +7,13 @@ import org.jh.forum.common.dto.response.*;
  * @author qianqianzyk
  */
 public interface CommentService {
-    PublishCommentResponse publishComment(PublishCommentRequest request);
+    void publishComment(PublishCommentRequest request);
 
-    UpvoteCommentResponse upvoteComment(Long commentId);
+    UpvoteCommentResponse upvoteComment(Long id);
 
-    PinCommentResponse pinComment(Long commentId);
+    PinCommentResponse pinComment(Long id);
 
-    void removeComment(Long commentId);
+    void removeComment(Long id);
 
     GetCommentListResponse getCommentList(GetCommentListRequest request);
 
