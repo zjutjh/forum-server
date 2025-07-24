@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.dto.request.CreateNoticeRequest;
+import org.jh.forum.common.dto.response.UnreadNoticeCheckResponse;
 import org.jh.forum.server.mapper.NoticeMapper;
 import org.jh.forum.common.entity.Notice;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,14 @@ public class NoticeManager {
     private final UserManager userManager;
 
     /**
-     * 获取通知列表
+     * 获取用户的通知列表
+     * 根据接收者ID分页查询通知，可按类型筛选，并自动标记未读通知为已读
+     *
+     * @param receiverId 接收者用户ID
+     * @param page 当前页码
+     * @param pageSize 每页数量
+     * @param type 通知类型(1:赞/收藏, 2:评论/at)
+     * @return 分页的通知列表响应，包含通知详情和分页信息
      */
     public BaseListResponse<GetNoticeListElement> getNoticeList(Long receiverId, Integer page, Integer pageSize, Integer type) {
         Page<Notice> noticePage = new Page<>(page, pageSize);
@@ -86,6 +94,12 @@ public class NoticeManager {
         return response;
     }
 
+    /**
+     * 创建新的通知
+     * 根据请求参数构建通知实体并插入数据库
+     *
+     * @param request 创建通知的请求参数，包含接收者ID、通知类型、位置信息等
+     */
     public void createNotice(CreateNoticeRequest request) {
         Notice notice = Notice.builder()
                 .receiverId(request.getReceiverId())
@@ -97,5 +111,24 @@ public class NoticeManager {
                 .isRead(false)
                 .build();
         noticeMapper.insert(notice);
+    }
+
+    /**
+     * 检查当前登录用户的未读通知数量
+     * 通过查询数据库获取当前用户所有未读且未删除的通知数量
+     *
+     * @return UnreadNoticeCheckResponse 包含未读通知数量的响应对象
+     */
+    public UnreadNoticeCheckResponse checkUnreadNotices() {
+        LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Notice::getReceiverId, StpUtil.getLoginIdAsLong())
+                .eq(Notice::getIsRead, false)
+                .eq(Notice::getDeleted, false);
+
+        int currentCount = Math.toIntExact(noticeMapper.selectCount(queryWrapper));
+
+        return UnreadNoticeCheckResponse.builder()
+                .unreadCount(currentCount)
+                .build();
     }
 }

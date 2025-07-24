@@ -30,4 +30,9 @@ public class NoticeServiceImpl implements NoticeService {
         noticeManager.createNotice(request);
     }
 
+    @Override
+    public UnreadNoticeCheckResponse checkUnreadNotices() {
+        return noticeManager.checkUnreadNotices();
+    }
+
 }

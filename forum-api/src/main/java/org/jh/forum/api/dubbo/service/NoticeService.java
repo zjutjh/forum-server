@@ -5,6 +5,7 @@ import org.jh.forum.common.dto.request.CreateNoticeRequest;
 import org.jh.forum.common.dto.request.GetNoticeListRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;
+import org.jh.forum.common.dto.response.UnreadNoticeCheckResponse;
 
 /**
  * @author lyyzzz
@@ -13,4 +14,6 @@ public interface NoticeService {
 
     BaseListResponse<GetNoticeListElement> getNoticeList(GetNoticeListRequest request);
     void createNotice(CreateNoticeRequest request);
+
+    UnreadNoticeCheckResponse checkUnreadNotices();
 }
