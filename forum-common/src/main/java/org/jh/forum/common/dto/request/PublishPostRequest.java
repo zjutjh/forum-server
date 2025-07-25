@@ -39,6 +39,6 @@ public class PublishPostRequest {
 
     @Schema(description = "要绑定的图片url列表")
     @NotNull
-    @Size(min = 1, max = 9)
+    @Size(max = 9)
     private List<String> pictures;
 }

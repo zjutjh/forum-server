@@ -1,5 +1,7 @@
 package org.jh.forum.start.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -32,5 +34,13 @@ public class UserController {
     public AjaxResult<Object> login(@RequestBody @Valid LoginRequest request) {
         UserTypeEnum userType = loginService.login(request.getUsername(), request.getPassword(), request.getLoginType());
         return AjaxResult.success(LoginResponse.builder().userType(userType).build());
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "用户退出登录")
+    @SaCheckLogin
+    public AjaxResult<Void> logout() {
+        StpUtil.logout();
+        return AjaxResult.success();
     }
 }

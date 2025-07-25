@@ -1,5 +1,6 @@
 package org.jh.forum.start.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +21,7 @@ import jakarta.validation.Valid;
 @Slf4j
 @RequestMapping("/post")
 @RestController
+@SaCheckLogin
 @Tag(name = "帖子", description = "帖子相关接口")
 public class PostController {
     @DubboReference
