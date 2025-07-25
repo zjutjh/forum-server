@@ -32,41 +32,50 @@ public class FAQManager {
     /**
      * 获取所有分类
      */
-    public List<FAQCategoryResponse> getAllCategories() {
-        // 从数据库中查询所有不同的分类
-        LambdaQueryWrapper<FAQ> wrapper = new LambdaQueryWrapper<>();
-        wrapper.select(FAQ::getCategory)
-               .eq(FAQ::getDeleted, false)
-               .groupBy(FAQ::getCategory);
+    public List<String> getAllCategories() {
+        log.info("开始获取FAQ分类列表");
         
-        List<FAQ> faqs = faqMapper.selectList(wrapper);
-        return faqs.stream()
-                .map(FAQ::getCategory)
-                .distinct()
-                .map(category -> new FAQCategoryResponse(category))
-                .collect(Collectors.toList());
+        // 返回固定的分类列表
+        List<String> fixedCategories = List.of(
+                "账号问题", 
+                "学院问题", 
+                "帖子问题", 
+                "猜你想问"
+        );
+        
+        log.info("返回固定的FAQ分类列表，共{}个分类", fixedCategories.size());
+        fixedCategories.forEach(category -> log.info("  - 分类: [{}]", category));
+        
+        return fixedCategories;
     }
     
     /**
      * 根据分类获取FAQ列表
      */
     public BaseListResponse<FAQQuestionListResponse> getFAQQuestions(String category, BaseListRequest pageRequest) {
+        log.info("开始查询FAQ问题列表，分类参数：[{}]", category);
+        
         // 设置默认分页参数
         Integer pageNum = pageRequest.getPage() != null ? pageRequest.getPage() : 1;
         Integer pageSize = pageRequest.getPageSize() != null ? pageRequest.getPageSize() : 10;
         Page<FAQ> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<FAQ> wrapper = new LambdaQueryWrapper<>();
         
-        if (category != null && !category.isEmpty()) {
-            wrapper.eq(FAQ::getCategory, category);
+        if (category != null && !category.trim().isEmpty()) {
+            log.info("添加分类过滤条件：[{}]", category);
+            wrapper.eq(FAQ::getCategory, category.trim());
+        } else {
+            log.info("未指定分类，查询所有分类的问题");
         }
-        wrapper.eq(FAQ::getDeleted, false)
-               .orderByDesc(FAQ::getCreatedAt);
+        // 移除手动的deleted条件，让@TableLogic自动处理
+        wrapper.orderByDesc(FAQ::getCreatedAt);
         
         IPage<FAQ> faqPage = faqMapper.selectPage(page, wrapper);
+        log.info("数据库查询结果：总数={}, 当前页记录数={}", faqPage.getTotal(), faqPage.getRecords().size());
         
         List<FAQQuestionListResponse> questionList = faqPage.getRecords().stream()
                 .map(faq -> {
+                    log.debug("处理FAQ记录：ID={}, 分类=[{}], 问题=[{}]", faq.getId(), faq.getCategory(), faq.getQuestion());
                     FAQQuestionListResponse response = new FAQQuestionListResponse();
                     response.setQuestionId(faq.getId());
                     response.setCategory(faq.getCategory());
@@ -76,6 +85,7 @@ public class FAQManager {
                 })
                 .collect(Collectors.toList());
         
+        log.info("最终返回结果：共{}条记录", questionList.size());
         return BaseListResponse.<FAQQuestionListResponse>builder()
                 .list(questionList)
                 .total(faqPage.getTotal())
@@ -89,8 +99,8 @@ public class FAQManager {
      */
     public FAQDetailResponse getFAQDetail(Long questionId) {
         LambdaQueryWrapper<FAQ> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FAQ::getId, questionId)
-               .eq(FAQ::getDeleted, false);
+        wrapper.eq(FAQ::getId, questionId);
+        // 移除手动的deleted条件，让@TableLogic自动处理
         
         FAQ faq = faqMapper.selectOne(wrapper);
         if (faq == null) {

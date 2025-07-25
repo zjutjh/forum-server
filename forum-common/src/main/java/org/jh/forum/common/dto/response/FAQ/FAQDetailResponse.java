@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * FAQ详情响应对象
  *
@@ -14,7 +16,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "FAQ详情响应数据")
-public class FAQDetailResponse {
+public class FAQDetailResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     @Schema(description = "问题ID", example = "1", required = true)
     private Long questionId;
     

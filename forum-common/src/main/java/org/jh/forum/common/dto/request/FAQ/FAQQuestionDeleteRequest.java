@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * FAQ问题删除请求
  *
@@ -15,7 +17,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "FAQ问题删除请求参数")
-public class FAQQuestionDeleteRequest {
+public class FAQQuestionDeleteRequest implements Serializable {
+    private static final long serialVersionUID = 1L;
     
     @Schema(description = "问题ID", required = true, example = "1")
     @NotNull(message = "问题ID不能为空")

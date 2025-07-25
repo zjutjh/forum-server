@@ -18,7 +18,7 @@ public interface FAQService {
      * 获取FAQ分类列表
      * @return FAQ分类列表
      */
-    List<FAQCategoryResponse> getFAQCategories();
+    List<String> getFAQCategories();
     
     /**
      * 根据分类获取FAQ问题列表

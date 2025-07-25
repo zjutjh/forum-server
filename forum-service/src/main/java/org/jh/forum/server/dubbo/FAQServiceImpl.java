@@ -25,9 +25,12 @@ public class FAQServiceImpl implements FAQService {
     private FAQManager faqManager;
 
     @Override
-    public List<FAQCategoryResponse> getFAQCategories() {
+    public List<String> getFAQCategories() {
         try {
-            return faqManager.getAllCategories();
+            log.info("FAQServiceImpl: 开始调用faqManager.getAllCategories()");
+            List<String> result = faqManager.getAllCategories();
+            log.info("FAQServiceImpl: faqManager.getAllCategories()返回结果，共{}个分类", result != null ? result.size() : 0);
+            return result;
         } catch (Exception e) {
             log.error("获取FAQ分类失败", e);
             throw e;

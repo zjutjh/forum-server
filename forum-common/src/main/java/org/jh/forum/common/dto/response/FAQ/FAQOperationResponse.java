@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * FAQ操作结果响应对象
  *
@@ -16,7 +18,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "FAQ操作结果响应数据")
-public class FAQOperationResponse {
+public class FAQOperationResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     @Schema(description = "是否操作成功", example = "true", required = true)
     private Boolean success;
     

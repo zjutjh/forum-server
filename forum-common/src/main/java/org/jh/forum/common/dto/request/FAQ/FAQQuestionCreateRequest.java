@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * FAQ问题创建请求
  *
@@ -17,7 +19,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "FAQ问题创建请求参数")
-public class FAQQuestionCreateRequest {
+public class FAQQuestionCreateRequest implements Serializable {
+    private static final long serialVersionUID = 1L;
     
     @Schema(description = "FAQ类别", required = true, example = "猜你想问")
     @NotNull(message = "分类ID不能为空")

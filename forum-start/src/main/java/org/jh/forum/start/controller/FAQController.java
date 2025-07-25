@@ -36,18 +36,29 @@ public class FAQController {
      */
     @Operation(summary = "获取FAQ分类列表", description = "获取所有可用的FAQ分类")
     @GetMapping("/categories")
-    public AjaxResult<List<FAQCategoryResponse>> getFAQCategories() {
+    public AjaxResult<List<String>> getFAQCategories() {
         try {
-            log.info("开始获取FAQ分类列表");
-            List<FAQCategoryResponse> categoryList = faqService.getFAQCategories();
+            log.info("=== Controller开始获取FAQ分类列表 ===");
+            log.info("调用faqService.getFAQCategories()");
+            
+            List<String> categoryList = faqService.getFAQCategories();
+            
+            log.info("faqService.getFAQCategories()返回结果：{}", categoryList);
+            log.info("返回结果是否为null：{}", categoryList == null);
+            
             if (categoryList == null) {
-                log.warn("FAQ分类列表为空");
+                log.warn("FAQ分类列表为空，创建空列表");
                 categoryList = new ArrayList<>();
+            } else {
+                log.info("FAQ分类列表不为空，大小：{}", categoryList.size());
+                categoryList.forEach(category -> 
+                    log.info("  - 分类：[{}]", category));
             }
-            log.info("成功获取FAQ分类列表，共{}个分类", categoryList.size());
+            
+            log.info("=== Controller成功获取FAQ分类列表，共{}个分类 ===", categoryList.size());
             return AjaxResult.success(categoryList);
         } catch (Exception e) {
-            log.error("获取FAQ分类列表失败", e);
+            log.error("=== Controller获取FAQ分类列表失败 ===", e);
             return AjaxResult.fail(500, "获取分类列表失败：" + e.getMessage());
         }
     }    
@@ -58,25 +69,38 @@ public class FAQController {
     @Operation(summary = "获取分类问题列表")
     @GetMapping("/questions/list")
     public AjaxResult<BaseListResponse<FAQQuestionListResponse>> getCategoryQuestions(
-            @ModelAttribute FAQQuestionListRequest categoryRequest,
-            @ModelAttribute BaseListRequest pageRequest) {
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
         try {
-            // 设置默认分页参数
-            if (pageRequest.getPage() == null) {
-                pageRequest.setPage(1);
-            }
-            if (pageRequest.getPageSize() == null) {
-                pageRequest.setPageSize(10);
-            }
+            // 构建请求对象
+            FAQQuestionListRequest categoryRequest = new FAQQuestionListRequest();
+            categoryRequest.setCategory(category);
             
-            log.info("开始获取FAQ问题列表，分类：{}, 页码：{}, 页大小：{}", 
-                    categoryRequest.getCategory(), pageRequest.getPage(), pageRequest.getPageSize());
+            BaseListRequest pageRequest = new BaseListRequest();
+            pageRequest.setPage(page);
+            pageRequest.setPageSize(pageSize);
+            
+            // 详细日志记录请求参数
+            log.info("接收到FAQ问题列表请求 - category: [{}], page: {}, pageSize: {}", category, page, pageSize);
+            log.info("分类参数详情 - 是否为空: {}, 长度: {}", 
+                    category == null || category.trim().isEmpty(),
+                    category != null ? category.length() : 0);
             
             BaseListResponse<FAQQuestionListResponse> response = faqService.getFAQQuestions(categoryRequest, pageRequest);
             log.info("成功获取FAQ问题列表，共{}条记录", response.getTotal());
+            
+            // 记录返回的数据中的分类信息
+            if (response.getList() != null && !response.getList().isEmpty()) {
+                log.info("返回数据中的分类信息：");
+                response.getList().forEach(item -> 
+                    log.info("  - 问题ID: {}, 分类: [{}], 问题: {}", 
+                            item.getQuestionId(), item.getCategory(), item.getQuestion()));
+            }
+            
             return AjaxResult.success(response);
         } catch (Exception e) {
-            log.error("获取FAQ问题列表失败，分类：{}", categoryRequest.getCategory(), e);
+            log.error("获取FAQ问题列表失败，分类：[{}]", category, e);
             return AjaxResult.fail(500, "获取问题列表失败：" + e.getMessage());
         }
     }
