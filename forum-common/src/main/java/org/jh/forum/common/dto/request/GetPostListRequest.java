@@ -5,9 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.jh.forum.common.constants.CategoryEnum;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * @author SugarMGP
@@ -18,9 +16,7 @@ public class GetPostListRequest extends BaseListRequest {
     @Schema(description = "帖子板块")
     private CategoryEnum category;
 
-    @Schema(description = "排序类型（1为最新，2为最热）")
-    @NotNull
-    @Min(1)
-    @Max(2)
-    private Integer sortType;
+    @Schema(description = "排序类型", allowableValues = {"hot", "new"})
+    @NotBlank
+    private String sortType;
 }

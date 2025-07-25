@@ -29,7 +29,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public BaseListResponse<GetPostListElement> getPostList(GetPostListRequest request) {
         BaseListResponse<GetPostListElement> postList;
-        if (request.getSortType() == 1) {
+        if ("new".equals(request.getSortType())) {
             postList = postManager.getPostList(request.getCategory(), request.getPage(), request.getPageSize());
         } else {
             postList = postManager.getHotPostList(request.getCategory(), request.getPage(), request.getPageSize());

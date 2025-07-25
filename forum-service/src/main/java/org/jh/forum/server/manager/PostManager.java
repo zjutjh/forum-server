@@ -84,7 +84,7 @@ public class PostManager {
         if (category != null) {
             queryWrapper.eq(Post::getCategory, category);
         }
-        queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).orderByDesc(Post::getCreatedAt);
+        queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).orderByDesc(Post::getIsPinned).orderByDesc(Post::getCreatedAt);
         postMapper.selectPage(postPage, queryWrapper);
         List<GetPostListElement> list = new ArrayList<>();
         for (Post post : postPage.getRecords()) {
@@ -98,6 +98,7 @@ public class PostManager {
                     .likeCount(getLikeCount(post.getId()))
                     .commentCount(getCommentCount(post.getId()))
                     .createdAt(post.getCreatedAt())
+                    .isPinned(post.getIsPinned())
                     .build()
             );
         }
@@ -159,6 +160,7 @@ public class PostManager {
                     .likeCount(getLikeCount(id))
                     .commentCount(getCommentCount(id))
                     .createdAt(post.getCreatedAt())
+                    .isPinned(false)
                     .build()
             );
         });

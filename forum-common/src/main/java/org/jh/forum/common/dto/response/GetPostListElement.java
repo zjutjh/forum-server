@@ -45,4 +45,7 @@ public class GetPostListElement {
 
     @Schema(description = "发帖时间")
     private LocalDateTime createdAt;
+
+    @Schema(description = "是否置顶")
+    private Boolean isPinned;
 }
