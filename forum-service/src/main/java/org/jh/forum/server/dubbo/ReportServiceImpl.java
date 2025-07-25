@@ -18,7 +18,7 @@ import jakarta.annotation.Resource;
 /**
  * @author zzb
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class ReportServiceImpl implements ReportService {
     @Resource

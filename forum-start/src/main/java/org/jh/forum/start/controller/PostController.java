@@ -5,13 +5,13 @@ import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.PostService;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 /**
@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 @RestController
 @Tag(name = "帖子", description = "帖子相关接口")
 public class PostController {
-    @Resource
+    @DubboReference
     private PostService postService;
 
     @Operation(summary = "获取帖子信息")

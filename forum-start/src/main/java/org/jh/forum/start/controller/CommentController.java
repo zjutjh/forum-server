@@ -6,13 +6,13 @@ import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.CommentService;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 /**
@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
 @Tag(name = "评论", description = "评论相关接口")
 @SaCheckLogin
 public class CommentController {
-    @Resource
+    @DubboReference
     private CommentService commentService;
 
     @Operation(summary = "发布评论/回复")

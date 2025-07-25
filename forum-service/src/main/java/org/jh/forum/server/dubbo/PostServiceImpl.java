@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author SugarMGP
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class PostServiceImpl implements PostService {
     @Resource
