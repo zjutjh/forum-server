@@ -6,10 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.service.PostService;
-import org.jh.forum.common.dto.request.GetAdminPostListRequest;
-import org.jh.forum.common.dto.request.GetPersonalPostRequest;
-import org.jh.forum.common.dto.request.GetPostListRequest;
-import org.jh.forum.common.dto.request.PublishPostRequest;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
@@ -82,6 +79,22 @@ public class PostController {
     @PutMapping("/restore")
     public AjaxResult<Void> restorePost(@RequestParam(value = "id") Long id) {
         postService.restorePost(id);
+        return AjaxResult.success();
+    }
+
+    @Operation(summary = "置顶帖子（管理员）")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @Tag(name = "管理员")
+    @PostMapping("/pin")
+    public AjaxResult<Void> pinPost(@Valid @RequestBody PinPostRequest request) {
+        postService.pinPost(request);
+        return AjaxResult.success();
+    }
+
+    @Operation(summary = "置顶帖子（个人主页）")
+    @PostMapping("/top")
+    public AjaxResult<Void> topPost(@Valid @RequestBody TopPostRequest request) {
+        postService.topPost(request);
         return AjaxResult.success();
     }
 

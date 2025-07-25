@@ -1,10 +1,7 @@
 package org.jh.forum.api.dubbo.service;
 
 
-import org.jh.forum.common.dto.request.GetAdminPostListRequest;
-import org.jh.forum.common.dto.request.GetPersonalPostRequest;
-import org.jh.forum.common.dto.request.GetPostListRequest;
-import org.jh.forum.common.dto.request.PublishPostRequest;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 
 /**
@@ -28,4 +25,8 @@ public interface PostService {
     TopFivePostList getTopFivePosts();
 
     void restorePost(Long id);
+
+    void pinPost(PinPostRequest request);
+
+    void topPost(TopPostRequest request);
 }

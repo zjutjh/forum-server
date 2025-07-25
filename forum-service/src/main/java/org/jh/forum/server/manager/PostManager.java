@@ -349,4 +349,38 @@ public class PostManager {
         post.setStatus(PostStatusEnum.NORMAL);
         postMapper.updateById(post);
     }
+
+    public void pinPost(Long id, Boolean pinned) {
+        long count = postMapper.selectCount(new LambdaQueryWrapper<Post>()
+                .ne(Post::getId, id)
+                .eq(Post::getIsPinned, true));
+        if (count >= 3 && Boolean.TRUE.equals(pinned)) {
+            throw new ApiException(ExceptionEnum.POST_PINNED_LIMIT_REACHED);
+        }
+        Post post = postMapper.selectById(id);
+        if (post == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        post.setIsPinned(pinned);
+        postMapper.updateById(post);
+    }
+
+    public void topPost(Long id, Boolean topped) {
+        Post post = postMapper.selectById(id);
+        if (post == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        if (!post.getUserId().equals(StpUtil.getLoginIdAsLong())) {
+            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+        }
+        boolean exist = postMapper.exists(new LambdaQueryWrapper<Post>()
+                .ne(Post::getId, id)
+                .eq(Post::getUserId, post.getUserId())
+                .eq(Post::getIsTopped, true));
+        if (exist && Boolean.TRUE.equals(topped)) {
+            throw new ApiException(ExceptionEnum.POST_TOPPED_LIMIT_REACHED);
+        }
+        post.setIsTopped(topped);
+        postMapper.updateById(post);
+    }
 }
