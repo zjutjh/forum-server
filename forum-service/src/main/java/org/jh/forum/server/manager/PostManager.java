@@ -16,15 +16,9 @@ import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPersonalPostRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
-import org.jh.forum.common.entity.Attachment;
-import org.jh.forum.common.entity.Post;
-import org.jh.forum.common.entity.PostTopicRelation;
-import org.jh.forum.common.entity.User;
+import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.server.mapper.AttachmentMapper;
-import org.jh.forum.server.mapper.PostMapper;
-import org.jh.forum.server.mapper.PostTopicRelationMapper;
-import org.jh.forum.server.mapper.UserMapper;
+import org.jh.forum.server.mapper.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +47,8 @@ public class PostManager {
     private final AttachmentMapper attachmentMapper;
     private final UserMapper userMapper;
     private final PostRankManager postRankManager;
+    private final CommentMapper commentMapper;
+    private final UpvoteMapper upvoteMapper;
 
     public void publishPost(PublishPostRequest request) {
         Post post = Post.builder()
@@ -308,13 +304,15 @@ public class PostManager {
     }
 
     private Integer getLikeCount(Long postId) {
-        // TODO 获取帖子点赞数
-        return null;
+        long count = upvoteMapper.selectCount(new LambdaQueryWrapper<Upvote>()
+                .eq(Upvote::getPostId, postId));
+        return Math.toIntExact(count);
     }
 
     private Integer getCommentCount(Long postId) {
-        // TODO 获取帖子评论数
-        return null;
+        long count = commentMapper.selectCount(new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getPostId, postId));
+        return Math.toIntExact(count);
     }
 
     private void updateViewCount(Long postId, Long userId) {
@@ -384,5 +382,32 @@ public class PostManager {
         }
         post.setIsTopped(topped);
         postMapper.updateById(post);
+    }
+
+    public Boolean upvotePost(Long id) {
+        Post post = postMapper.selectById(id);
+        if (post == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        Upvote upvote = upvoteMapper.selectOne(new LambdaQueryWrapper<Upvote>()
+                .eq(Upvote::getPostId, id)
+                .eq(Upvote::getUserId, userId));
+
+        if (upvote == null) {
+            upvote = Upvote.builder()
+                    .userId(userId)
+                    .postId(id)
+                    .status(true)
+                    .build();
+            upvoteMapper.insert(upvote);
+        } else {
+            boolean newStatus = !upvote.getStatus();
+            upvote.setStatus(newStatus);
+            upvoteMapper.updateById(upvote);
+        }
+
+        return upvote.getStatus();
     }
 }

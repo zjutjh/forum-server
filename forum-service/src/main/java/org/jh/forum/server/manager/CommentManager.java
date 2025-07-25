@@ -118,7 +118,6 @@ public class CommentManager {
         if (upvote == null) {
             upvote = Upvote.builder()
                     .userId(userId)
-                    .postId(comment.getPostId())
                     .commentId(commentId)
                     .status(true)
                     .build();

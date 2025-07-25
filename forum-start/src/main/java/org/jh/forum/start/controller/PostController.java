@@ -98,6 +98,12 @@ public class PostController {
         return AjaxResult.success();
     }
 
+    @Operation(summary = "点赞帖子")
+    @PostMapping("/upvote")
+    public AjaxResult<UpvotePostResponse> upvotePost(@RequestParam(value = "id") Long id) {
+        return AjaxResult.success(postService.upvotePost(id));
+    }
+
     @Operation(summary = "获取五大热帖")
     @GetMapping("/five")
     public AjaxResult<TopFivePostList> getTopFivePosts() {

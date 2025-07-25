@@ -29,7 +29,7 @@ public class CommentController {
 
     @Operation(summary = "发布评论/回复")
     @PostMapping("/publish")
-    public AjaxResult<Void> publishComment(@RequestBody PublishCommentRequest request) {
+    public AjaxResult<Void> publishComment(@Valid @RequestBody PublishCommentRequest request) {
         commentService.publishComment(request);
         return AjaxResult.success();
     }
@@ -120,7 +120,7 @@ public class CommentController {
     @Operation(summary = "管理员删除/恢复评论")
     @Tag(name = "管理员")
     @PostMapping("/admin/status")
-    public AjaxResult<Boolean> adminChangeCommentStatus(@RequestBody ChangeCommentStatusRequest request) {
+    public AjaxResult<Boolean> adminChangeCommentStatus(@Valid @RequestBody ChangeCommentStatusRequest request) {
         commentService.adminChangeCommentStatus(request);
         return AjaxResult.success();
     }

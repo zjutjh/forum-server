@@ -29,4 +29,6 @@ public interface PostService {
     void pinPost(PinPostRequest request);
 
     void topPost(TopPostRequest request);
+
+    UpvotePostResponse upvotePost(Long id);
 }

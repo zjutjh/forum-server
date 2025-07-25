@@ -90,4 +90,9 @@ public class PostServiceImpl implements PostService {
     public void topPost(TopPostRequest request) {
         postManager.topPost(request.getId(), request.getTopped());
     }
+
+    @Override
+    public UpvotePostResponse upvotePost(Long id) {
+        return new UpvotePostResponse(postManager.upvotePost(id));
+    }
 }
