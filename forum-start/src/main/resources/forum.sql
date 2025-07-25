@@ -152,6 +152,7 @@ create table notice
     position_type varchar(20)                         not null comment '位置类型（帖子/评论）',
     position_id   bigint                              not null comment '位置ID',
     comment_id    bigint                              not null comment '评论ID（type为comment或at时有效）',
+    is_read          boolean                             not null comment '是否已读',
     created_at    timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     updated_at    timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid    bigint                              not null comment '创建用户',
