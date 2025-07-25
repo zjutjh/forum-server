@@ -2,9 +2,8 @@ package org.jh.forum.common.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.jh.forum.common.constants.UserTypeEnum;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -22,8 +21,6 @@ public class LoginRequest {
     private String password;
 
     @NotNull
-    @Schema(description = "用户类型 (1,学生) (2,管理员)")
-    @Max(value = 2)
-    @Min(value = 1)
-    private Integer loginType;
+    @Schema(description = "用户类型")
+    private UserTypeEnum loginType;
 }
