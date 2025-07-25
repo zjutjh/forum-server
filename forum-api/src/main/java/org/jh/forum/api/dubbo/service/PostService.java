@@ -26,4 +26,6 @@ public interface PostService {
     GetAdminPostInfoResponse getAdminPostInfo(Long id);
 
     TopFivePostList getTopFivePosts();
+
+    void restorePost(Long id);
 }

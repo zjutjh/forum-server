@@ -76,6 +76,15 @@ public class PostController {
         return AjaxResult.success(postService.getAdminPostInfo(id));
     }
 
+    @Operation(summary = "恢复帖子")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @Tag(name = "管理员")
+    @PutMapping("/restore")
+    public AjaxResult<Void> restorePost(@RequestParam(value = "id") Long id) {
+        postService.restorePost(id);
+        return AjaxResult.success();
+    }
+
     @Operation(summary = "获取五大热帖")
     @GetMapping("/five")
     public AjaxResult<TopFivePostList> getTopFivePosts() {

@@ -78,4 +78,9 @@ public class PostServiceImpl implements PostService {
 
         return new TopFivePostList(topPosts);
     }
+
+    @Override
+    public void restorePost(Long id) {
+        postManager.restorePost(id);
+    }
 }
