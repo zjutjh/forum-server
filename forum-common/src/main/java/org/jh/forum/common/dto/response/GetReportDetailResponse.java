@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.dto.PictureInfoDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,6 +51,6 @@ public class GetReportDetailResponse {
     @Schema(description = "处理结论")
     private String result;
 
-    @Schema(description = "举报附件列表")
-    private List<AttachmentInfoDTO> attachments;
+    @Schema(description = "举报图片列表")
+    private List<PictureInfoDTO> pictures;
 }

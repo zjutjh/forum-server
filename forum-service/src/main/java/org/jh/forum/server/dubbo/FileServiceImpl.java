@@ -4,12 +4,13 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
+import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.FileMapper;
 
@@ -27,30 +28,30 @@ public class FileServiceImpl implements FileService {
     @Resource
     private AttachmentMapper attachmentMapper;
 
-    @Resource
-    private CubeService cubeService;
-
     @Override
-    public Long checkBlake3(String blake3) {
+    public String checkBlake3(String blake3) {
         File file = fileMapper.selectOne(new LambdaQueryWrapper<File>().eq(File::getBlake3, blake3));
-        return file == null ? -1L : file.getId();
+        return file == null ? null : file.getObjectKey();
     }
 
     @Override
-    public Long createFile(String objectKey, String blake3) {
+    public void createFile(String objectKey, String blake3) {
         File file = File.builder()
                 .blake3(blake3)
                 .objectKey(objectKey)
                 .build();
         fileMapper.insert(file);
-        return file.getId();
     }
 
     @Override
-    public Long createAttachment(Long fileId, AttachmentTypeEnum type, String filename) {
+    public Long createAttachment(String objectKey, AttachmentTypeEnum type, String filename) {
+        File file = fileMapper.selectOne(new LambdaQueryWrapper<File>().eq(File::getObjectKey, objectKey));
+        if (file == null) {
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
+        }
         Attachment attachment = Attachment.builder()
                 .userId(StpUtil.getLoginIdAsLong())
-                .fileId(fileId)
+                .fileId(file.getId())
                 .targetType(TargetTypeEnum.POST)
                 .targetId(-1L)
                 .type(type)

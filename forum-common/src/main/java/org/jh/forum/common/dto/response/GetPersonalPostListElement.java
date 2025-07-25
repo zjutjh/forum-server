@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.constants.PostStatusEnum;
+import org.jh.forum.common.dto.PictureInfoDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,4 +52,10 @@ public class GetPersonalPostListElement {
 
     @Schema(description = "帖子状态（此处不会是deleted），如果是查看他人帖子列表则全都是normal")
     private PostStatusEnum status;
+
+    @Schema(description = "帖子图片列表（前三个）")
+    private List<PictureInfoDTO> pictures;
+
+    @Schema(description = "帖子图片总数")
+    private Integer totalPictures;
 }

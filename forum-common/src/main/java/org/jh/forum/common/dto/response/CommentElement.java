@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
 import jakarta.validation.constraints.NotBlank;
@@ -34,7 +34,7 @@ public class CommentElement {
 
     @Schema(description = "附件列表")
     @NotBlank
-    private List<AttachmentInfoDTO> attachments;
+    private List<PictureInfoDTO> pictures;
 
     @Schema(description = "是否置顶")
     @NotNull

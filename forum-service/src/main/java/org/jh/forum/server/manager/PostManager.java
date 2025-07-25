@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jh.forum.common.constants.*;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPersonalPostRequest;
@@ -67,8 +66,8 @@ public class PostManager {
                     .build()
             );
         }
-        for (Long attachmentId : request.getAttachmentIds()) {
-            fileManager.bindAttachment(attachmentId, TargetTypeEnum.POST, post.getId());
+        for (String url : request.getPictures()) {
+            fileManager.bindAttachment(url, TargetTypeEnum.POST, post.getId());
         }
     }
 
@@ -130,6 +129,7 @@ public class PostManager {
         postMapper.selectPage(postPage, queryWrapper);
         List<GetPersonalPostListElement> list = new ArrayList<>();
         for (Post post : postPage.getRecords()) {
+            List<PictureInfoDTO> pictures = getPostPictures(post.getId());
             list.add(GetPersonalPostListElement.builder()
                     .id(post.getId())
                     .category(post.getCategory())
@@ -142,6 +142,8 @@ public class PostManager {
                     .createdAt(post.getCreatedAt())
                     .isTopped(post.getIsTopped())
                     .status(post.getStatus())
+                    .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
+                    .totalPictures(pictures.size())
                     .build()
             );
         }
@@ -199,7 +201,7 @@ public class PostManager {
                 .commentCount(getCommentCount(postId))
                 .viewCount(post.getViewCount())
                 .createdAt(post.getCreatedAt())
-                .attachments(getPostAttachments(postId))
+                .pictures(getPostPictures(postId))
                 .build();
     }
 
@@ -285,7 +287,7 @@ public class PostManager {
                 .createdAt(post.getCreatedAt())
                 .status(post.getStatus())
                 .isPinned(post.getIsPinned())
-                .attachments(getPostAttachments(id))
+                .pictures(getPostPictures(id))
                 .build();
     }
 
@@ -296,23 +298,6 @@ public class PostManager {
             topics.add(topicManager.getTopicName(relation.getTopicId()));
         }
         return topics;
-    }
-
-    private List<AttachmentInfoDTO> getPostAttachments(Long postId) {
-        List<Attachment> attachments = attachmentMapper.selectList(new LambdaQueryWrapper<Attachment>()
-                .eq(Attachment::getTargetId, postId)
-                .eq(Attachment::getTargetType, TargetTypeEnum.POST)
-        );
-        List<AttachmentInfoDTO> attachmentInfoList = new ArrayList<>();
-        for (Attachment attachment : attachments) {
-            attachmentInfoList.add(AttachmentInfoDTO.builder()
-                    .url(fileManager.getFileUrl(attachment.getFileId()))
-                    .type(attachment.getType())
-                    .filename(attachment.getFilename())
-                    .build()
-            );
-        }
-        return attachmentInfoList;
     }
 
     private Integer getLikeCount(Long postId) {
@@ -370,7 +355,7 @@ public class PostManager {
             throw new ApiException(ExceptionEnum.POST_PINNED_LIMIT_REACHED);
         }
         Post post = postMapper.selectById(id);
-        if (post == null) {
+        if (post == null || post.getStatus() != PostStatusEnum.NORMAL) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         post.setIsPinned(pinned);
@@ -379,7 +364,7 @@ public class PostManager {
 
     public void topPost(Long id, Boolean topped) {
         Post post = postMapper.selectById(id);
-        if (post == null) {
+        if (post == null || post.getStatus() != PostStatusEnum.NORMAL) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         if (!post.getUserId().equals(StpUtil.getLoginIdAsLong())) {
@@ -398,7 +383,7 @@ public class PostManager {
 
     public Boolean upvotePost(Long id) {
         Post post = postMapper.selectById(id);
-        if (post == null) {
+        if (post == null || post.getStatus() != PostStatusEnum.NORMAL) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         Long userId = StpUtil.getLoginIdAsLong();

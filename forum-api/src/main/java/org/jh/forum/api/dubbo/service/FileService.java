@@ -6,9 +6,9 @@ import org.jh.forum.common.constants.AttachmentTypeEnum;
  * @author SugarMGP
  */
 public interface FileService {
-    Long checkBlake3(String blake3);
+    String checkBlake3(String blake3);
 
-    Long createFile(String objectKey, String blake3);
+    void createFile(String objectKey, String blake3);
 
-    Long createAttachment(Long fileId, AttachmentTypeEnum type, String filename);
+    Long createAttachment(String objectKey, AttachmentTypeEnum type, String filename);
 }

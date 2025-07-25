@@ -7,24 +7,19 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.constants.ReportStatusEnum;
-import org.jh.forum.common.constants.ReportTypeEnum;
-import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.constants.*;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
 import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
 import org.jh.forum.common.entity.Attachment;
+import org.jh.forum.common.entity.Comment;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.server.mapper.AttachmentMapper;
-import org.jh.forum.server.mapper.PostMapper;
-import org.jh.forum.server.mapper.ReportMapper;
-import org.jh.forum.server.mapper.UserMapper;
+import org.jh.forum.server.mapper.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -41,12 +36,12 @@ public class ReportManager {
     private final ReportMapper reportMapper;
     private final PostMapper postMapper;
     private final AttachmentMapper attachmentMapper;
-    private final UserManager userManager;
     private final FileManager fileManager;
     private final PostManager postManager;
     private final UserMapper userMapper;
+    private final CommentMapper commentMapper;
 
-    public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, List<Long> attachmentIds) {
+    public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, List<String> pictureUrls) {
         if (targetUserId.equals(StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
         }
@@ -61,12 +56,12 @@ public class ReportManager {
                 .result("")
                 .build();
         reportMapper.insert(report);
-        for (Long attachmentId : attachmentIds) {
-            fileManager.bindAttachment(attachmentId, TargetTypeEnum.REPORT, report.getId());
+        for (String url : pictureUrls) {
+            fileManager.bindAttachment(url, TargetTypeEnum.REPORT, report.getId());
         }
     }
 
-    public void reportContent(ReportTypeEnum type, String reason, Long targetId, TargetTypeEnum target, List<Long> attachmentIds) {
+    public void reportContent(ReportTypeEnum type, String reason, Long targetId, TargetTypeEnum target, List<String> pictureUrls) {
         Long targetUserId = -1L;
         if (target == TargetTypeEnum.POST) {
             Post post = postMapper.selectById(targetId);
@@ -75,7 +70,11 @@ public class ReportManager {
             }
             targetUserId = post.getUserId();
         } else if (target == TargetTypeEnum.COMMENT) {
-            // Todo 根据评论id获取被举报用户id
+            Comment comment = commentMapper.selectById(targetId);
+            if (comment == null) {
+                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            }
+            targetUserId = comment.getUserId();
         } else {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
@@ -93,8 +92,8 @@ public class ReportManager {
                 .result("")
                 .build();
         reportMapper.insert(report);
-        for (Long attachmentId : attachmentIds) {
-            fileManager.bindAttachment(attachmentId, TargetTypeEnum.REPORT, report.getId());
+        for (String url : pictureUrls) {
+            fileManager.bindAttachment(url, TargetTypeEnum.REPORT, report.getId());
         }
     }
 
@@ -114,7 +113,7 @@ public class ReportManager {
             if (targetType == TargetTypeEnum.POST) {
                 postManager.deletePost(report.getTargetId(), true);
             } else if (targetType == TargetTypeEnum.COMMENT) {
-                // Todo 删除评论
+                commentMapper.deleteById(report.getTargetId());
             }
         }
 
@@ -177,21 +176,20 @@ public class ReportManager {
                 .reason(report.getReason())
                 .status(report.getStatus())
                 .result(report.getResult())
-                .attachments(getReportAttachments(report.getId()))
+                .pictures(getReportPictures(report.getId()))
                 .build();
     }
 
-    private List<AttachmentInfoDTO> getReportAttachments(Long reportId) {
+    private List<PictureInfoDTO> getReportPictures(Long reportId) {
         List<Attachment> attachments = attachmentMapper.selectList(new LambdaQueryWrapper<Attachment>()
+                .eq(Attachment::getType, AttachmentTypeEnum.PICTURE)
                 .eq(Attachment::getTargetId, reportId)
                 .eq(Attachment::getTargetType, TargetTypeEnum.REPORT)
         );
-        List<AttachmentInfoDTO> attachmentInfoList = new ArrayList<>();
+        List<PictureInfoDTO> attachmentInfoList = new ArrayList<>();
         for (Attachment attachment : attachments) {
-            attachmentInfoList.add(AttachmentInfoDTO.builder()
+            attachmentInfoList.add(PictureInfoDTO.builder()
                     .url(fileManager.getFileUrl(attachment.getFileId()))
-                    .type(attachment.getType())
-                    .filename(attachment.getFilename())
                     .build()
             );
         }

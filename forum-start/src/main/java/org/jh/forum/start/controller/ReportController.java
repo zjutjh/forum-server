@@ -1,5 +1,6 @@
 package org.jh.forum.start.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,7 @@ import jakarta.validation.Valid;
 @RestController
 @Tag(name = "举报", description = "举报相关接口")
 @RequestMapping("/report")
+@SaCheckLogin
 public class ReportController {
     @DubboReference
     private ReportService reportService;

@@ -10,6 +10,7 @@ import org.jh.forum.common.constants.CategoryEnum;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -36,7 +37,8 @@ public class PublishPostRequest {
     @NotNull
     private List<@Length(min = 1, max = 30) String> topics;
 
-    @Schema(description = "要绑定的附件ID列表")
+    @Schema(description = "要绑定的图片url列表")
     @NotNull
-    private List<Long> attachmentIds;
+    @Size(max = 9)
+    private List<String> pictures;
 }

@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
 import java.time.LocalDateTime;
@@ -47,6 +47,6 @@ public class GetPostInfoResponse {
     @Schema(description = "发帖时间")
     private LocalDateTime createdAt;
 
-    @Schema(description = "帖子附件列表")
-    private List<AttachmentInfoDTO> attachments;
+    @Schema(description = "帖子图片列表")
+    private List<PictureInfoDTO> pictures;
 }
