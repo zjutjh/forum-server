@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,23 +35,18 @@ public class GetMyPostListElement {
     private String content;
 
     @Schema(description = "帖子点赞数")
-    @JsonProperty("like_count")
     private Integer likeCount;
 
     @Schema(description = "帖子评论数")
-    @JsonProperty("comment_count")
     private Integer commentCount;
 
     @Schema(description = "帖子浏览数")
-    @JsonProperty("view_count")
     private Integer viewCount;
 
     @Schema(description = "发帖时间")
-    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     @Schema(description = "是否置顶（个人主页）")
-    @JsonProperty("is_topped")
     private Boolean isTopped;
 
     @Schema(description = "帖子状态（此处不会是deleted）")

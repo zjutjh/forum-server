@@ -1,7 +1,6 @@
 package org.jh.forum.common.dto.request;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.jh.forum.common.constants.AnnouncementStatusEnum;
@@ -38,7 +37,6 @@ public class CreateAnnouncementRequest {
     @Schema(description = "公告状态")
     private AnnouncementStatusEnum status;
 
-    @JsonProperty("published_at")
     @Schema(description = "定时发布时间(yyyy-MM-dd'T'HH:mm:ss, 前端发送UTC+8本地时间)")
     private LocalDateTime publishedAt;
 }

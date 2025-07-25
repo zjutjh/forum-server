@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +32,6 @@ public class GetAnnouncementListElement {
     @Schema(description = "发布人")
     private String publisher;
 
-    @JsonProperty("published_at")
     @Schema(description = "发布时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime publishedAt;
 

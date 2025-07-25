@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +19,6 @@ import jakarta.validation.constraints.NotNull;
 @Data
 public class HandleReportRequest {
     @Schema(description = "举报ID")
-    @JsonProperty("report_id")
     @NotNull
     private Long reportId;
 
@@ -30,7 +28,6 @@ public class HandleReportRequest {
 
     @Schema(description = "是否删除原帖子/评论")
     @NotNull
-    @JsonProperty("should_delete")
     private Boolean shouldDelete;
 
     @Schema(description = "处罚类型：no_punishment-无处罚，short_mute-短期禁言(1天)，" +
