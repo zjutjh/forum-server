@@ -43,14 +43,14 @@ public class CustomExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseBody
     public AjaxResult<Object> handleNotFoundException(NoResourceFoundException e, HttpServletRequest request) {
-        HandlerUtils.logException(e, request);
+        log.error(e.getMessage());
         return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseBody
     public AjaxResult<Object> handleMethodNotSupportedException(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
-        HandlerUtils.logException(e, request);
+        log.error(e.getMessage());
         return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
     }
 

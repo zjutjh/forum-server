@@ -36,7 +36,7 @@ public class LoginServiceImpl implements LoginService {
      * @return 用户类型
      */
     @Override
-    public UserTypeEnum login(String username, String password, Integer loginType) {
+    public UserTypeEnum login(String username, String password, UserTypeEnum loginType) {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, username));
         if (Objects.isNull(user)) {
             // 首次登录, 数据库创建对象
@@ -48,11 +48,11 @@ public class LoginServiceImpl implements LoginService {
                     .password(BCrypt.hashpw(password))
                     .collegeId(1L)
                     .gender(EnumUtil.getBy(GenderEnum::getDesc, "男"))
-                    .role(UserTypeEnum.STUDENT).build();
+                    .role(loginType).build();
             userMapper.insert(user);
             userManager.insertUserDetail(user.getId());
-        } else if (!BCrypt.checkpw(password, user.getPassword())) {
-            // 数据库密码校验错误, 再尝试统一登录
+        } else if (!BCrypt.checkpw(password, user.getPassword()) || !user.getRole().equals(loginType)) {
+            // 数据库密码校验错误
             throw new ApiException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
         }
         StpUtil.login(user.getId());

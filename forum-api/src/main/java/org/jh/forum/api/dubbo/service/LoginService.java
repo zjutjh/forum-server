@@ -6,5 +6,5 @@ import org.jh.forum.common.constants.UserTypeEnum;
  * @author SugarMGP
  */
 public interface LoginService {
-    UserTypeEnum login(String username, String password, Integer loginType);
+    UserTypeEnum login(String username, String password, UserTypeEnum loginType);
 }
