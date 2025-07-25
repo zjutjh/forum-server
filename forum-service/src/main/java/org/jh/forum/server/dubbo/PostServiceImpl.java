@@ -4,8 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.PostService;
-import org.jh.forum.common.dto.request.BaseListRequest;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
+import org.jh.forum.common.dto.request.GetPersonalPostRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
@@ -41,8 +41,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public BaseListResponse<GetMyPostListElement> getMyPostList(BaseListRequest request) {
-        return postManager.getMyPostList(StpUtil.getLoginIdAsLong(), request.getPage(), request.getPageSize());
+    public BaseListResponse<GetPersonalPostListElement> getPersonalPostList(GetPersonalPostRequest request) {
+        return postManager.getPersonalPostList(request);
     }
 
     @Override

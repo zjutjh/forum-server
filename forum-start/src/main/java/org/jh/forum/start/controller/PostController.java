@@ -6,8 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.service.PostService;
-import org.jh.forum.common.dto.request.BaseListRequest;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
+import org.jh.forum.common.dto.request.GetPersonalPostRequest;
 import org.jh.forum.common.dto.request.GetPostListRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
@@ -54,10 +54,10 @@ public class PostController {
         return AjaxResult.success(postService.getPostList(request));
     }
 
-    @Operation(summary = "获取我的帖子列表")
-    @GetMapping("/my_list")
-    public AjaxResult<BaseListResponse<GetMyPostListElement>> getMyPostList(@Valid BaseListRequest request) {
-        return AjaxResult.success(postService.getMyPostList(request));
+    @Operation(summary = "获取个人帖子列表")
+    @GetMapping("/personal")
+    public AjaxResult<BaseListResponse<GetPersonalPostListElement>> getPersonalPostList(@Valid GetPersonalPostRequest request) {
+        return AjaxResult.success(postService.getPersonalPostList(request));
     }
 
     @Operation(summary = "管理员获取帖子列表")

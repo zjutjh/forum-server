@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetMyPostListElement {
+public class GetPersonalPostListElement {
     @Schema(description = "帖子ID")
     private Long id;
 
@@ -49,6 +49,6 @@ public class GetMyPostListElement {
     @Schema(description = "是否置顶（个人主页）")
     private Boolean isTopped;
 
-    @Schema(description = "帖子状态（此处不会是deleted）")
+    @Schema(description = "帖子状态（此处不会是deleted），如果是查看他人帖子列表则全都是normal")
     private PostStatusEnum status;
 }

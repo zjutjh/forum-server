@@ -13,6 +13,7 @@ import org.jh.forum.common.constants.PostStatusEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
+import org.jh.forum.common.dto.request.GetPersonalPostRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Attachment;
@@ -108,14 +109,19 @@ public class PostManager {
                 .build();
     }
 
-    public BaseListResponse<GetMyPostListElement> getMyPostList(Long userId, Integer page, Integer pageSize) {
-        IPage<Post> postPage = new Page<>(page, pageSize);
+    public BaseListResponse<GetPersonalPostListElement> getPersonalPostList(GetPersonalPostRequest request) {
+        IPage<Post> postPage = new Page<>(request.getPage(), request.getPageSize());
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.ne(Post::getStatus, PostStatusEnum.DELETED).eq(Post::getUserId, userId).orderByDesc(Post::getCreatedAt);
+        if (request.getId() == null || request.getId().equals(StpUtil.getLoginIdAsLong())) {
+            queryWrapper.ne(Post::getStatus, PostStatusEnum.DELETED).eq(Post::getUserId, StpUtil.getLoginIdAsLong());
+        } else {
+            queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).eq(Post::getUserId, request.getId());
+        }
+        queryWrapper.orderByDesc(Post::getIsTopped).orderByDesc(Post::getCreatedAt);
         postMapper.selectPage(postPage, queryWrapper);
-        List<GetMyPostListElement> list = new ArrayList<>();
+        List<GetPersonalPostListElement> list = new ArrayList<>();
         for (Post post : postPage.getRecords()) {
-            list.add(GetMyPostListElement.builder()
+            list.add(GetPersonalPostListElement.builder()
                     .id(post.getId())
                     .category(post.getCategory())
                     .topics(getPostTopics(post.getId()))
@@ -130,11 +136,11 @@ public class PostManager {
                     .build()
             );
         }
-        return BaseListResponse.<GetMyPostListElement>builder()
+        return BaseListResponse.<GetPersonalPostListElement>builder()
                 .list(list)
                 .total(postPage.getTotal())
-                .page(page)
-                .pageSize(pageSize)
+                .page(request.getPage())
+                .pageSize(request.getPageSize())
                 .build();
     }
 
