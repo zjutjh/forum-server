@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class PictureInfoDTO {
-    @Schema(description = "附件URL")
+    @Schema(description = "图片URL")
     String url;
 }
