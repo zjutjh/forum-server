@@ -3,7 +3,6 @@ package org.jh.forum.server.dubbo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.ReportService;
-import org.jh.forum.common.constants.TargetTypeEnum;
 import org.jh.forum.common.dto.request.GetReportListRequest;
 import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.request.ReportContentRequest;
@@ -12,14 +11,14 @@ import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetReportDetailResponse;
 import org.jh.forum.common.dto.response.GetReportListElement;
 import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
-import org.jh.forum.server.manger.ReportManager;
+import org.jh.forum.server.manager.ReportManager;
 
 import jakarta.annotation.Resource;
 
 /**
  * @author zzb
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class ReportServiceImpl implements ReportService {
     @Resource
@@ -28,7 +27,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public void reportUser(ReportUserRequest request) {
         reportManager.reportUser(request.getType(), request.getReason(),
-                request.getUserId(), TargetTypeEnum.USER, request.getAttachmentIds());
+                request.getUserId(), request.getAttachmentIds());
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.jh.forum.server.manger;
+package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -7,28 +7,22 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jh.forum.common.constants.CategoryEnum;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.constants.PostStatusEnum;
-import org.jh.forum.common.constants.TargetTypeEnum;
+import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
+import org.jh.forum.common.dto.request.GetPersonalPostRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
-import org.jh.forum.common.entity.Attachment;
-import org.jh.forum.common.entity.Post;
-import org.jh.forum.common.entity.PostTopicRelation;
-import org.jh.forum.common.entity.User;
+import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.server.mapper.AttachmentMapper;
-import org.jh.forum.server.mapper.PostMapper;
-import org.jh.forum.server.mapper.PostTopicRelationMapper;
-import org.jh.forum.server.mapper.UserMapper;
+import org.jh.forum.server.mapper.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +45,8 @@ public class PostManager {
     private final AttachmentMapper attachmentMapper;
     private final UserMapper userMapper;
     private final PostRankManager postRankManager;
+    private final CommentMapper commentMapper;
+    private final UpvoteMapper upvoteMapper;
 
     public void publishPost(PublishPostRequest request) {
         Post post = Post.builder()
@@ -82,10 +78,11 @@ public class PostManager {
         if (category != null) {
             queryWrapper.eq(Post::getCategory, category);
         }
-        queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).orderByDesc(Post::getCreatedAt);
+        queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).orderByDesc(Post::getIsPinned).orderByDesc(Post::getCreatedAt);
         postMapper.selectPage(postPage, queryWrapper);
         List<GetPostListElement> list = new ArrayList<>();
         for (Post post : postPage.getRecords()) {
+            List<PictureInfoDTO> pictures = getPostPictures(post.getId());
             list.add(GetPostListElement.builder()
                     .id(post.getId())
                     .publisherInfo(userManager.getUserInfo(post.getUserId()))
@@ -96,6 +93,9 @@ public class PostManager {
                     .likeCount(getLikeCount(post.getId()))
                     .commentCount(getCommentCount(post.getId()))
                     .createdAt(post.getCreatedAt())
+                    .isPinned(post.getIsPinned())
+                    .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
+                    .totalPictures(pictures.size())
                     .build()
             );
         }
@@ -107,14 +107,30 @@ public class PostManager {
                 .build();
     }
 
-    public BaseListResponse<GetMyPostListElement> getMyPostList(Long userId, Integer page, Integer pageSize) {
-        IPage<Post> postPage = new Page<>(page, pageSize);
+    private List<PictureInfoDTO> getPostPictures(Long id) {
+        return attachmentMapper.selectList(new LambdaQueryWrapper<Attachment>()
+                .eq(Attachment::getTargetId, id)
+                .eq(Attachment::getTargetType, TargetTypeEnum.POST)
+                .eq(Attachment::getType, AttachmentTypeEnum.PICTURE)
+        ).stream().map(attachment -> PictureInfoDTO.builder()
+                .url(fileManager.getFileUrl(attachment.getFileId()))
+                .build()
+        ).toList();
+    }
+
+    public BaseListResponse<GetPersonalPostListElement> getPersonalPostList(GetPersonalPostRequest request) {
+        IPage<Post> postPage = new Page<>(request.getPage(), request.getPageSize());
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.ne(Post::getStatus, PostStatusEnum.DELETED).eq(Post::getUserId, userId).orderByDesc(Post::getCreatedAt);
+        if (request.getId() == null || request.getId().equals(StpUtil.getLoginIdAsLong())) {
+            queryWrapper.ne(Post::getStatus, PostStatusEnum.DELETED).eq(Post::getUserId, StpUtil.getLoginIdAsLong());
+        } else {
+            queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).eq(Post::getUserId, request.getId());
+        }
+        queryWrapper.orderByDesc(Post::getIsTopped).orderByDesc(Post::getCreatedAt);
         postMapper.selectPage(postPage, queryWrapper);
-        List<GetMyPostListElement> list = new ArrayList<>();
+        List<GetPersonalPostListElement> list = new ArrayList<>();
         for (Post post : postPage.getRecords()) {
-            list.add(GetMyPostListElement.builder()
+            list.add(GetPersonalPostListElement.builder()
                     .id(post.getId())
                     .category(post.getCategory())
                     .topics(getPostTopics(post.getId()))
@@ -129,11 +145,11 @@ public class PostManager {
                     .build()
             );
         }
-        return BaseListResponse.<GetMyPostListElement>builder()
+        return BaseListResponse.<GetPersonalPostListElement>builder()
                 .list(list)
                 .total(postPage.getTotal())
-                .page(page)
-                .pageSize(pageSize)
+                .page(request.getPage())
+                .pageSize(request.getPageSize())
                 .build();
     }
 
@@ -152,6 +168,7 @@ public class PostManager {
                     .likeCount(getLikeCount(id))
                     .commentCount(getCommentCount(id))
                     .createdAt(post.getCreatedAt())
+                    .isPinned(false)
                     .build()
             );
         });
@@ -186,16 +203,12 @@ public class PostManager {
                 .build();
     }
 
-    public void deletePost(Long id) {
+    public void deletePost(Long id, boolean isAdmin) {
         Post post = postMapper.selectById(id);
         if (post == null || post.getStatus() == PostStatusEnum.DELETED) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
-        if (
-                !post.getUserId().equals(StpUtil.getLoginIdAsLong())
-                        && !StpUtil.hasRole("admin")
-                        && !StpUtil.hasRole("super_admin")
-        ) {
+        if (!post.getUserId().equals(StpUtil.getLoginIdAsLong()) && !isAdmin) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         postRankManager.removePost(id);
@@ -303,13 +316,15 @@ public class PostManager {
     }
 
     private Integer getLikeCount(Long postId) {
-        // TODO 获取帖子点赞数
-        return null;
+        long count = upvoteMapper.selectCount(new LambdaQueryWrapper<Upvote>()
+                .eq(Upvote::getPostId, postId));
+        return Math.toIntExact(count);
     }
 
     private Integer getCommentCount(Long postId) {
-        // TODO 获取帖子评论数
-        return null;
+        long count = commentMapper.selectCount(new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getPostId, postId));
+        return Math.toIntExact(count);
     }
 
     private void updateViewCount(Long postId, Long userId) {
@@ -328,5 +343,83 @@ public class PostManager {
             return content;
         }
         return content.substring(0, 50);
+    }
+
+    public List<Post> getTopFivePosts() {
+        List<Long> postIds = postRankManager.getTopFiveHotPostIds();
+        if (postIds != null && !postIds.isEmpty()) {
+            return postMapper.selectByIds(postIds);
+        }
+        return Collections.emptyList();
+    }
+
+    public void restorePost(Long id) {
+        Post post = postMapper.selectById(id);
+        if (post == null || post.getStatus() != PostStatusEnum.DELETED) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        post.setStatus(PostStatusEnum.NORMAL);
+        postMapper.updateById(post);
+    }
+
+    public void pinPost(Long id, Boolean pinned) {
+        long count = postMapper.selectCount(new LambdaQueryWrapper<Post>()
+                .ne(Post::getId, id)
+                .eq(Post::getIsPinned, true));
+        if (count >= 3 && Boolean.TRUE.equals(pinned)) {
+            throw new ApiException(ExceptionEnum.POST_PINNED_LIMIT_REACHED);
+        }
+        Post post = postMapper.selectById(id);
+        if (post == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        post.setIsPinned(pinned);
+        postMapper.updateById(post);
+    }
+
+    public void topPost(Long id, Boolean topped) {
+        Post post = postMapper.selectById(id);
+        if (post == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        if (!post.getUserId().equals(StpUtil.getLoginIdAsLong())) {
+            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+        }
+        boolean exist = postMapper.exists(new LambdaQueryWrapper<Post>()
+                .ne(Post::getId, id)
+                .eq(Post::getUserId, post.getUserId())
+                .eq(Post::getIsTopped, true));
+        if (exist && Boolean.TRUE.equals(topped)) {
+            throw new ApiException(ExceptionEnum.POST_TOPPED_LIMIT_REACHED);
+        }
+        post.setIsTopped(topped);
+        postMapper.updateById(post);
+    }
+
+    public Boolean upvotePost(Long id) {
+        Post post = postMapper.selectById(id);
+        if (post == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        Upvote upvote = upvoteMapper.selectOne(new LambdaQueryWrapper<Upvote>()
+                .eq(Upvote::getPostId, id)
+                .eq(Upvote::getUserId, userId));
+
+        if (upvote == null) {
+            upvote = Upvote.builder()
+                    .userId(userId)
+                    .postId(id)
+                    .status(true)
+                    .build();
+            upvoteMapper.insert(upvote);
+        } else {
+            boolean newStatus = !upvote.getStatus();
+            upvote.setStatus(newStatus);
+            upvoteMapper.updateById(upvote);
+        }
+
+        return upvote.getStatus();
     }
 }

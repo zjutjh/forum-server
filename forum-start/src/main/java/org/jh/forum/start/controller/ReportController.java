@@ -1,18 +1,23 @@
 package org.jh.forum.start.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.ReportService;
+import org.jh.forum.common.dto.request.GetReportListRequest;
+import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.request.ReportContentRequest;
 import org.jh.forum.common.dto.request.ReportUserRequest;
+import org.jh.forum.common.dto.response.BaseListResponse;
+import org.jh.forum.common.dto.response.GetReportDetailResponse;
+import org.jh.forum.common.dto.response.GetReportListElement;
+import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
 import org.jh.forum.start.models.AjaxResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 /**
@@ -23,7 +28,7 @@ import jakarta.validation.Valid;
 @Tag(name = "举报", description = "举报相关接口")
 @RequestMapping("/report")
 public class ReportController {
-    @Resource
+    @DubboReference
     private ReportService reportService;
 
     @Operation(summary = "举报用户")
@@ -38,5 +43,38 @@ public class ReportController {
     AjaxResult<Void> reportContent(@Valid @RequestBody ReportContentRequest request) {
         reportService.reportContent(request);
         return AjaxResult.success();
+    }
+
+    @Operation(summary = "处理举报")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @Tag(name = "管理员")
+    @PostMapping("/handle")
+    public AjaxResult<Void> handleReport(@Valid @RequestBody HandleReportRequest request) {
+        reportService.handleReport(request);
+        return AjaxResult.success();
+    }
+
+    @Operation(summary = "获取举报列表")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @Tag(name = "管理员")
+    @GetMapping("/list")
+    public AjaxResult<BaseListResponse<GetReportListElement>> getReportList(@Valid GetReportListRequest request) {
+        return AjaxResult.success(reportService.getReportList(request));
+    }
+
+    @Operation(summary = "获取举报详情")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @Tag(name = "管理员")
+    @GetMapping("/detail")
+    public AjaxResult<GetReportDetailResponse> getReportDetail(@RequestParam(value = "id") Long id) {
+        return AjaxResult.success(reportService.getReportDetail(id));
+    }
+
+    @Operation(summary = "获取被举报用户历史统计")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @Tag(name = "管理员")
+    @GetMapping("/history")
+    public AjaxResult<UserHistoryStatsResponse> getUserHistoryStats(@RequestParam(value = "user_id") Long userId) {
+        return AjaxResult.success(reportService.getUserHistoryStats(userId));
     }
 }

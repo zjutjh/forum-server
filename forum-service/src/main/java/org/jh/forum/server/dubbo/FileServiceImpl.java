@@ -7,12 +7,9 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
-import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
-import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.FileMapper;
 
@@ -21,7 +18,7 @@ import jakarta.annotation.Resource;
 /**
  * @author SugarMGP
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class FileServiceImpl implements FileService {
     @Resource
@@ -61,19 +58,5 @@ public class FileServiceImpl implements FileService {
                 .build();
         attachmentMapper.insert(attachment);
         return attachment.getId();
-    }
-
-    @Override
-    public AttachmentInfoDTO getAttachmentInfo(Long attachmentId) {
-        Attachment attachment = attachmentMapper.selectById(attachmentId);
-        if (attachment == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-        File file = fileMapper.selectById(attachment.getFileId());
-        return AttachmentInfoDTO.builder()
-                .url(cubeService.getFileUrl(file.getObjectKey()))
-                .type(attachment.getType())
-                .filename(attachment.getFilename())
-                .build();
     }
 }

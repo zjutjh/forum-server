@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +22,6 @@ import java.util.List;
 @Data
 public class GetAdminPostInfoResponse {
     @Schema(description = "发帖人信息")
-    @JsonProperty("publisher_info")
     private UserInfoDTO publisherInfo;
 
     @Schema(description = "帖子板块")
@@ -39,26 +37,21 @@ public class GetAdminPostInfoResponse {
     private String content;
 
     @Schema(description = "帖子点赞数")
-    @JsonProperty("like_count")
     private Integer likeCount;
 
     @Schema(description = "帖子评论数")
-    @JsonProperty("comment_count")
     private Integer commentCount;
 
     @Schema(description = "帖子浏览数")
-    @JsonProperty("view_count")
     private Integer viewCount;
 
     @Schema(description = "发帖时间")
-    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     @Schema(description = "帖子状态")
     private PostStatusEnum status;
 
     @Schema(description = "是否置顶（管理员）")
-    @JsonProperty("is_pinned")
     private Boolean isPinned;
 
     @Schema(description = "帖子附件列表")

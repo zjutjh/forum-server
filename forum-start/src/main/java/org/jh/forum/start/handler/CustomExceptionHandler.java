@@ -11,6 +11,7 @@ import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -33,14 +34,19 @@ public class CustomExceptionHandler {
     @ExceptionHandler(ApiException.class)
     @ResponseBody
     public AjaxResult<Object> handleAppException(ApiException e, HttpServletRequest request) {
-        HandlerUtils.logException(e, request);
+        if (e.getCause() != null) {
+            HandlerUtils.logException(e.getCause(), request);
+        }
         return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
+    @ExceptionHandler({
+            NoResourceFoundException.class,
+            HttpRequestMethodNotSupportedException.class
+    })
     @ResponseBody
-    public AjaxResult<Object> handleNotFoundException(NoResourceFoundException e, HttpServletRequest request) {
-        HandlerUtils.logException(e, request);
+    public AjaxResult<Object> handleNotFoundException(Exception e) {
+        log.error(e.getMessage());
         return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
     }
 

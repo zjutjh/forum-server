@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,30 +23,23 @@ public class GetReportListElement {
     private Long id;
 
     @Schema(description = "处理状态 pending: 未处理, success: 举报成功, failure: 举报失败")
-    @JsonProperty("status")
     private ReportStatusEnum status;
 
     @Schema(description = "举报目标类型 评论/帖子/用户")
-    @JsonProperty("target_type")
     private TargetTypeEnum targetType;
 
     @Schema(description = "举报类型")
-    @JsonProperty("type")
     private ReportTypeEnum type;
 
     @Schema(description = "举报描述")
-    @JsonProperty("reason")
     private String reason;
 
     @Schema(description = "被举报用户ID")
-    @JsonProperty("user_id")
     private Long userId;
 
     @Schema(description = "被举报用户名称")
-    @JsonProperty("nickname")
-    private String nickname;
+    private String targetNickname;
 
     @Schema(description = "举报时间")
-    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 }

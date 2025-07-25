@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,16 +22,15 @@ public class ReportUserRequest {
     @NotNull
     private ReportTypeEnum type;
 
-    @Schema(description = "举报内容 选择其他时填写")
+    @Schema(description = "举报原因")
+    @NotNull
     private String reason;
 
     @Schema(description = "被举报的用户ID")
-    @JsonProperty("user_id")
     @NotNull
     private Long userId;
 
     @Schema(description = "要绑定的附件ID列表")
     @NotNull
-    @JsonProperty("attachment_ids")
     private List<Long> attachmentIds;
 }

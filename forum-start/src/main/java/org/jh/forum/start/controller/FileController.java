@@ -4,17 +4,20 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.service.FileService;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
 import org.jh.forum.common.dto.response.UploadPictureResponse;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.BlakeUtils;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Resource;
@@ -33,7 +36,7 @@ public class FileController {
     @Resource
     private CubeService cubeService;
 
-    @Resource
+    @DubboReference
     private FileService fileService;
 
     @Operation(summary = "上传图片")
@@ -41,12 +44,6 @@ public class FileController {
     public AjaxResult<UploadPictureResponse> uploadPicture(@RequestParam("picture") MultipartFile picture) {
         Long attachmentId = uploadFile(picture, AttachmentTypeEnum.PICTURE);
         return AjaxResult.success(new UploadPictureResponse(attachmentId));
-    }
-
-    @Operation(summary = "获取附件信息")
-    @GetMapping("/info")
-    public AjaxResult<AttachmentInfoDTO> getAttachmentInfo(@RequestParam("attachment_id") Long attachmentId) {
-        return AjaxResult.success(fileService.getAttachmentInfo(attachmentId));
     }
 
     private Long uploadFile(MultipartFile file, AttachmentTypeEnum type) {
@@ -68,7 +65,6 @@ public class FileController {
             }
             return fileService.createAttachment(fileId, type, file.getOriginalFilename());
         } catch (IOException e) {
-            log.error("文件上传失败", e);
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR, e);
         }
     }
