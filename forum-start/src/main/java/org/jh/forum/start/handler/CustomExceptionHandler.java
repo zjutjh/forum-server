@@ -40,16 +40,12 @@ public class CustomExceptionHandler {
         return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
+    @ExceptionHandler({
+            NoResourceFoundException.class,
+            HttpRequestMethodNotSupportedException.class
+    })
     @ResponseBody
-    public AjaxResult<Object> handleNotFoundException(NoResourceFoundException e, HttpServletRequest request) {
-        log.error(e.getMessage());
-        return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
-    }
-
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    @ResponseBody
-    public AjaxResult<Object> handleMethodNotSupportedException(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
+    public AjaxResult<Object> handleNotFoundException(Exception e) {
         log.error(e.getMessage());
         return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
     }

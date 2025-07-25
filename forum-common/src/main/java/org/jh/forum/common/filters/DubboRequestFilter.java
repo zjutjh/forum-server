@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.*;
+import org.jh.forum.common.exceptions.ApiException;
 import org.springframework.stereotype.Service;
 
 import java.net.InetAddress;
@@ -22,7 +23,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 @Activate(group = PROVIDER)
 public class DubboRequestFilter implements Filter {
 
-    private static final String LOG_DELIMITER = "|";
+    private static final String LOG_DELIMITER = " | ";
     private static final Integer MAX_ARGS_LENGTH = 1024;
     private static String ipHost;
 
@@ -33,17 +34,6 @@ public class DubboRequestFilter implements Filter {
             log.error("getHostAddress error", e);
             ipHost = "";
         }
-    }
-
-    private static void logError(String serviceName, String methodName, String jsonArgs, Throwable e) {
-        String sb = ipHost +
-                LOG_DELIMITER +
-                serviceName +
-                LOG_DELIMITER +
-                methodName +
-                LOG_DELIMITER +
-                (jsonArgs.length() > MAX_ARGS_LENGTH ? jsonArgs.substring(0, MAX_ARGS_LENGTH) : jsonArgs);
-        log.error("[Dubbo Request error] {}", sb, e);
     }
 
     @Override
@@ -61,12 +51,12 @@ public class DubboRequestFilter implements Filter {
         String jsonResp = JSON.toJSONString(appResponse.getValue());
         String invokeLog = buildInvokeLog(serviceName, methodName, jsonArgs, rt, jsonResp);
         if (hasErr) {
-            log.error("[Dubbo Request] {}", invokeLog);
-        } else {
-            log.info("[Dubbo Request] {}", invokeLog);
-        }
-        if (hasErr) {
-            logError(serviceName, methodName, jsonArgs, result.getException());
+            Throwable exception = result.getException();
+            if (exception instanceof ApiException ae) {
+                log.info("[Dubbo Request Error] {} | {}", ae.getErrorMsg(), invokeLog);
+            } else {
+                log.error("[Dubbo Request Error] {}", invokeLog, exception);
+            }
         }
         return result;
     }
@@ -78,10 +68,10 @@ public class DubboRequestFilter implements Filter {
                 LOG_DELIMITER +
                 methodName +
                 LOG_DELIMITER +
+                rt + "ms" +
+                LOG_DELIMITER +
                 (jsonArgs.length() > MAX_ARGS_LENGTH ? jsonArgs.substring(0, MAX_ARGS_LENGTH) : jsonArgs) +
                 LOG_DELIMITER +
-                (jsonResp.length() > MAX_ARGS_LENGTH ? jsonResp.substring(0, MAX_ARGS_LENGTH) : jsonResp) +
-                LOG_DELIMITER +
-                rt;
+                (jsonResp.length() > MAX_ARGS_LENGTH ? jsonResp.substring(0, MAX_ARGS_LENGTH) : jsonResp);
     }
 }

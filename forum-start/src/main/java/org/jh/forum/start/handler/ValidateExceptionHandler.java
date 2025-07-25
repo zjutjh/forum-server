@@ -9,6 +9,7 @@ import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -77,6 +78,19 @@ public class ValidateExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseBody
     public AjaxResult<Object> validationBodyException(HttpMessageNotReadableException e, HttpServletRequest request) {
+        HandlerUtils.logException(e, request);
+        return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
+    }
+
+    /**
+     * Query参数错误拦截处理
+     *
+     * @param e 错误信息集合
+     * @return 错误信息
+     */
+    @ExceptionHandler(ServletRequestBindingException.class)
+    @ResponseBody
+    public AjaxResult<Object> validationQueryException(ServletRequestBindingException e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
         return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
     }

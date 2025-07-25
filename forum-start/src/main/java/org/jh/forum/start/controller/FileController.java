@@ -65,7 +65,6 @@ public class FileController {
             }
             return fileService.createAttachment(fileId, type, file.getOriginalFilename());
         } catch (IOException e) {
-            log.error("文件上传失败", e);
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR, e);
         }
     }
