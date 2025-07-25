@@ -355,7 +355,7 @@ public class PostManager {
 
     public void restorePost(Long id) {
         Post post = postMapper.selectById(id);
-        if (post == null || post.getStatus() == PostStatusEnum.DELETED) {
+        if (post == null || post.getStatus() != PostStatusEnum.DELETED) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         post.setStatus(PostStatusEnum.NORMAL);
