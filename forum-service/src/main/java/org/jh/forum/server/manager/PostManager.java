@@ -129,6 +129,7 @@ public class PostManager {
         postMapper.selectPage(postPage, queryWrapper);
         List<GetPersonalPostListElement> list = new ArrayList<>();
         for (Post post : postPage.getRecords()) {
+            List<PictureInfoDTO> pictures = getPostPictures(post.getId());
             list.add(GetPersonalPostListElement.builder()
                     .id(post.getId())
                     .category(post.getCategory())
@@ -141,6 +142,8 @@ public class PostManager {
                     .createdAt(post.getCreatedAt())
                     .isTopped(post.getIsTopped())
                     .status(post.getStatus())
+                    .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
+                    .totalPictures(pictures.size())
                     .build()
             );
         }
