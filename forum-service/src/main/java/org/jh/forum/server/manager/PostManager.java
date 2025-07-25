@@ -7,11 +7,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jh.forum.common.constants.CategoryEnum;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.constants.PostStatusEnum;
-import org.jh.forum.common.constants.TargetTypeEnum;
+import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
 import org.jh.forum.common.dto.request.GetPersonalPostRequest;
 import org.jh.forum.common.dto.request.PublishPostRequest;
@@ -84,6 +82,7 @@ public class PostManager {
         postMapper.selectPage(postPage, queryWrapper);
         List<GetPostListElement> list = new ArrayList<>();
         for (Post post : postPage.getRecords()) {
+            List<PictureInfoDTO> pictures = getPostPictures(post.getId());
             list.add(GetPostListElement.builder()
                     .id(post.getId())
                     .publisherInfo(userManager.getUserInfo(post.getUserId()))
@@ -95,6 +94,8 @@ public class PostManager {
                     .commentCount(getCommentCount(post.getId()))
                     .createdAt(post.getCreatedAt())
                     .isPinned(post.getIsPinned())
+                    .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
+                    .totalPictures(pictures.size())
                     .build()
             );
         }
@@ -104,6 +105,17 @@ public class PostManager {
                 .page(page)
                 .pageSize(pageSize)
                 .build();
+    }
+
+    private List<PictureInfoDTO> getPostPictures(Long id) {
+        return attachmentMapper.selectList(new LambdaQueryWrapper<Attachment>()
+                .eq(Attachment::getTargetId, id)
+                .eq(Attachment::getTargetType, TargetTypeEnum.POST)
+                .eq(Attachment::getType, AttachmentTypeEnum.PICTURE)
+        ).stream().map(attachment -> PictureInfoDTO.builder()
+                .url(fileManager.getFileUrl(attachment.getFileId()))
+                .build()
+        ).toList();
     }
 
     public BaseListResponse<GetPersonalPostListElement> getPersonalPostList(GetPersonalPostRequest request) {

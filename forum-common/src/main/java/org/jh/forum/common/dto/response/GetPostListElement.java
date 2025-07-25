@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
 import java.time.LocalDateTime;
@@ -48,4 +49,10 @@ public class GetPostListElement {
 
     @Schema(description = "是否置顶")
     private Boolean isPinned;
+
+    @Schema(description = "帖子图片列表（前三张）")
+    private List<PictureInfoDTO> pictures;
+
+    @Schema(description = "帖子图片总数")
+    private Integer totalPictures;
 }
