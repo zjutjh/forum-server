@@ -37,8 +37,8 @@ public class PublishPostRequest {
     @NotNull
     private List<@Length(min = 1, max = 30) String> topics;
 
-    @Schema(description = "要绑定的图片附件ID列表")
+    @Schema(description = "要绑定的图片url列表")
     @NotNull
     @Size(min = 1, max = 9)
-    private List<Long> pictureIds;
+    private List<String> pictures;
 }

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.dto.PictureInfoDTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -34,7 +34,7 @@ public class PersonalCommentElement {
 
     @Schema(description = "帖子附件列表")
     @NotBlank
-    private List<AttachmentInfoDTO> attachments;
+    private List<PictureInfoDTO> pictures;
 
     @Schema(description = "帖子创建时间")
     @NotBlank

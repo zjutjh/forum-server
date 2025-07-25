@@ -36,7 +36,7 @@ public class ReportContentRequest {
     @NotNull
     private Long targetId;
 
-    @Schema(description = "要绑定的附件ID列表")
+    @Schema(description = "图片URL列表")
     @NotNull
-    private List<Long> attachmentIds;
+    private List<String> pictures;
 }

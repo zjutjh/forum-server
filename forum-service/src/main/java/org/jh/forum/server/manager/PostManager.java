@@ -66,8 +66,8 @@ public class PostManager {
                     .build()
             );
         }
-        for (Long attachmentId : request.getAttachmentIds()) {
-            fileManager.bindAttachment(attachmentId, TargetTypeEnum.POST, post.getId());
+        for (String url : request.getPictures()) {
+            fileManager.bindAttachment(url, TargetTypeEnum.POST, post.getId());
         }
     }
 
