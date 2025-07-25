@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +22,6 @@ import java.util.List;
 public class PersonalCommentElement {
     @Schema(description = "帖子ID")
     @NotNull
-    @JsonProperty("post_id")
     private Long postId;
 
     @Schema(description = "帖子标题")
@@ -40,16 +38,13 @@ public class PersonalCommentElement {
 
     @Schema(description = "帖子创建时间")
     @NotBlank
-    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     @Schema(description = "帖子更新时间")
     @NotBlank
-    @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
     @Schema(description = "个人评论列表")
     @NotNull
-    @JsonProperty("personal_comment_list")
     private List<PersonalCommentListElement> personalCommentList;
 }

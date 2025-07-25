@@ -7,13 +7,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author SugarMGP
+ * @author qianqianzyk
  */
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UploadPictureResponse {
-    @Schema(description = "附件ID")
-    private Long attachmentId;
+public class UpvotePostResponse {
+    @Schema(description = "点赞状态")
+    private Boolean status;
 }

@@ -18,7 +18,7 @@ import jakarta.annotation.Resource;
 /**
  * @author SugarMGP
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class FileServiceImpl implements FileService {
     @Resource

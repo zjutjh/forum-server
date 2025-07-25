@@ -5,6 +5,7 @@ import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.ReportService;
 import org.jh.forum.common.dto.request.GetReportListRequest;
 import org.jh.forum.common.dto.request.HandleReportRequest;
@@ -17,7 +18,6 @@ import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 /**
@@ -28,7 +28,7 @@ import jakarta.validation.Valid;
 @Tag(name = "举报", description = "举报相关接口")
 @RequestMapping("/report")
 public class ReportController {
-    @Resource
+    @DubboReference
     private ReportService reportService;
 
     @Operation(summary = "举报用户")

@@ -21,7 +21,7 @@ import java.util.Objects;
 /**
  * @author MangoGovo
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 @AllArgsConstructor
 public class LoginServiceImpl implements LoginService {

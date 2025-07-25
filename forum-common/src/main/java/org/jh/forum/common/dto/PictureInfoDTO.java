@@ -1,4 +1,4 @@
-package org.jh.forum.common.dto.response;
+package org.jh.forum.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UploadPictureResponse {
-    @Schema(description = "附件ID")
-    private Long attachmentId;
+public class PictureInfoDTO {
+    @Schema(description = "附件URL")
+    String url;
 }

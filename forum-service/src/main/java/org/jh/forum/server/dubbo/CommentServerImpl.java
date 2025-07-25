@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
  * @author qianqianzyk
  * @version 1.0
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class CommentServerImpl implements CommentService {
     @Resource

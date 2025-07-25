@@ -1,10 +1,7 @@
 package org.jh.forum.api.dubbo.service;
 
 
-import org.jh.forum.common.dto.request.BaseListRequest;
-import org.jh.forum.common.dto.request.GetAdminPostListRequest;
-import org.jh.forum.common.dto.request.GetPostListRequest;
-import org.jh.forum.common.dto.request.PublishPostRequest;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 
 /**
@@ -15,7 +12,7 @@ public interface PostService {
 
     BaseListResponse<GetPostListElement> getPostList(GetPostListRequest request);
 
-    BaseListResponse<GetMyPostListElement> getMyPostList(BaseListRequest request);
+    BaseListResponse<GetPersonalPostListElement> getPersonalPostList(GetPersonalPostRequest request);
 
     GetPostInfoResponse getPostInfo(Long id);
 
@@ -26,4 +23,12 @@ public interface PostService {
     GetAdminPostInfoResponse getAdminPostInfo(Long id);
 
     TopFivePostList getTopFivePosts();
+
+    void restorePost(Long id);
+
+    void pinPost(PinPostRequest request);
+
+    void topPost(TopPostRequest request);
+
+    UpvotePostResponse upvotePost(Long id);
 }
