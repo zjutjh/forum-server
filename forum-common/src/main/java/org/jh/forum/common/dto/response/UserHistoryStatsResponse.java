@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,15 +32,12 @@ public class UserHistoryStatsResponse {
     @Data
     public static class StatDetail {
         @Schema(description = "被举报次数")
-        @JsonProperty("report_count")
         private Integer reportCount;
 
         @Schema(description = "成立次数")
-        @JsonProperty("established_count")
         private Integer establishedCount;
 
         @Schema(description = "近60天内成立次数")
-        @JsonProperty("recent_established_count")
         private Integer recentEstablishedCount;
     }
 

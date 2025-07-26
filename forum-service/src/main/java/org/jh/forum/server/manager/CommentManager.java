@@ -6,12 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jh.forum.common.annotation.IgnoreLogicDelete;
-import org.jh.forum.common.constants.CommentOperationEnum;
-import org.jh.forum.common.constants.CommentStatusEnum;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.constants.*;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Attachment;
@@ -43,7 +41,7 @@ public class CommentManager {
     private final FileManager fileManager;
     private final UserManager userManager;
 
-    public void publishComment(Long postId, Long parentId, Long targetId, String content, Long attachmentId) {
+    public void publishComment(Long postId, Long parentId, Long targetId, String content, String pictureUrl) {
         // 检查 post_id 合法性
         Post post = postMapper.selectById(postId);
         if (post == null) {
@@ -87,8 +85,8 @@ public class CommentManager {
         commentMapper.insert(comment);
 
         // 绑定附件关系
-        if (attachmentId != null && attachmentId != 0) {
-            fileManager.bindAttachment(attachmentId, TargetTypeEnum.COMMENT, comment.getId());
+        if (StringUtils.isNotBlank(pictureUrl)) {
+            fileManager.bindAttachment(pictureUrl, TargetTypeEnum.COMMENT, comment.getId());
         }
 
         if (parentId != 0) {
@@ -118,7 +116,6 @@ public class CommentManager {
         if (upvote == null) {
             upvote = Upvote.builder()
                     .userId(userId)
-                    .postId(comment.getPostId())
                     .commentId(commentId)
                     .status(true)
                     .build();
@@ -406,14 +403,14 @@ public class CommentManager {
                     .postId(post.getId())
                     .title(post.getTitle())
                     .content(truncateContent(post.getContent()))
-                    .attachments(getAttachments(post.getId(), TargetTypeEnum.POST))
+                    .pictures(getCommentPictures(post.getId()))
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
                     .personalCommentList(Collections.singletonList(
                             PersonalCommentListElement.builder()
                                     .commentId(comment.getId())
                                     .content(comment.getContent())
-                                    .attachments(getAttachments(comment.getId(), TargetTypeEnum.COMMENT))
+                                    .pictures(getCommentPictures(comment.getId()))
                                     .createdAt(comment.getCreatedAt())
                                     .upvoteCount(comment.getUpvoteCount())
                                     .replyCount(comment.getReplyCount())
@@ -569,7 +566,7 @@ public class CommentManager {
                 .publisherInfo(userManager.getUserInfo(reply.getUserId()))
                 .targetUser(targetUser)
                 .content(reply.getContent())
-                .attachments(getAttachments(reply.getId(), TargetTypeEnum.COMMENT))
+                .pictures(getCommentPictures(reply.getId()))
                 .isPinned(reply.getIsPinned())
                 .isAuthor(reply.getUserId().equals(postAuthorId))
                 .isDeleted(reply.getDeleted())
@@ -584,7 +581,7 @@ public class CommentManager {
                 .commentId(comment.getId())
                 .publisherInfo(userManager.getUserInfo(comment.getUserId()))
                 .content(comment.getContent())
-                .attachments(getAttachments(comment.getId(), TargetTypeEnum.COMMENT))
+                .pictures(getCommentPictures(comment.getId()))
                 .isPinned(comment.getIsPinned())
                 .isAuthor(comment.getUserId().equals(postAuthorId))
                 .isDeleted(comment.getDeleted())
@@ -595,20 +592,14 @@ public class CommentManager {
                 .build();
     }
 
-    private List<AttachmentInfoDTO> getAttachments(Long targetId, TargetTypeEnum type) {
-        List<Attachment> attachments = attachmentMapper.selectList(
-                new LambdaQueryWrapper<Attachment>()
-                        .eq(Attachment::getTargetId, targetId)
-                        .eq(Attachment::getTargetType, type)
-        );
-
-        return attachments.stream()
-                .map(attachment -> AttachmentInfoDTO.builder()
-                        .url(fileManager.getFileUrl(attachment.getFileId()))
-                        .type(attachment.getType())
-                        .filename(attachment.getFilename())
-                        .build())
-                .collect(Collectors.toList());
+    private List<PictureInfoDTO> getCommentPictures(Long targetId) {
+        return attachmentMapper.selectList(new LambdaQueryWrapper<Attachment>()
+                .eq(Attachment::getType, AttachmentTypeEnum.PICTURE)
+                .eq(Attachment::getTargetId, targetId)
+                .eq(Attachment::getTargetType, TargetTypeEnum.COMMENT)
+        ).stream().map(attachment -> PictureInfoDTO.builder()
+                .url(fileManager.getFileUrl(attachment.getFileId()))
+                .build()).toList();
     }
 
     private String truncateContent(String content) {

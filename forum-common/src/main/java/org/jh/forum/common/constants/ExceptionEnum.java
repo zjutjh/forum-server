@@ -21,6 +21,9 @@ public enum ExceptionEnum {
     ANNOUNCEMENT_STICKY_LIMIT_REACHED(200007, "公告置顶达到上限"),
     ANNOUNCEMENT_NOT_PUBLISHED(200008, "该公告还未发布"),
     CANNOT_REPORT_YOURSELF(200009, "不能举报自己"),
+    POST_PINNED_LIMIT_REACHED(200010, "帖子置顶达到上限"),
+    POST_TOPPED_LIMIT_REACHED(200011, "个人主页只能置顶一个帖子"),
+    INVALID_URL(200012, "不合法的URL"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试"),

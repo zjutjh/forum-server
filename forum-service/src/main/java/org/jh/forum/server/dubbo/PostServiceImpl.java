@@ -4,10 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.PostService;
-import org.jh.forum.common.dto.request.BaseListRequest;
-import org.jh.forum.common.dto.request.GetAdminPostListRequest;
-import org.jh.forum.common.dto.request.GetPostListRequest;
-import org.jh.forum.common.dto.request.PublishPostRequest;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.server.manager.PostManager;
@@ -18,7 +15,7 @@ import java.util.List;
 /**
  * @author SugarMGP
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class PostServiceImpl implements PostService {
     @Resource
@@ -32,7 +29,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public BaseListResponse<GetPostListElement> getPostList(GetPostListRequest request) {
         BaseListResponse<GetPostListElement> postList;
-        if (request.getSortType() == 1) {
+        if ("new".equals(request.getSortType())) {
             postList = postManager.getPostList(request.getCategory(), request.getPage(), request.getPageSize());
         } else {
             postList = postManager.getHotPostList(request.getCategory(), request.getPage(), request.getPageSize());
@@ -41,8 +38,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public BaseListResponse<GetMyPostListElement> getMyPostList(BaseListRequest request) {
-        return postManager.getMyPostList(StpUtil.getLoginIdAsLong(), request.getPage(), request.getPageSize());
+    public BaseListResponse<GetPersonalPostListElement> getPersonalPostList(GetPersonalPostRequest request) {
+        return postManager.getPersonalPostList(request);
     }
 
     @Override
@@ -77,5 +74,25 @@ public class PostServiceImpl implements PostService {
                 .toList();
 
         return new TopFivePostList(topPosts);
+    }
+
+    @Override
+    public void restorePost(Long id) {
+        postManager.restorePost(id);
+    }
+
+    @Override
+    public void pinPost(PinPostRequest request) {
+        postManager.pinPost(request.getId(), request.getPinned());
+    }
+
+    @Override
+    public void topPost(TopPostRequest request) {
+        postManager.topPost(request.getId(), request.getTopped());
+    }
+
+    @Override
+    public UpvotePostResponse upvotePost(Long id) {
+        return new UpvotePostResponse(postManager.upvotePost(id));
     }
 }

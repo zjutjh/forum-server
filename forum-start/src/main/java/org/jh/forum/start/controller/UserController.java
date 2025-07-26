@@ -1,27 +1,17 @@
 package org.jh.forum.start.controller;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
-import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import jakarta.servlet.http.HttpServletRequest;
-
-import jakarta.websocket.server.PathParam;
-
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.common.constants.UserTypeEnum;
-import org.jh.forum.api.dubbo.service.UserService;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.dto.UserDTO;
 import org.jh.forum.common.dto.request.LoginRequest;
-import org.jh.forum.common.dto.request.UserUpdateRequest;
 import org.jh.forum.common.dto.response.LoginResponse;
-import org.jh.forum.common.dto.response.UserDetailResponse;
 import org.jh.forum.start.models.AjaxResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -34,7 +24,7 @@ import jakarta.validation.Valid;
 @RestController
 @Tag(name = "用户", description = "用户相关接口")
 public class UserController {
-    @Resource
+    @DubboReference
     private LoginService loginService;
 
     @PostMapping("/login")
@@ -42,6 +32,14 @@ public class UserController {
     public AjaxResult<Object> login(@RequestBody @Valid LoginRequest request) {
         UserTypeEnum userType = loginService.login(request.getUsername(), request.getPassword(), request.getLoginType());
         return AjaxResult.success(LoginResponse.builder().userType(userType).build());
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "用户退出登录")
+    @SaCheckLogin
+    public AjaxResult<Void> logout() {
+        StpUtil.logout();
+        return AjaxResult.success();
     }
 
 

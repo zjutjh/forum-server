@@ -33,7 +33,7 @@ public class PublishCommentRequest {
     @NotBlank
     private String content;
 
-    @Schema(description = "评论附件ID，无值即传0")
+    @Schema(description = "评论图片Url，无即传空字符串")
     @NotNull
-    private Long attachmentId;
+    private String picture;
 }

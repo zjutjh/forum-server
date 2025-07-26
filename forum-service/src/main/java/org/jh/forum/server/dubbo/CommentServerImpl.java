@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
  * @author qianqianzyk
  * @version 1.0
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class CommentServerImpl implements CommentService {
     @Resource
@@ -21,7 +21,7 @@ public class CommentServerImpl implements CommentService {
 
     @Override
     public void publishComment(PublishCommentRequest request) {
-        commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getAttachmentId());
+        commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getPicture());
 
         // TODO 发送评论消息
     }

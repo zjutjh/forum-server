@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.CategoryEnum;
 import org.jh.forum.common.constants.PostStatusEnum;
+import org.jh.forum.common.dto.PictureInfoDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetMyPostListElement {
+public class GetPersonalPostListElement {
     @Schema(description = "帖子ID")
     private Long id;
 
@@ -36,25 +36,26 @@ public class GetMyPostListElement {
     private String content;
 
     @Schema(description = "帖子点赞数")
-    @JsonProperty("like_count")
     private Integer likeCount;
 
     @Schema(description = "帖子评论数")
-    @JsonProperty("comment_count")
     private Integer commentCount;
 
     @Schema(description = "帖子浏览数")
-    @JsonProperty("view_count")
     private Integer viewCount;
 
     @Schema(description = "发帖时间")
-    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     @Schema(description = "是否置顶（个人主页）")
-    @JsonProperty("is_topped")
     private Boolean isTopped;
 
-    @Schema(description = "帖子状态（此处不会是deleted）")
+    @Schema(description = "帖子状态（此处不会是deleted），如果是查看他人帖子列表则全都是normal")
     private PostStatusEnum status;
+
+    @Schema(description = "帖子图片列表（前三个）")
+    private List<PictureInfoDTO> pictures;
+
+    @Schema(description = "帖子图片总数")
+    private Integer totalPictures;
 }

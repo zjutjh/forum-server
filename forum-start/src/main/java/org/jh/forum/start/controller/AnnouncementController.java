@@ -6,13 +6,13 @@ import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.AnnouncementService;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 /**
@@ -42,7 +42,7 @@ import jakarta.validation.Valid;
 @Tag(name = "公告", description = "公告的创建、发布、查询等功能")
 public class AnnouncementController {
 
-    @Resource
+    @DubboReference
     private AnnouncementService announcementService;
 
     /**
