@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jh.forum.common.constants.NoticePositionTypeEnum;
 import org.jh.forum.common.constants.NoticeTypeEnum;
 import org.jh.forum.common.dto.UserInfoDTO;
-import org.jh.forum.common.dto.request.CreateNoticeRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;
 import org.jh.forum.common.dto.response.UnreadNoticeCheckResponse;
@@ -91,17 +91,15 @@ public class NoticeManager {
     /**
      * 创建新的通知
      * 根据请求参数构建通知实体并插入数据库
-     *
-     * @param request 创建通知的请求参数，包含接收者ID、通知类型、位置信息等
      */
-    public void createNotice(CreateNoticeRequest request) {
+    public void createNotice(Long receiverId, NoticeTypeEnum type, NoticePositionTypeEnum positionType, Long positionId, Long newCommentId) {
         Notice notice = Notice.builder()
-                .receiverId(request.getReceiverId())
+                .receiverId(receiverId)
                 .senderId(StpUtil.getLoginIdAsLong())
-                .type(request.getType())
-                .positionType(request.getPositionType())
-                .positionId(request.getPositionId())
-                .commentId(request.getCommentId())
+                .type(type)
+                .positionType(positionType)
+                .positionId(positionId)
+                .commentId(newCommentId)
                 .isRead(false)
                 .build();
         noticeMapper.insert(notice);

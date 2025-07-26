@@ -24,6 +24,7 @@ import org.jh.forum.server.mapper.UpvoteMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +41,8 @@ public class CommentManager {
     private final AttachmentMapper attachmentMapper;
     private final FileManager fileManager;
     private final UserManager userManager;
+    private final PostRankManager postRankManager;
+    private final NoticeManager noticeManager;
 
     public void publishComment(Long postId, Long parentId, Long targetId, String content, String pictureUrl) {
         // 检查 post_id 合法性
@@ -48,8 +51,8 @@ public class CommentManager {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
-        Comment parentComment = null;
-        Comment targetComment = null;
+        Comment parentComment;
+        Comment targetComment;
 
         // 检查父评论链完整性检查
         if (parentId != 0) {
@@ -64,8 +67,12 @@ public class CommentManager {
                         || !targetComment.getParentId().equals(parentId)) {
                     throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
                 }
+            } else {
+                targetComment = null;
             }
         } else {
+            parentComment = null;
+            targetComment = null;
             if (targetId != 0) {
                 throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
             }
@@ -88,6 +95,19 @@ public class CommentManager {
         if (StringUtils.isNotBlank(pictureUrl)) {
             fileManager.bindAttachment(pictureUrl, TargetTypeEnum.COMMENT, comment.getId());
         }
+
+        CompletableFuture.runAsync(() -> {
+            postRankManager.recordAction(postId, postRankManager.COMMENT);
+            if (parentId != 0) {
+                if (targetId != 0) {
+                    noticeManager.createNotice(targetComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, targetId, comment.getId());
+                } else {
+                    noticeManager.createNotice(parentComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, parentId, comment.getId());
+                }
+            } else {
+                noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.POST, postId, comment.getId());
+            }
+        });
 
         if (parentId != 0) {
             parentComment.setReplyCount(parentComment.getReplyCount() + 1);
@@ -132,9 +152,13 @@ public class CommentManager {
             }
         }
 
-        return UpvoteCommentResponse.builder()
-                .status(upvote.getStatus())
-                .build();
+        Boolean status = upvote.getStatus();
+
+        CompletableFuture.runAsync(() -> {
+            noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null);
+        });
+
+        return new UpvoteCommentResponse(status);
     }
 
     public PinCommentResponse pinComment(Long commentId) {
