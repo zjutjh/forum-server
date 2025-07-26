@@ -7,5 +7,4 @@ import org.jh.forum.common.entity.User;
  * @author MangoGovo
  */
 public interface UserMapper extends BaseMapper<User> {
-    //User selectById(Long userId);
 }

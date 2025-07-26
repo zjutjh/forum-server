@@ -17,7 +17,6 @@ import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author lyyzzz

@@ -217,6 +217,8 @@ public class PostManager {
         }
         postRankManager.removePost(id);
         post.setStatus(PostStatusEnum.DELETED);
+        post.setIsTopped(false);
+        post.setIsPinned(false);
         postMapper.updateById(post);
     }
 

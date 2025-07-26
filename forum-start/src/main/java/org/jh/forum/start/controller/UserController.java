@@ -1,23 +1,25 @@
 package org.jh.forum.start.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.LoginService;
+import org.jh.forum.api.dubbo.service.UserService;
 import org.jh.forum.common.constants.UserTypeEnum;
 import org.jh.forum.common.dto.request.LoginRequest;
+import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
+import org.jh.forum.common.dto.response.GetUserDetailResponse;
 import org.jh.forum.common.dto.response.LoginResponse;
 import org.jh.forum.start.models.AjaxResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 /**
- * @author MangoGovo
+ * @author MangoGovo, MeaquaOWO
  */
 @Slf4j
 @RequestMapping("/user")
@@ -27,11 +29,14 @@ public class UserController {
     @DubboReference
     private LoginService loginService;
 
+    @DubboReference
+    private UserService userService;
+
     @PostMapping("/login")
     @Operation(summary = "用户登录")
-    public AjaxResult<Object> login(@RequestBody @Valid LoginRequest request) {
+    public AjaxResult<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         UserTypeEnum userType = loginService.login(request.getUsername(), request.getPassword(), request.getLoginType());
-        return AjaxResult.success(LoginResponse.builder().userType(userType).build());
+        return AjaxResult.success(new LoginResponse(userType));
     }
 
     @PostMapping("/logout")
@@ -42,40 +47,21 @@ public class UserController {
         return AjaxResult.success();
     }
 
-
-    /**
-     * @author MeaquaOWO
-     */
-    @Autowired
-    private UserService userService;
-
-    //普通用户访问自己
     @GetMapping("/profile")
-    public AjaxResult<UserDetailResponse> getMyProfile() {
-        Long userId = StpUtil.getLoginIdAsLong();
-        UserDTO targetUser = userService.getUserById(userId);
-        return AjaxResult.success(userService.filterFields(targetUser, userId));
-    }
-
-    // 普通用户访问他人
-    @GetMapping("/profile/userId")
-    public AjaxResult<UserDetailResponse> getOtherProfile(@RequestParam(name="userId",required=false) String targetUserId) {
-        Long userId= Long.parseLong(targetUserId);
-        Long currentUserId = StpUtil.getLoginIdAsLong();
-        if (userId.equals(currentUserId)) {
-            UserDTO targetUser = userService.getUserById(userId);
-            return AjaxResult.success(userService.filterFields(targetUser, userId));
-        } else {
-            UserDTO targetUser = userService.getUserById(userId);
-            return AjaxResult.success(userService.filterFields(targetUser, userId));
+    @Operation(summary = "获取个人信息")
+    @SaCheckLogin
+    public AjaxResult<GetUserDetailResponse> getProfile(@RequestParam(name = "id", required = false) Long targetUserId) {
+        if (targetUserId == null) {
+            targetUserId = StpUtil.getLoginIdAsLong();
         }
+        return AjaxResult.success(userService.getUserProfile(targetUserId));
     }
 
-    // 普通用户更新自己资料
     @PutMapping("/profile")
-    public AjaxResult<Void> updateMyProfile(@RequestBody UserUpdateRequest dto) {
-        userService.updateUserProfile(dto);
+    @Operation(summary = "更新个人信息")
+    @SaCheckLogin
+    public AjaxResult<Void> updateMyProfile(@Valid @RequestBody UpdateUserDetailRequest request) {
+        userService.updateUserProfile(request);
         return AjaxResult.success();
     }
-
 }
