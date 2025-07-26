@@ -3,6 +3,7 @@ package org.jh.forum.common.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -20,6 +21,7 @@ public class BaseListRequest {
 
     @Schema(description = "每页数量")
     @Min(1)
+    @Max(20)
     @NotNull
     private Integer pageSize;
 }

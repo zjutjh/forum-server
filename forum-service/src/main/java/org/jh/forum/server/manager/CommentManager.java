@@ -21,10 +21,10 @@ import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.CommentMapper;
 import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.mapper.UpvoteMapper;
+import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -96,7 +96,7 @@ public class CommentManager {
             fileManager.bindAttachment(pictureUrl, TargetTypeEnum.COMMENT, comment.getId());
         }
 
-        CompletableFuture.runAsync(() -> {
+        AsyncUtil.runAsyncWithLogging(() -> {
             postRankManager.recordAction(postId, postRankManager.COMMENT);
             if (parentId != 0) {
                 if (targetId != 0) {
@@ -154,9 +154,11 @@ public class CommentManager {
 
         Boolean status = upvote.getStatus();
 
-        CompletableFuture.runAsync(() -> {
-            noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null);
-        });
+        if (Boolean.TRUE.equals(status)) {
+            AsyncUtil.runAsyncWithLogging(
+                    () -> noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null)
+            );
+        }
 
         return new UpvoteCommentResponse(status);
     }

@@ -13,6 +13,7 @@ import org.jh.forum.common.dto.response.GetNoticeListElement;
 import org.jh.forum.common.dto.response.UnreadNoticeCheckResponse;
 import org.jh.forum.common.entity.Notice;
 import org.jh.forum.server.mapper.NoticeMapper;
+import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -72,13 +73,7 @@ public class NoticeManager {
                             .build();
                 }).toList();
         if (!unreadNoticeIds.isEmpty()) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    noticeMapper.batchMarkAsRead(unreadNoticeIds);
-                } catch (Exception e) {
-                    log.error("异步标记通知为已读失败，ids:{}", unreadNoticeIds, e);
-                }
-            });
+            AsyncUtil.runAsyncWithLogging(() -> noticeMapper.batchMarkAsRead(unreadNoticeIds));
         }
         return BaseListResponse.<GetNoticeListElement>builder()
                 .list(list)

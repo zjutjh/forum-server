@@ -16,6 +16,7 @@ import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.*;
+import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -410,7 +410,7 @@ public class PostManager {
         Boolean status = upvote.getStatus();
 
         if (Boolean.TRUE.equals(status)) {
-            CompletableFuture.runAsync(() -> {
+            AsyncUtil.runAsyncWithLogging(() -> {
                 postRankManager.recordAction(id, postRankManager.LIKE);
                 noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.POST, id, null);
             });
