@@ -127,6 +127,11 @@ public class PostManager {
         } else {
             queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).eq(Post::getUserId, request.getId());
         }
+        if (StringUtils.isNotBlank(request.getKeyword())) {
+            queryWrapper.like(Post::getTitle, request.getKeyword())
+                    .or()
+                    .like(Post::getContent, request.getKeyword());
+        }
         queryWrapper.orderByDesc(Post::getIsTopped).orderByDesc(Post::getCreatedAt);
         postMapper.selectPage(postPage, queryWrapper);
         List<GetPersonalPostListElement> list = new ArrayList<>();
@@ -159,7 +164,7 @@ public class PostManager {
 
     public BaseListResponse<GetPostListElement> getHotPostList(CategoryEnum category, Integer page, Integer pageSize) {
         List<GetPostListElement> list = new ArrayList<>();
-        PostRankManager.PageResult<Long> result = postRankManager.getHotPostIds(page, pageSize);
+        PostRankManager.PageResult<Long> result = postRankManager.getHotPostIds(category, page, pageSize);
         result.getRecords().forEach(id -> {
             Post post = postMapper.selectById(id);
             list.add(GetPostListElement.builder()
@@ -192,7 +197,7 @@ public class PostManager {
         if (post.getStatus() == PostStatusEnum.PENDING && !Objects.equals(post.getUserId(), userId)) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
-        updateViewCount(postId, userId);
+        updateViewCount(postId, userId, post.getCategory());
         return GetPostInfoResponse.builder()
                 .publisherInfo(userManager.getUserInfo(post.getUserId()))
                 .category(post.getCategory())
@@ -247,7 +252,7 @@ public class PostManager {
             queryWrapper.between(Post::getCreatedAt, startOfDay, endOfDay);
         }
 
-        queryWrapper.orderByDesc(Post::getCreatedAt);
+        queryWrapper.orderByDesc(Post::getIsPinned).orderByDesc(Post::getCreatedAt);
         IPage<Post> postPage = new Page<>(request.getPage(), request.getPageSize());
         postMapper.selectPage(postPage, queryWrapper);
         List<GetAdminPostListElement> list = new ArrayList<>();
@@ -316,7 +321,7 @@ public class PostManager {
         return Math.toIntExact(count);
     }
 
-    private void updateViewCount(Long postId, Long userId) {
+    private void updateViewCount(Long postId, Long userId, CategoryEnum category) {
         // 2分钟内仅允许一次浏览量增加
         String checkKey = "post:view:" + userId + ":" + postId;
         Boolean isSet = redisTemplate.opsForValue().setIfAbsent(checkKey, "1", 2, TimeUnit.MINUTES);
@@ -324,14 +329,11 @@ public class PostManager {
             return;
         }
         postMapper.incrementViewCount(postId);
-        postRankManager.recordAction(postId, postRankManager.VIEW);
+        postRankManager.recordAction(postId, category, postRankManager.VIEW);
     }
 
     private String truncateContent(String content) {
-        if (content == null || content.length() <= 50) {
-            return content;
-        }
-        return content.substring(0, 50);
+        return (content == null || content.length() <= 50) ? content : content.substring(0, 50);
     }
 
     public List<Post> getTopFivePosts() {
@@ -413,7 +415,7 @@ public class PostManager {
 
         if (Boolean.TRUE.equals(status)) {
             AsyncUtil.runAsyncWithLogging(() -> {
-                postRankManager.recordAction(id, postRankManager.LIKE);
+                postRankManager.recordAction(id, post.getCategory(), postRankManager.LIKE);
                 noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.POST, id, null);
             });
         }

@@ -43,9 +43,11 @@ public class NoticeManager {
         Page<Notice> noticePage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Notice::getReceiverId, receiverId);
-        if (type != null) {
+        if (type != 0) {
             if (type == 1) {
-                queryWrapper.eq(Notice::getType, NoticeTypeEnum.LIKE).or().eq(Notice::getType, NoticeTypeEnum.COLLECT);
+                queryWrapper.eq(Notice::getType, NoticeTypeEnum.LIKE);
+            } else if (type == 2) {
+                queryWrapper.eq(Notice::getType, NoticeTypeEnum.COLLECT);
             } else {
                 queryWrapper.eq(Notice::getType, NoticeTypeEnum.COMMENT).or().eq(Notice::getType, NoticeTypeEnum.AT);
             }

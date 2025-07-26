@@ -2,7 +2,6 @@ package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author qianqianzyk
@@ -97,7 +97,7 @@ public class CommentManager {
         }
 
         AsyncUtil.runAsyncWithLogging(() -> {
-            postRankManager.recordAction(postId, postRankManager.COMMENT);
+            postRankManager.recordAction(postId, post.getCategory(), postRankManager.COMMENT);
             if (parentId != 0) {
                 if (targetId != 0) {
                     noticeManager.createNotice(targetComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, targetId, comment.getId());
@@ -247,26 +247,23 @@ public class CommentManager {
 
         // 根据排序规则查询非置顶评论
         Page<Comment> commentPage = new Page<>(page, pageSize);
-        QueryWrapper<Comment> wrapper = new QueryWrapper<Comment>()
-                .eq("post_id", postId)
-                .eq("parent_id", 0)
-                .eq("is_pinned", false);
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getPostId, postId)
+                .eq(Comment::getParentId, 0)
+                .eq(Comment::getIsPinned, false);
         if (excludeId != null) {
-            wrapper.ne("id", excludeId);
+            wrapper.ne(Comment::getId, excludeId);
         }
         if (sort == 1) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at");
+            wrapper.orderByDesc(Comment::getHotScore)
+                    .orderByDesc(Comment::getCreatedAt);
         } else {
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByDesc(Comment::getCreatedAt);
         }
         List<Comment> normal = commentMapper.selectPage(commentPage, wrapper).getRecords();
 
         // 合并置顶和普通评论
-        List<Comment> allComments = new ArrayList<>();
-        allComments.addAll(pinned);
-        allComments.addAll(normal);
-
+        List<Comment> allComments = Stream.concat(pinned.stream(), normal.stream()).toList();
         if (allComments.isEmpty()) {
             return GetCommentListResponse.emptyListResponse(page, pageSize);
         }
@@ -603,9 +600,6 @@ public class CommentManager {
     }
 
     private String truncateContent(String content) {
-        if (content == null || content.length() <= 50) {
-            return content;
-        }
-        return content.substring(0, 50);
+        return (content == null || content.length() <= 50) ? content : content.substring(0, 50);
     }
 }
