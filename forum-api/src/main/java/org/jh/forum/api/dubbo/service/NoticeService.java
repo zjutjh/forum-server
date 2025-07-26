@@ -13,6 +13,7 @@ import org.jh.forum.common.dto.response.UnreadNoticeCheckResponse;
 public interface NoticeService {
 
     BaseListResponse<GetNoticeListElement> getNoticeList(GetNoticeListRequest request);
+
     void createNotice(CreateNoticeRequest request);
 
     UnreadNoticeCheckResponse checkUnreadNotices();

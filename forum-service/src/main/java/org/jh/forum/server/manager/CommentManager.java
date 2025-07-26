@@ -242,13 +242,7 @@ public class CommentManager {
         allComments.addAll(normal);
 
         if (allComments.isEmpty()) {
-            return GetCommentListResponse.builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .highlightComment(null)
-                    .build();
+            return GetCommentListResponse.emptyListResponse(page, pageSize);
         }
 
         Post post = postMapper.selectById(postId);
@@ -256,10 +250,10 @@ public class CommentManager {
 
         List<CommentElement> commentElements = new ArrayList<>();
         for (Comment comment : allComments) {
-            List<Comment> hottestReplyList = commentMapper.selectList(new QueryWrapper<Comment>()
-                    .eq("parent_id", comment.getId())
-                    .orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at")
+            List<Comment> hottestReplyList = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
+                    .eq(Comment::getParentId, comment.getId())
+                    .orderByDesc(Comment::getHotScore)
+                    .orderByDesc(Comment::getCreatedAt)
                     .last("limit 1"));
 
             List<ReplyElement> replyElements = new ArrayList<>();
@@ -285,10 +279,10 @@ public class CommentManager {
         Long postAuthorId = post != null ? post.getUserId() : null;
 
         if (highlight.getParentId() == 0) {
-            List<Comment> replyList = commentMapper.selectList(new QueryWrapper<Comment>()
-                    .eq("parent_id", highlight.getId())
-                    .orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at")
+            List<Comment> replyList = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
+                    .eq(Comment::getParentId, highlight.getId())
+                    .orderByDesc(Comment::getHotScore)
+                    .orderByDesc(Comment::getCreatedAt)
                     .last("limit 1"));
 
             List<ReplyElement> replies = new ArrayList<>();
@@ -311,27 +305,22 @@ public class CommentManager {
 
     public BaseListResponse<ReplyElement> getReplyList(Long commentId, Integer page, Integer pageSize, Integer sort, Long[] excludeCommentIds) {
         Page<Comment> pageParam = new Page<>(page, pageSize);
-        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
-        wrapper.eq("parent_id", commentId);
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getParentId, commentId);
         if (excludeCommentIds != null && excludeCommentIds.length > 0) {
-            wrapper.notIn("id", Arrays.asList(excludeCommentIds));
+            wrapper.notIn(Comment::getId, Arrays.asList(excludeCommentIds));
         }
         if (sort == 1) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at");
+            wrapper.orderByDesc(Comment::getHotScore)
+                    .orderByDesc(Comment::getCreatedAt);
         } else {
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByDesc(Comment::getCreatedAt);
         }
         Page<Comment> replyPage = commentMapper.selectPage(pageParam, wrapper);
         List<Comment> replies = replyPage.getRecords();
 
         if (replies.isEmpty()) {
-            return BaseListResponse.<ReplyElement>builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .build();
+            return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
         Long postId = replies.get(0).getPostId();
@@ -365,12 +354,7 @@ public class CommentManager {
         );
         List<Comment> commentList = commentPage.getRecords();
         if (commentList.isEmpty()) {
-            return BaseListResponse.<PersonalCommentElement>builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .build();
+            return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
         // 查询所有相关帖子的详情
@@ -378,12 +362,7 @@ public class CommentManager {
                 .map(Comment::getPostId)
                 .collect(Collectors.toSet());
         if (postIds.isEmpty()) {
-            return BaseListResponse.<PersonalCommentElement>builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .build();
+            return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
         List<Post> posts = postMapper.selectList(
@@ -495,12 +474,7 @@ public class CommentManager {
         Page<Comment> replyPage = commentMapper.selectPage(pageParam, wrapper);
         List<Comment> replies = replyPage.getRecords();
         if (replies.isEmpty()) {
-            return BaseListResponse.<ReplyElement>builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .build();
+            return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
         Long postId = replies.get(0).getPostId();

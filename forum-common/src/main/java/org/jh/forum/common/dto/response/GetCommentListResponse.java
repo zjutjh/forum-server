@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
 import jakarta.validation.constraints.NotNull;
+import java.util.Collections;
 
 /**
  * @author qianqianzyk
@@ -17,4 +18,14 @@ public class GetCommentListResponse extends BaseListResponse<CommentElement> {
     @Schema(description = "高亮评论")
     @NotNull
     private CommentElement highlightComment;
+
+    public static GetCommentListResponse emptyListResponse(int page, int pageSize) {
+        return GetCommentListResponse.builder()
+                .page(page)
+                .pageSize(pageSize)
+                .total(0L)
+                .list(Collections.emptyList())
+                .highlightComment(null)
+                .build();
+    }
 }
