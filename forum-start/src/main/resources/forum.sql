@@ -277,6 +277,7 @@ create table user
     update_uid     bigint                                 not null comment '更新用户',
     deleted        boolean                                not null comment '是否被删除',
     attribute      text                                   null comment '属性列（json string）',
+    muted_until    timestamp                              null comment '禁言截止时间',
     constraint uq_user
         unique (nickname, student_id, phone)
 );
