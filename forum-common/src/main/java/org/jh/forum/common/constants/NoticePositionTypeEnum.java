@@ -10,11 +10,9 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum NoticeTypeEnum {
-    LIKE("like", "点赞"),
-    COLLECT("collect", "收藏"),
-    COMMENT("comment", "评论"),
-    AT("at", "@提及");
+public enum NoticePositionTypeEnum {
+    POST("post", "帖子"),
+    COMMENT("comment", "评论");
 
     @EnumValue
     @JsonValue

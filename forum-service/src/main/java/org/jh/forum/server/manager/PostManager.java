@@ -16,6 +16,7 @@ import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.*;
+import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +47,7 @@ public class PostManager {
     private final PostRankManager postRankManager;
     private final CommentMapper commentMapper;
     private final UpvoteMapper upvoteMapper;
+    private final NoticeManager noticeManager;
 
     public void publishPost(PublishPostRequest request) {
         Post post = Post.builder()
@@ -405,6 +407,15 @@ public class PostManager {
             upvoteMapper.updateById(upvote);
         }
 
-        return upvote.getStatus();
+        Boolean status = upvote.getStatus();
+
+        if (Boolean.TRUE.equals(status)) {
+            AsyncUtil.runAsyncWithLogging(() -> {
+                postRankManager.recordAction(id, postRankManager.LIKE);
+                noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.POST, id, null);
+            });
+        }
+
+        return status;
     }
 }

@@ -33,4 +33,8 @@ public class Comment extends BaseEntity {
     private Integer upvoteCount;
 
     private Integer replyCount;
+
+    public Integer getHotScore() {
+        return upvoteCount + replyCount * 2;
+    }
 }

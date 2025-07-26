@@ -22,17 +22,11 @@ public class CommentServerImpl implements CommentService {
     @Override
     public void publishComment(PublishCommentRequest request) {
         commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getPicture());
-
-        // TODO 发送评论消息
     }
 
     @Override
     public UpvoteCommentResponse upvoteComment(Long id) {
-        UpvoteCommentResponse response = commentManager.upvoteComment(id);
-
-        // TODO 发送点赞消息
-
-        return response;
+        return commentManager.upvoteComment(id);
     }
 
     @Override
