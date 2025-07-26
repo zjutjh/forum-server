@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -14,7 +14,6 @@ import java.util.List;
  * @author MangoGovo
  */
 @Data
-@Builder
 @SuperBuilder
 public class BaseListResponse<T> {
     @Schema(description = "页码")
@@ -28,4 +27,13 @@ public class BaseListResponse<T> {
 
     @Schema(description = "列表")
     private List<T> list;
+
+    public static <T> BaseListResponse<T> emptyListResponse(int page, int pageSize) {
+        return BaseListResponse.<T>builder()
+                .page(page)
+                .pageSize(pageSize)
+                .total(0L)
+                .list(Collections.emptyList())
+                .build();
+    }
 }

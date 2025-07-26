@@ -67,9 +67,6 @@ public class CustomExceptionHandler {
     @ResponseBody
     public AjaxResult<Object> handleCubeException(CubeException e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
-        if (e.getCode() == 200504) {
-            return AjaxResult.fail(ExceptionEnum.FILE_NOT_PICTURE);
-        }
-        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
+        return AjaxResult.fail(e.getCode(), e.getMessage());
     }
 }

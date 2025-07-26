@@ -1,7 +1,12 @@
 package org.jh.forum.common.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-import lombok.*;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.jh.forum.common.constants.NoticePositionTypeEnum;
 import org.jh.forum.common.constants.NoticeTypeEnum;
 
 
@@ -11,14 +16,14 @@ import org.jh.forum.common.constants.NoticeTypeEnum;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("notice")
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Notice extends BaseEntity {
     private Long receiverId;
     private Long senderId;
     private NoticeTypeEnum type;
-    private NoticeTypeEnum positionType;
+    private NoticePositionTypeEnum positionType;
     private Long positionId;
     private Long commentId;
     private Boolean isRead;
