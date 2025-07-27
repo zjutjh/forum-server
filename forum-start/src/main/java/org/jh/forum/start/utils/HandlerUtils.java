@@ -21,7 +21,7 @@ public class HandlerUtils {
     public static void logException(Throwable e, HttpServletRequest request) {
         String query = JSON.toJSONString(request.getParameterMap());
         String logLine = AnsiOutput.toString(
-                AnsiColor.YELLOW, "⚠️ ERROR",
+                AnsiColor.YELLOW, "Forum Error",
                 AnsiColor.DEFAULT, " | params = " + query
         );
         log.error(logLine, e);

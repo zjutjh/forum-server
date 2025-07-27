@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
 
+import java.time.LocalDateTime;
+
 
 /**
  * @author O v O
@@ -75,4 +77,9 @@ public class User extends BaseEntity {
      * 用户角色
      */
     private UserTypeEnum role;
+
+    /**
+     * 禁言截止时间
+     */
+    private LocalDateTime mutedUntil;
 }

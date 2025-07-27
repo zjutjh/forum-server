@@ -2,16 +2,13 @@ package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jh.forum.common.annotation.IgnoreLogicDelete;
-import org.jh.forum.common.constants.CommentOperationEnum;
-import org.jh.forum.common.constants.CommentStatusEnum;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.dto.AttachmentInfoDTO;
+import org.jh.forum.common.constants.*;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Attachment;
@@ -23,10 +20,12 @@ import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.CommentMapper;
 import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.mapper.UpvoteMapper;
+import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author qianqianzyk
@@ -42,16 +41,18 @@ public class CommentManager {
     private final AttachmentMapper attachmentMapper;
     private final FileManager fileManager;
     private final UserManager userManager;
+    private final PostRankManager postRankManager;
+    private final NoticeManager noticeManager;
 
-    public void publishComment(Long postId, Long parentId, Long targetId, String content, Long attachmentId) {
+    public void publishComment(Long postId, Long parentId, Long targetId, String content, String pictureUrl) {
         // 检查 post_id 合法性
         Post post = postMapper.selectById(postId);
         if (post == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
-        Comment parentComment = null;
-        Comment targetComment = null;
+        Comment parentComment;
+        Comment targetComment;
 
         // 检查父评论链完整性检查
         if (parentId != 0) {
@@ -66,8 +67,12 @@ public class CommentManager {
                         || !targetComment.getParentId().equals(parentId)) {
                     throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
                 }
+            } else {
+                targetComment = null;
             }
         } else {
+            parentComment = null;
+            targetComment = null;
             if (targetId != 0) {
                 throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
             }
@@ -87,9 +92,22 @@ public class CommentManager {
         commentMapper.insert(comment);
 
         // 绑定附件关系
-        if (attachmentId != null && attachmentId != 0) {
-            fileManager.bindAttachment(attachmentId, TargetTypeEnum.COMMENT, comment.getId());
+        if (StringUtils.isNotBlank(pictureUrl)) {
+            fileManager.bindAttachment(pictureUrl, TargetTypeEnum.COMMENT, comment.getId());
         }
+
+        AsyncUtil.runAsyncWithLogging(() -> {
+            postRankManager.recordAction(postId, post.getCategory(), postRankManager.COMMENT);
+            if (parentId != 0) {
+                if (targetId != 0) {
+                    noticeManager.createNotice(targetComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, targetId, comment.getId());
+                } else {
+                    noticeManager.createNotice(parentComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, parentId, comment.getId());
+                }
+            } else {
+                noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.POST, postId, comment.getId());
+            }
+        });
 
         if (parentId != 0) {
             parentComment.setReplyCount(parentComment.getReplyCount() + 1);
@@ -118,7 +136,6 @@ public class CommentManager {
         if (upvote == null) {
             upvote = Upvote.builder()
                     .userId(userId)
-                    .postId(comment.getPostId())
                     .commentId(commentId)
                     .status(true)
                     .build();
@@ -135,9 +152,15 @@ public class CommentManager {
             }
         }
 
-        return UpvoteCommentResponse.builder()
-                .status(upvote.getStatus())
-                .build();
+        Boolean status = upvote.getStatus();
+
+        if (Boolean.TRUE.equals(status)) {
+            AsyncUtil.runAsyncWithLogging(
+                    () -> noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null)
+            );
+        }
+
+        return new UpvoteCommentResponse(status);
     }
 
     public PinCommentResponse pinComment(Long commentId) {
@@ -224,34 +247,25 @@ public class CommentManager {
 
         // 根据排序规则查询非置顶评论
         Page<Comment> commentPage = new Page<>(page, pageSize);
-        QueryWrapper<Comment> wrapper = new QueryWrapper<Comment>()
-                .eq("post_id", postId)
-                .eq("parent_id", 0)
-                .eq("is_pinned", false);
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getPostId, postId)
+                .eq(Comment::getParentId, 0)
+                .eq(Comment::getIsPinned, false);
         if (excludeId != null) {
-            wrapper.ne("id", excludeId);
+            wrapper.ne(Comment::getId, excludeId);
         }
         if (sort == 1) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at");
+            wrapper.orderByDesc(Comment::getHotScore)
+                    .orderByDesc(Comment::getCreatedAt);
         } else {
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByDesc(Comment::getCreatedAt);
         }
         List<Comment> normal = commentMapper.selectPage(commentPage, wrapper).getRecords();
 
         // 合并置顶和普通评论
-        List<Comment> allComments = new ArrayList<>();
-        allComments.addAll(pinned);
-        allComments.addAll(normal);
-
+        List<Comment> allComments = Stream.concat(pinned.stream(), normal.stream()).toList();
         if (allComments.isEmpty()) {
-            return GetCommentListResponse.builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .highlightComment(null)
-                    .build();
+            return GetCommentListResponse.emptyListResponse(page, pageSize);
         }
 
         Post post = postMapper.selectById(postId);
@@ -259,10 +273,10 @@ public class CommentManager {
 
         List<CommentElement> commentElements = new ArrayList<>();
         for (Comment comment : allComments) {
-            List<Comment> hottestReplyList = commentMapper.selectList(new QueryWrapper<Comment>()
-                    .eq("parent_id", comment.getId())
-                    .orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at")
+            List<Comment> hottestReplyList = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
+                    .eq(Comment::getParentId, comment.getId())
+                    .orderByDesc(Comment::getHotScore)
+                    .orderByDesc(Comment::getCreatedAt)
                     .last("limit 1"));
 
             List<ReplyElement> replyElements = new ArrayList<>();
@@ -288,10 +302,10 @@ public class CommentManager {
         Long postAuthorId = post != null ? post.getUserId() : null;
 
         if (highlight.getParentId() == 0) {
-            List<Comment> replyList = commentMapper.selectList(new QueryWrapper<Comment>()
-                    .eq("parent_id", highlight.getId())
-                    .orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at")
+            List<Comment> replyList = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
+                    .eq(Comment::getParentId, highlight.getId())
+                    .orderByDesc(Comment::getHotScore)
+                    .orderByDesc(Comment::getCreatedAt)
                     .last("limit 1"));
 
             List<ReplyElement> replies = new ArrayList<>();
@@ -314,27 +328,22 @@ public class CommentManager {
 
     public BaseListResponse<ReplyElement> getReplyList(Long commentId, Integer page, Integer pageSize, Integer sort, Long[] excludeCommentIds) {
         Page<Comment> pageParam = new Page<>(page, pageSize);
-        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
-        wrapper.eq("parent_id", commentId);
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getParentId, commentId);
         if (excludeCommentIds != null && excludeCommentIds.length > 0) {
-            wrapper.notIn("id", Arrays.asList(excludeCommentIds));
+            wrapper.notIn(Comment::getId, Arrays.asList(excludeCommentIds));
         }
         if (sort == 1) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at");
+            wrapper.orderByDesc(Comment::getHotScore)
+                    .orderByDesc(Comment::getCreatedAt);
         } else {
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByDesc(Comment::getCreatedAt);
         }
         Page<Comment> replyPage = commentMapper.selectPage(pageParam, wrapper);
         List<Comment> replies = replyPage.getRecords();
 
         if (replies.isEmpty()) {
-            return BaseListResponse.<ReplyElement>builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .build();
+            return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
         Long postId = replies.get(0).getPostId();
@@ -368,12 +377,7 @@ public class CommentManager {
         );
         List<Comment> commentList = commentPage.getRecords();
         if (commentList.isEmpty()) {
-            return BaseListResponse.<PersonalCommentElement>builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .build();
+            return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
         // 查询所有相关帖子的详情
@@ -381,12 +385,7 @@ public class CommentManager {
                 .map(Comment::getPostId)
                 .collect(Collectors.toSet());
         if (postIds.isEmpty()) {
-            return BaseListResponse.<PersonalCommentElement>builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .build();
+            return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
         List<Post> posts = postMapper.selectList(
@@ -406,14 +405,14 @@ public class CommentManager {
                     .postId(post.getId())
                     .title(post.getTitle())
                     .content(truncateContent(post.getContent()))
-                    .attachments(getAttachments(post.getId(), TargetTypeEnum.POST))
+                    .pictures(getCommentPictures(post.getId()))
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
                     .personalCommentList(Collections.singletonList(
                             PersonalCommentListElement.builder()
                                     .commentId(comment.getId())
                                     .content(comment.getContent())
-                                    .attachments(getAttachments(comment.getId(), TargetTypeEnum.COMMENT))
+                                    .pictures(getCommentPictures(comment.getId()))
                                     .createdAt(comment.getCreatedAt())
                                     .upvoteCount(comment.getUpvoteCount())
                                     .replyCount(comment.getReplyCount())
@@ -498,12 +497,7 @@ public class CommentManager {
         Page<Comment> replyPage = commentMapper.selectPage(pageParam, wrapper);
         List<Comment> replies = replyPage.getRecords();
         if (replies.isEmpty()) {
-            return BaseListResponse.<ReplyElement>builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(0L)
-                    .list(Collections.emptyList())
-                    .build();
+            return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
         Long postId = replies.get(0).getPostId();
@@ -569,7 +563,7 @@ public class CommentManager {
                 .publisherInfo(userManager.getUserInfo(reply.getUserId()))
                 .targetUser(targetUser)
                 .content(reply.getContent())
-                .attachments(getAttachments(reply.getId(), TargetTypeEnum.COMMENT))
+                .pictures(getCommentPictures(reply.getId()))
                 .isPinned(reply.getIsPinned())
                 .isAuthor(reply.getUserId().equals(postAuthorId))
                 .isDeleted(reply.getDeleted())
@@ -584,7 +578,7 @@ public class CommentManager {
                 .commentId(comment.getId())
                 .publisherInfo(userManager.getUserInfo(comment.getUserId()))
                 .content(comment.getContent())
-                .attachments(getAttachments(comment.getId(), TargetTypeEnum.COMMENT))
+                .pictures(getCommentPictures(comment.getId()))
                 .isPinned(comment.getIsPinned())
                 .isAuthor(comment.getUserId().equals(postAuthorId))
                 .isDeleted(comment.getDeleted())
@@ -595,26 +589,17 @@ public class CommentManager {
                 .build();
     }
 
-    private List<AttachmentInfoDTO> getAttachments(Long targetId, TargetTypeEnum type) {
-        List<Attachment> attachments = attachmentMapper.selectList(
-                new LambdaQueryWrapper<Attachment>()
-                        .eq(Attachment::getTargetId, targetId)
-                        .eq(Attachment::getTargetType, type)
-        );
-
-        return attachments.stream()
-                .map(attachment -> AttachmentInfoDTO.builder()
-                        .url(fileManager.getFileUrl(attachment.getFileId()))
-                        .type(attachment.getType())
-                        .filename(attachment.getFilename())
-                        .build())
-                .collect(Collectors.toList());
+    private List<PictureInfoDTO> getCommentPictures(Long targetId) {
+        return attachmentMapper.selectList(new LambdaQueryWrapper<Attachment>()
+                .eq(Attachment::getType, AttachmentTypeEnum.PICTURE)
+                .eq(Attachment::getTargetId, targetId)
+                .eq(Attachment::getTargetType, TargetTypeEnum.COMMENT)
+        ).stream().map(attachment -> PictureInfoDTO.builder()
+                .url(fileManager.getFileUrl(attachment.getFileId()))
+                .build()).toList();
     }
 
     private String truncateContent(String content) {
-        if (content == null || content.length() <= 50) {
-            return content;
-        }
-        return content.substring(0, 50);
+        return (content == null || content.length() <= 50) ? content : content.substring(0, 50);
     }
 }

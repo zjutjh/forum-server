@@ -40,17 +40,13 @@ public class CustomExceptionHandler {
         return AjaxResult.fail(e.getErrorCode(), e.getErrorMsg());
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
+    @ExceptionHandler({
+            NoResourceFoundException.class,
+            HttpRequestMethodNotSupportedException.class
+    })
     @ResponseBody
-    public AjaxResult<Object> handleNotFoundException(NoResourceFoundException e, HttpServletRequest request) {
-        HandlerUtils.logException(e, request);
-        return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
-    }
-
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    @ResponseBody
-    public AjaxResult<Object> handleMethodNotSupportedException(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
-        HandlerUtils.logException(e, request);
+    public AjaxResult<Object> handleNotFoundException(Exception e) {
+        log.error(e.getMessage());
         return AjaxResult.fail(ExceptionEnum.NOT_FOUND_ERROR);
     }
 
@@ -71,9 +67,6 @@ public class CustomExceptionHandler {
     @ResponseBody
     public AjaxResult<Object> handleCubeException(CubeException e, HttpServletRequest request) {
         HandlerUtils.logException(e, request);
-        if (e.getCode() == 200504) {
-            return AjaxResult.fail(ExceptionEnum.FILE_NOT_PICTURE);
-        }
-        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
+        return AjaxResult.fail(e.getCode(), e.getMessage());
     }
 }

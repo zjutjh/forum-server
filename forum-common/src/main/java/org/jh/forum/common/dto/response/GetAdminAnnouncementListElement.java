@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,11 +32,9 @@ public class GetAdminAnnouncementListElement {
     @Schema(description = "类型")
     private AnnouncementTypeEnum type;
 
-    @JsonProperty("published_at")
     @Schema(description = "发布时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime publishedAt;
 
-    @JsonProperty("updated_at")
     @Schema(description = "最后编辑时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 

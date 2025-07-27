@@ -6,13 +6,13 @@ import cn.dev33.satoken.annotation.SaMode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.CommentService;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 /**
@@ -24,12 +24,12 @@ import jakarta.validation.Valid;
 @Tag(name = "评论", description = "评论相关接口")
 @SaCheckLogin
 public class CommentController {
-    @Resource
+    @DubboReference
     private CommentService commentService;
 
     @Operation(summary = "发布评论/回复")
     @PostMapping("/publish")
-    public AjaxResult<Void> publishComment(@RequestBody PublishCommentRequest request) {
+    public AjaxResult<Void> publishComment(@Valid @RequestBody PublishCommentRequest request) {
         commentService.publishComment(request);
         return AjaxResult.success();
     }
@@ -60,7 +60,7 @@ public class CommentController {
             分为`最新`和`最热`
             `默认`按最热排序（计分=点赞数×1+回复数×2，`按计分由高到低排序`）
             最新`按发布时间由近到远`
-                    
+            
             **评论时间说明：**
             1. 1分钟以内---“刚刚”
             2. 10分钟以内---“x分钟前”
@@ -68,7 +68,7 @@ public class CommentController {
             4. 昨天---“昨天 xx:xx”
             5. 昨天前---“xx-xx”（某月某日）
             6. 不是今年---“xxxx-xx-xx”（年月日）
-                    
+            
             **多级评论说明：**
             获取时默认每个评论下方展示`一条`该层内`热度最高`的回复
             展开n条评论(n：获取该条评论下方的分级评论条数)""")
@@ -120,7 +120,7 @@ public class CommentController {
     @Operation(summary = "管理员删除/恢复评论")
     @Tag(name = "管理员")
     @PostMapping("/admin/status")
-    public AjaxResult<Boolean> adminChangeCommentStatus(@RequestBody ChangeCommentStatusRequest request) {
+    public AjaxResult<Boolean> adminChangeCommentStatus(@Valid @RequestBody ChangeCommentStatusRequest request) {
         commentService.adminChangeCommentStatus(request);
         return AjaxResult.success();
     }

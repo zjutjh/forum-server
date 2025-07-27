@@ -3,6 +3,7 @@ package org.jh.forum.server.manager;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.jh.forum.common.constants.CategoryEnum;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -31,6 +32,7 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
     public final String LIKE = "like";
     public final String COMMENT = "comment";
     public final String VIEW = "view";
+    public final String CATEGORY = "category";
 
     // 热榜计算间隔（单位：秒）
     public final long COMPUTE_INTERVAL_SECONDS = 15 * 60;
@@ -39,13 +41,14 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-    public void recordAction(Long postId, String type) {
+    public void recordAction(Long postId, CategoryEnum category, String type) {
         long currentTime = System.currentTimeMillis() / 1000;
         long hour = currentTime / 3600;
         String key = "post:" + postId + ":" + hour;
 
         // 累加字段
         redisTemplate.opsForHash().increment(key, type, 1);
+        redisTemplate.opsForHash().put(key, CATEGORY, category.getValue());
 
         // 设置24小时过期（动态）
         long expire = (hour + 24) * 3600 - currentTime;
@@ -98,6 +101,8 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
         // 对每个帖子计算24小时热度值
         for (Object postId : postIds) {
             int likeSum = 0, commentSum = 0, viewSum = 0;
+            String category = null;
+
             for (int i = 0; i < 24; i++) {
                 long hour = (currentTime / 3600) - i;
                 String key = "post:" + postId + ":" + hour;
@@ -106,14 +111,28 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
                 likeSum += toInt(map.get(LIKE));
                 commentSum += toInt(map.get(COMMENT));
                 viewSum += toInt(map.get(VIEW));
+
+                if (category == null && map.containsKey(CATEGORY)) {
+                    category = map.get(CATEGORY).toString();
+                }
             }
 
             double score = likeSum + commentSum * 2 + viewSum * 0.1;
             redisTemplate.opsForZSet().add(HOT_RANK_TEMP_KEY, postId, score);
+            if (category != null) {
+                redisTemplate.opsForZSet().add(HOT_RANK_TEMP_KEY + ":" + category, postId, score);
+            }
         }
 
-        // 替换排行榜
+        // 替换总榜
         redisTemplate.rename(HOT_RANK_TEMP_KEY, HOT_RANK_KEY);
+
+        // 替换每个分类榜
+        for (CategoryEnum category : CategoryEnum.values()) {
+            String tempKey = HOT_RANK_TEMP_KEY + ":" + category.getValue();
+            String realKey = HOT_RANK_KEY + ":" + category.getValue();
+            redisTemplate.rename(tempKey, realKey);
+        }
     }
 
     public List<Long> getTopFiveHotPostIds() {
@@ -132,19 +151,26 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
     }
 
 
-    public PageResult<Long> getHotPostIds(int page, int pageSize) {
+    public PageResult<Long> getHotPostIds(CategoryEnum category, int page, int pageSize) {
         int start = (page - 1) * pageSize;
         int end = start + pageSize - 1;
 
+        String key;
+        if (category == null) {
+            key = HOT_RANK_KEY;
+        } else {
+            key = HOT_RANK_KEY + ":" + category.getValue();
+        }
+
         // 获取总数
-        Long total = redisTemplate.opsForZSet().zCard(HOT_RANK_KEY);
+        Long total = redisTemplate.opsForZSet().zCard(key);
         if (total == null || total == 0) {
             return new PageResult<>(Collections.emptyList(), 0);
         }
 
         // 倒序分页查询帖子ID
         Set<ZSetOperations.TypedTuple<Object>> result = redisTemplate.opsForZSet()
-                .reverseRangeWithScores(HOT_RANK_KEY, start, end);
+                .reverseRangeWithScores(key, start, end);
         if (result == null || result.isEmpty()) {
             return new PageResult<>(Collections.emptyList(), total);
         }
@@ -164,6 +190,11 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
         redisTemplate.opsForZSet().remove(ACTIVE_POSTS_KEY, postId.toString());
         redisTemplate.opsForZSet().remove(HOT_RANK_KEY, postId.toString());
         redisTemplate.opsForZSet().remove(HOT_RANK_TEMP_KEY, postId.toString());
+
+        for (CategoryEnum category : CategoryEnum.values()) {
+            redisTemplate.opsForZSet().remove(HOT_RANK_KEY + ":" + category.getValue(), postId.toString());
+            redisTemplate.opsForZSet().remove(HOT_RANK_TEMP_KEY + ":" + category.getValue(), postId.toString());
+        }
     }
 
     private int toInt(Object value) {

@@ -1,12 +1,12 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
 import jakarta.validation.constraints.NotNull;
+import java.util.Collections;
 
 /**
  * @author qianqianzyk
@@ -17,6 +17,15 @@ import jakarta.validation.constraints.NotNull;
 public class GetCommentListResponse extends BaseListResponse<CommentElement> {
     @Schema(description = "高亮评论")
     @NotNull
-    @JsonProperty("highlight_comment")
     private CommentElement highlightComment;
+
+    public static GetCommentListResponse emptyListResponse(int page, int pageSize) {
+        return GetCommentListResponse.builder()
+                .page(page)
+                .pageSize(pageSize)
+                .total(0L)
+                .list(Collections.emptyList())
+                .highlightComment(null)
+                .build();
+    }
 }

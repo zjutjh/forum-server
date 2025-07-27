@@ -1,10 +1,10 @@
 package org.jh.forum.common.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,7 +20,6 @@ public class BaseListResponse<T> {
     private Integer page;
 
     @Schema(description = "每页数量")
-    @JsonProperty("page_size")
     private Integer pageSize;
 
     @Schema(description = "总数")
@@ -28,4 +27,13 @@ public class BaseListResponse<T> {
 
     @Schema(description = "列表")
     private List<T> list;
+
+    public static <T> BaseListResponse<T> emptyListResponse(int page, int pageSize) {
+        return BaseListResponse.<T>builder()
+                .page(page)
+                .pageSize(pageSize)
+                .total(0L)
+                .list(Collections.emptyList())
+                .build();
+    }
 }

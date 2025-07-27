@@ -18,7 +18,7 @@ import jakarta.annotation.Resource;
 /**
  * @author zzb
  */
-@DubboService(version = "1.0.0")
+@DubboService
 @Slf4j
 public class ReportServiceImpl implements ReportService {
     @Resource
@@ -27,13 +27,13 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public void reportUser(ReportUserRequest request) {
         reportManager.reportUser(request.getType(), request.getReason(),
-                request.getUserId(), request.getAttachmentIds());
+                request.getUserId(), request.getPictures());
     }
 
     @Override
     public void reportContent(ReportContentRequest request) {
         reportManager.reportContent(request.getType(), request.getReason(),
-                request.getTargetId(), request.getTarget(), request.getAttachmentIds());
+                request.getTargetId(), request.getTarget(), request.getPictures());
     }
 
     @Override

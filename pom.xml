@@ -151,7 +151,7 @@
         <dependency>
             <groupId>com.github.SugarMGP</groupId>
             <artifactId>cube-spring-boot3-starter</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
         </dependency>
     </dependencies>
     <dependencyManagement>

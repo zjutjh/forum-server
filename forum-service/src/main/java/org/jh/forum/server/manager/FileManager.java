@@ -8,16 +8,12 @@ import org.jh.cube.CubeException;
 import org.jh.cube.CubeService;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.entity.Attachment;
-import org.jh.forum.common.entity.File;
-import org.jh.forum.common.entity.Post;
-import org.jh.forum.common.entity.Report;
+import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.server.mapper.AttachmentMapper;
-import org.jh.forum.server.mapper.FileMapper;
-import org.jh.forum.server.mapper.PostMapper;
-import org.jh.forum.server.mapper.ReportMapper;
+import org.jh.forum.server.mapper.*;
 import org.springframework.stereotype.Service;
+
+import java.net.URL;
 
 /**
  * @author SugarMGP
@@ -31,6 +27,7 @@ public class FileManager {
     private final FileMapper fileMapper;
     private final CubeService cubeService;
     private final ReportMapper reportMapper;
+    private final CommentMapper commentMapper;
 
     public void deleteAttachment(Long attachmentId) {
         Attachment attachment = attachmentMapper.selectById(attachmentId);
@@ -56,7 +53,22 @@ public class FileManager {
         }
     }
 
-    public void bindAttachment(Long attachmentId, TargetTypeEnum targetType, Long targetId) {
+    private Long getAttachmentIdFromUrl(String url) {
+        try {
+            String query = new URL(url).getQuery();
+            for (String param : query.split("&")) {
+                if (param.startsWith("attachment_id=")) {
+                    return Long.parseLong(param.substring("attachment_id=".length()));
+                }
+            }
+        } catch (Exception e) {
+            throw new ApiException(ExceptionEnum.INVALID_URL, e);
+        }
+        throw new ApiException(ExceptionEnum.INVALID_URL);
+    }
+
+    public void bindAttachment(String url, TargetTypeEnum targetType, Long targetId) {
+        Long attachmentId = getAttachmentIdFromUrl(url);
         Attachment attachment = attachmentMapper.selectById(attachmentId);
         if (attachment == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
@@ -73,7 +85,13 @@ public class FileManager {
                 throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
             }
         } else if (targetType == TargetTypeEnum.COMMENT) {
-            // TODO: 评论绑定
+            Comment comment = commentMapper.selectById(targetId);
+            if (comment == null) {
+                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            }
+            if (!comment.getUserId().equals(attachment.getUserId())) {
+                throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+            }
         } else if (targetType == TargetTypeEnum.REPORT) {
             Report report = reportMapper.selectById(targetId);
             if (report == null) {

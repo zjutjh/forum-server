@@ -88,6 +88,5 @@ public class AccessLogFilter implements Filter {
                 uri + (query != null ? "?" + query : ""),
                 ip
         );
-
     }
 }
