@@ -125,13 +125,17 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
         }
 
         // 替换总榜
-        redisTemplate.rename(HOT_RANK_TEMP_KEY, HOT_RANK_KEY);
+        if (redisTemplate.hasKey(HOT_RANK_TEMP_KEY)) {
+            redisTemplate.rename(HOT_RANK_TEMP_KEY, HOT_RANK_KEY);
+        }
 
         // 替换每个分类榜
         for (CategoryEnum category : CategoryEnum.values()) {
             String tempKey = HOT_RANK_TEMP_KEY + ":" + category.getValue();
             String realKey = HOT_RANK_KEY + ":" + category.getValue();
-            redisTemplate.rename(tempKey, realKey);
+            if (redisTemplate.hasKey(tempKey)) {
+                redisTemplate.rename(tempKey, realKey);
+            }
         }
     }
 

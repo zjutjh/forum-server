@@ -5,7 +5,6 @@ import lombok.Data;
 import org.jh.forum.common.constants.AnnouncementStatusEnum;
 import org.jh.forum.common.constants.AnnouncementTypeEnum;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,17 +19,16 @@ import java.time.LocalDateTime;
 @Schema(description = "修改公告")
 public class EditAnnouncementRequest {
     @NotNull
-    @Min(1)
     @Schema(description = "公告ID")
     private Long id;
 
     @NotBlank
-    @Size(min = 2, max = 50)
+    @Size(max = 50)
     @Schema(description = "公告标题", example = "重要系统维护通知")
     private String title;
 
     @NotBlank
-    @Size(min = 1, max = 500)
+    @Size(max = 500)
     @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...")
     private String content;
 

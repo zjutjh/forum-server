@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.cube.CubeService;
 import org.jh.forum.api.dubbo.service.FileService;
@@ -62,10 +64,18 @@ public class FileController {
                 );
                 fileService.createFile(objectKey, hash);
             }
-            Long id = fileService.createAttachment(objectKey, type, file.getOriginalFilename());
+            Long id = fileService.createAttachment(objectKey, type, truncateFilename(file.getOriginalFilename()));
             return new UploadResponse(cubeService.getFileUrl(objectKey) + "&attachment_id=" + id);
         } catch (IOException e) {
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR, e);
         }
+    }
+
+    private String truncateFilename(String filename) {
+        if (filename == null) {
+            return "";
+        }
+        String baseName = FilenameUtils.getBaseName(filename);
+        return StringUtils.left(baseName, 20);
     }
 }

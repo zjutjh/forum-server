@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * @author qianqianzyk
@@ -31,6 +32,7 @@ public class PublishCommentRequest {
 
     @Schema(description = "评论内容，禁止发空评论")
     @NotBlank
+    @Size(max = 500)
     private String content;
 
     @Schema(description = "评论图片Url，无即传空字符串")
