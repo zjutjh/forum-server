@@ -23,6 +23,7 @@ public enum ExceptionEnum {
     POST_PINNED_LIMIT_REACHED(200010, "帖子置顶达到上限"),
     POST_TOPPED_LIMIT_REACHED(200011, "个人主页只能置顶一个帖子"),
     INVALID_URL(200012, "不合法的URL"),
+    FILE_SIZE_EXCEEDED(200013, "文件大小超出限制"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试"),

@@ -15,6 +15,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,6 +62,12 @@ public class CustomExceptionHandler {
             return AjaxResult.fail(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ResponseBody
+    public AjaxResult<Object> handleMaxSizeException(MaxUploadSizeExceededException ignore) {
+        return AjaxResult.fail(ExceptionEnum.FILE_SIZE_EXCEEDED);
     }
 
     @ExceptionHandler(CubeException.class)
