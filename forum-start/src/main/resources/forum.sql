@@ -2,12 +2,12 @@ create table announcement
 (
     id           bigint                              not null comment '公告ID'
         primary key,
-    title        varchar(100)                        not null comment '公告标题',
+    title        varchar(60)                         not null comment '公告标题',
     content      text                                not null comment '正文',
-    type         varchar(40)                         not null comment '公告类型',
+    type         varchar(20)                         not null comment '公告类型',
     sticky       boolean   default false             not null comment '是否置顶',
     published_at timestamp                           null comment '发布时间',
-    status       varchar(40)                         not null comment '公告状态',
+    status       varchar(20)                         not null comment '公告状态',
     created_at   timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
     updated_at   timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid   bigint                              not null comment '创建用户ID',
@@ -25,7 +25,7 @@ create table attachment
     target_type varchar(20)                         not null comment '对象类型',
     target_id   bigint                              not null comment '对象ID',
     type        varchar(20)                         not null comment '附件类型（图像/视频/文档）',
-    filename    varchar(255)                        not null comment '原始文件名',
+    filename    varchar(30)                         not null comment '原始文件名',
     created_at  timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     updated_at  timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid  bigint                              not null comment '创建用户',
@@ -38,7 +38,7 @@ create table college
 (
     id         bigint                              not null comment '学院ID'
         primary key,
-    name       varchar(100)                        not null comment '名称',
+    name       varchar(40)                         not null comment '名称',
     created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid bigint                              not null comment '创建用户',
@@ -175,22 +175,22 @@ create table operation_log
 
 create table post
 (
-    id         bigint                                 not null comment '帖子ID'
+    id         bigint                              not null comment '帖子ID'
         primary key,
-    user_id    bigint                                 not null comment '作者用户ID',
-    title      varchar(100) default ''                not null comment '标题',
-    content    text                                   not null comment '正文',
-    category   varchar(20)                            not null comment '板块归属',
-    is_pinned  boolean                                not null comment '是否置顶（管理员）',
-    is_topped  boolean                                not null comment '是否置顶（个人主页）',
-    view_count int          default 0                 not null comment '浏览次数',
-    status     varchar(20)                            not null comment '帖子状态（normal/pending/deleted）',
-    created_at timestamp    default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                              not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                                 not null comment '创建用户',
-    update_uid bigint                                 not null comment '更新用户',
-    deleted    boolean                                not null comment '是否被删除（在该表中废弃，与其他表保持统一）',
-    attribute  text                                   null comment '属性列（json string）'
+    user_id    bigint                              not null comment '作者用户ID',
+    title      varchar(100)                        not null comment '标题',
+    content    text                                not null comment '正文',
+    category   varchar(20)                         not null comment '板块归属',
+    is_pinned  boolean                             not null comment '是否置顶（管理员）',
+    is_topped  boolean                             not null comment '是否置顶（个人主页）',
+    view_count int       default 0                 not null comment '浏览次数',
+    status     varchar(20)                         not null comment '帖子状态（normal/pending/deleted）',
+    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                              not null comment '创建用户',
+    update_uid bigint                              not null comment '更新用户',
+    deleted    boolean                             not null comment '是否被删除（在该表中废弃，与其他表保持统一）',
+    attribute  text                                null comment '属性列（json string）'
 );
 
 create table post_topic_relation

@@ -21,6 +21,7 @@ import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class ReportManager {
     private final UserMapper userMapper;
     private final CommentMapper commentMapper;
 
+    @Transactional
     public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, List<String> pictureUrls) {
         if (targetUserId.equals(StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
@@ -61,8 +63,9 @@ public class ReportManager {
         }
     }
 
+    @Transactional
     public void reportContent(ReportTypeEnum type, String reason, Long targetId, TargetTypeEnum target, List<String> pictureUrls) {
-        Long targetUserId = -1L;
+        Long targetUserId;
         if (target == TargetTypeEnum.POST) {
             Post post = postMapper.selectById(targetId);
             if (post == null) {

@@ -23,10 +23,12 @@ import java.util.List;
 public class PublishPostRequest {
     @Schema(description = "帖子标题")
     @NotBlank
+    @Size(max = 80)
     private String title;
 
     @Schema(description = "帖子内容")
     @NotBlank
+    @Size(max = 3000)
     private String content;
 
     @Schema(description = "帖子板块")
@@ -35,7 +37,7 @@ public class PublishPostRequest {
 
     @Schema(description = "帖子话题列表")
     @NotNull
-    private List<@Length(min = 1, max = 30) String> topics;
+    private List<@NotBlank @Length(max = 30) String> topics;
 
     @Schema(description = "要绑定的图片url列表")
     @NotNull

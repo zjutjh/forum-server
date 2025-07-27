@@ -19,6 +19,7 @@ import org.jh.forum.server.mapper.*;
 import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class PostManager {
     private final UpvoteMapper upvoteMapper;
     private final NoticeManager noticeManager;
 
+    @Transactional
     public void publishPost(PublishPostRequest request) {
         Post post = Post.builder()
                 .userId(StpUtil.getLoginIdAsLong())
@@ -90,7 +92,7 @@ public class PostManager {
                     .category(post.getCategory())
                     .topics(getPostTopics(post.getId()))
                     .title(post.getTitle())
-                    .content(truncateContent(post.getContent()))
+                    .content(StringUtils.left(post.getContent(), 50))
                     .likeCount(getLikeCount(post.getId()))
                     .commentCount(getCommentCount(post.getId()))
                     .createdAt(post.getCreatedAt())
@@ -142,7 +144,7 @@ public class PostManager {
                     .category(post.getCategory())
                     .topics(getPostTopics(post.getId()))
                     .title(post.getTitle())
-                    .content(truncateContent(post.getContent()))
+                    .content(StringUtils.left(post.getContent(), 50))
                     .likeCount(getLikeCount(post.getId()))
                     .commentCount(getCommentCount(post.getId()))
                     .viewCount(post.getViewCount())
@@ -173,7 +175,7 @@ public class PostManager {
                     .category(post.getCategory())
                     .topics(getPostTopics(id))
                     .title(post.getTitle())
-                    .content(truncateContent(post.getContent()))
+                    .content(StringUtils.left(post.getContent(), 50))
                     .likeCount(getLikeCount(id))
                     .commentCount(getCommentCount(id))
                     .createdAt(post.getCreatedAt())
@@ -330,10 +332,6 @@ public class PostManager {
         }
         postMapper.incrementViewCount(postId);
         postRankManager.recordAction(postId, category, postRankManager.VIEW);
-    }
-
-    private String truncateContent(String content) {
-        return (content == null || content.length() <= 50) ? content : content.substring(0, 50);
     }
 
     public List<Post> getTopFivePosts() {
