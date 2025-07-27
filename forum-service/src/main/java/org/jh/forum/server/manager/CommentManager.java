@@ -186,6 +186,19 @@ public class CommentManager {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
 
+        // 一个帖子下仅允许置顶五个评论
+        if (!comment.getIsPinned()) {
+            LambdaQueryWrapper<Comment> pinnedCountWrapper = new LambdaQueryWrapper<>();
+            pinnedCountWrapper.eq(Comment::getPostId, comment.getPostId())
+                    .eq(Comment::getIsPinned, true)
+                    .eq(Comment::getParentId, 0);
+            Long pinnedCount = commentMapper.selectCount(pinnedCountWrapper);
+
+            if (pinnedCount >= 5) {
+                throw new ApiException(ExceptionEnum.COMMENT_PINNED_LIMIT_REACHED);
+            }
+        }
+
         // 更新评论置顶状态
         comment.setIsPinned(!comment.getIsPinned());
         commentMapper.updateById(comment);
@@ -226,13 +239,13 @@ public class CommentManager {
     }
 
     public GetCommentListResponse getCommentList(Long postId, Integer page, Integer pageSize, Integer sort, Long highlightCommentId) {
-        // 按时间顺序查询置顶评论
+        // 按时间升序查询置顶评论
         List<Comment> pinned = commentMapper.selectList(
                 new LambdaQueryWrapper<Comment>()
                         .eq(Comment::getPostId, postId)
                         .eq(Comment::getParentId, 0)
                         .eq(Comment::getIsPinned, true)
-                        .orderByDesc(Comment::getCreatedAt)
+                        .orderByAsc(Comment::getCreatedAt)
         );
 
         Long excludeId = null;
@@ -258,9 +271,9 @@ public class CommentManager {
             wrapper.ne("id", excludeId);
         }
         if (sort == 1) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2").orderByDesc("created_at");
+            wrapper.orderByDesc("upvote_count + reply_count * 2").orderByAsc("created_at");
         } else {
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByAsc("created_at");
         }
         List<Comment> normal = commentMapper.selectPage(commentPage, wrapper).getRecords();
 
@@ -278,7 +291,7 @@ public class CommentManager {
             List<Comment> hottestReplyList = commentMapper.selectList(new QueryWrapper<Comment>()
                     .eq("parent_id", comment.getId())
                     .orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at")
+                    .orderByAsc("created_at")
                     .last("limit 1"));
 
             List<ReplyElement> replyElements = new ArrayList<>();
@@ -307,7 +320,7 @@ public class CommentManager {
             List<Comment> replyList = commentMapper.selectList(new QueryWrapper<Comment>()
                     .eq("parent_id", highlight.getId())
                     .orderByDesc("upvote_count + reply_count * 2")
-                    .orderByDesc("created_at")
+                    .orderByAsc("created_at")
                     .last("limit 1"));
 
             List<ReplyElement> replies = new ArrayList<>();
@@ -336,9 +349,9 @@ public class CommentManager {
             wrapper.notIn("id", Arrays.asList(excludeCommentIds));
         }
         if (sort == 1) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2").orderByDesc("created_at");
+            wrapper.orderByDesc("upvote_count + reply_count * 2").orderByAsc("created_at");
         } else {
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByAsc("created_at");
         }
         Page<Comment> replyPage = commentMapper.selectPage(pageParam, wrapper);
         List<Comment> replies = replyPage.getRecords();
@@ -368,13 +381,13 @@ public class CommentManager {
         Long currentUserId = StpUtil.getLoginIdAsLong();
         Long realUserId = (userId == null || userId.equals(currentUserId)) ? currentUserId : userId;
 
-        // 按时间降序查询当前用户的评论
+        // 按时间升序查询当前用户的评论
         Page<Comment> pageParam = new Page<>(page, pageSize);
         Page<Comment> commentPage = commentMapper.selectPage(
                 pageParam,
                 new LambdaQueryWrapper<Comment>()
                         .eq(Comment::getUserId, realUserId)
-                        .orderByDesc(Comment::getCreatedAt)
+                        .orderByAsc(Comment::getCreatedAt)
         );
         List<Comment> commentList = commentPage.getRecords();
         if (commentList.isEmpty()) {
@@ -436,9 +449,16 @@ public class CommentManager {
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Comment::getPostId, postId)
                 .eq(Comment::getParentId, 0)
-                .orderByDesc(Comment::getCreatedAt);
+                .orderByDesc(Comment::getIsPinned)
+                .orderByAsc(Comment::getCreatedAt);
+
         if (CommentStatusEnum.DELETED.equals(status)) {
-            wrapper.eq(Comment::getDeleted, true);
+            List<Long> allCommentIds = commentMapper.getDeletedOrHasDeletedReplyCommentIds(postId);
+            if (allCommentIds.isEmpty()) {
+                return BaseListResponse.emptyListResponse(page, pageSize);
+            }
+
+            wrapper.in(Comment::getId, allCommentIds);
         } else if (CommentStatusEnum.NORMAL.equals(status)) {
             wrapper.eq(Comment::getDeleted, false);
         }
@@ -452,10 +472,9 @@ public class CommentManager {
 
         List<CommentElement> list = new ArrayList<>();
         for (Comment comment : comments) {
-            // 查询评论的前 5 条回复
             LambdaQueryWrapper<Comment> replyWrapper = new LambdaQueryWrapper<>();
             replyWrapper.eq(Comment::getParentId, comment.getId())
-                    .orderByDesc(Comment::getCreatedAt)
+                    .orderByAsc(Comment::getCreatedAt)
                     .last("limit 5");
             if (CommentStatusEnum.DELETED.equals(status)) {
                 replyWrapper.eq(Comment::getDeleted, true);
@@ -485,7 +504,7 @@ public class CommentManager {
         Page<Comment> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Comment::getParentId, commentId)
-                .orderByDesc(Comment::getCreatedAt);
+                .orderByAsc(Comment::getCreatedAt);
         if (excludeCommentIds != null && excludeCommentIds.length > 0) {
             wrapper.notIn(Comment::getId, Arrays.asList(excludeCommentIds));
         }
