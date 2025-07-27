@@ -20,12 +20,12 @@ import java.time.LocalDateTime;
 @Schema(description = "创建公告请求")
 public class CreateAnnouncementRequest {
     @NotBlank
-    @Size(min = 2, max = 50)
+    @Size(max = 50)
     @Schema(description = "公告标题", example = "重要系统维护通知")
     private String title;
 
     @NotBlank
-    @Size(min = 1, max = 500)
+    @Size(max = 500)
     @Schema(description = "公告内容", example = "系统将于今晚进行维护升级...")
     private String content;
 
