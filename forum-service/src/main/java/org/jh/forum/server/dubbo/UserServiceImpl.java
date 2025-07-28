@@ -62,6 +62,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setAvatar(request.getAvatar());
         userEntity.setNickname(request.getNickname());
         userEntity.setGender(request.getGender());
+        userEntity.setCollegeId(request.getCollegeId());
         detailEntity.setSignature(request.getSignature());
         detailEntity.setEmail(request.getEmail());
         detailEntity.setBirthday(request.getBirthday());
@@ -69,6 +70,7 @@ public class UserServiceImpl implements UserService {
         detailEntity.setBirthdayVisible(request.getBirthdayVisible());
         detailEntity.setCollegeVisible(request.getCollegeVisible());
         detailEntity.setRealnameVisible(request.getRealnameVisible());
+
 
         userMapper.updateById(userEntity);
         userDetailMapper.updateById(detailEntity);
