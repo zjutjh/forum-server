@@ -89,6 +89,17 @@ public class NoticeManager {
      * 根据请求参数构建通知实体并插入数据库
      */
     public void createNotice(Long receiverId, NoticeTypeEnum type, NoticePositionTypeEnum positionType, Long positionId, Long newCommentId) {
+        // 查询是否已存在相同通知
+        LambdaQueryWrapper<Notice> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Notice::getReceiverId, receiverId)
+                .eq(Notice::getSenderId, StpUtil.getLoginIdAsLong())
+                .eq(Notice::getType, type)
+                .eq(Notice::getPositionType, positionType)
+                .eq(Notice::getPositionId, positionId);
+        if (noticeMapper.exists(wrapper)) {
+            return;
+        }
+
         Notice notice = Notice.builder()
                 .receiverId(receiverId)
                 .senderId(StpUtil.getLoginIdAsLong())

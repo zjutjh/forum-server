@@ -26,6 +26,8 @@ public class Comment extends BaseEntity {
 
     private Long targetId;
 
+    private Long targetUserId;
+
     private String content;
 
     private Boolean isPinned;

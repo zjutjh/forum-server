@@ -1,259 +1,260 @@
 create table announcement
 (
-    id           bigint                              not null comment '公告ID'
+    id           bigint                                 not null comment '公告ID'
         primary key,
-    title        varchar(60)                         not null comment '公告标题',
-    content      text                                not null comment '正文',
-    type         varchar(20)                         not null comment '公告类型',
-    sticky       boolean   default false             not null comment '是否置顶',
-    published_at timestamp                           null comment '发布时间',
-    status       varchar(20)                         not null comment '公告状态',
-    created_at   timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
-    updated_at   timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid   bigint                              not null comment '创建用户ID',
-    update_uid   bigint                              not null comment '更新用户ID',
-    deleted      boolean                             not null comment '是否被删除',
-    attribute    text                                null comment '属性列（json string）'
+    title        varchar(60)                            not null comment '公告标题',
+    content      text                                   not null comment '正文',
+    type         varchar(20)                            not null comment '公告类型',
+    sticky       boolean      default false             not null comment '是否置顶',
+    published_at timestamp(3)                           null comment '发布时间',
+    status       varchar(20)                            not null comment '公告状态',
+    created_at   timestamp(3) default CURRENT_TIMESTAMP not null comment '发布时间',
+    updated_at   timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid   bigint                                 not null comment '创建用户ID',
+    update_uid   bigint                                 not null comment '更新用户ID',
+    deleted      boolean                                not null comment '是否被删除',
+    attribute    text                                   null comment '属性列（json string）'
 );
 
 create table attachment
 (
-    id          bigint                              not null comment '附件ID'
+    id          bigint                                 not null comment '附件ID'
         primary key,
-    user_id     bigint                              not null comment '上传用户',
-    file_id     bigint                              not null comment '对应的文件',
-    target_type varchar(20)                         not null comment '对象类型',
-    target_id   bigint                              not null comment '对象ID',
-    type        varchar(20)                         not null comment '附件类型（图像/视频/文档）',
-    filename    varchar(30)                         not null comment '原始文件名',
-    created_at  timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at  timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid  bigint                              not null comment '创建用户',
-    update_uid  bigint                              not null comment '更新用户',
-    deleted     boolean                             not null comment '是否被删除',
-    attribute   text                                null comment '属性列（json string）'
+    user_id     bigint                                 not null comment '上传用户',
+    file_id     bigint                                 not null comment '对应的文件',
+    target_type varchar(20)                            not null comment '对象类型',
+    target_id   bigint                                 not null comment '对象ID',
+    type        varchar(20)                            not null comment '附件类型（图像/视频/文档）',
+    filename    varchar(30)                            not null comment '原始文件名',
+    created_at  timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at  timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid  bigint                                 not null comment '创建用户',
+    update_uid  bigint                                 not null comment '更新用户',
+    deleted     boolean                                not null comment '是否被删除',
+    attribute   text                                   null comment '属性列（json string）'
 );
 
 create table college
 (
-    id         bigint                              not null comment '学院ID'
+    id         bigint                                 not null comment '学院ID'
         primary key,
-    name       varchar(40)                         not null comment '名称',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    name       varchar(40)                            not null comment '名称',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table comment
 (
-    id           bigint                              not null comment '评论ID'
+    id             bigint                                 not null comment '评论ID'
         primary key,
-    user_id      bigint                              not null comment '用户ID',
-    post_id      bigint                              not null comment '帖子ID',
-    parent_id    bigint                              null comment '父评论ID',
-    target_id    bigint                              null comment '回复对象ID',
-    content      varchar(500)                        not null comment '评论内容',
-    is_pinned    boolean                             not null comment '是否被置顶',
-    upvote_count int       DEFAULT 0                 NOT NULL COMMENT '点赞数',
-    reply_count  int       DEFAULT 0                 NOT NULL COMMENT '回复数',
-    created_at   timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at   timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid   bigint                              not null comment '创建用户',
-    update_uid   bigint                              not null comment '更新用户',
-    deleted      boolean                             not null comment '是否被删除',
-    attribute    text                                null comment '属性列（json string）'
+    user_id        bigint                                 not null comment '用户ID',
+    post_id        bigint                                 not null comment '帖子ID',
+    parent_id      bigint                                 not null comment '父评论ID',
+    target_id      bigint                                 not null comment '回复评论ID',
+    target_user_id bigint                                 not null comment '回复人ID',
+    content        varchar(500)                           not null comment '评论内容',
+    is_pinned      boolean                                not null comment '是否被置顶',
+    upvote_count   int          DEFAULT 0                 NOT NULL COMMENT '点赞数',
+    reply_count    int          DEFAULT 0                 NOT NULL COMMENT '回复数',
+    created_at     timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at     timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid     bigint                                 not null comment '创建用户',
+    update_uid     bigint                                 not null comment '更新用户',
+    deleted        boolean                                not null comment '是否被删除',
+    attribute      text                                   null comment '属性列（json string）'
 );
 
 create table faq
 (
-    id         bigint                              not null comment '常见问题ID'
+    id         bigint                                 not null comment '常见问题ID'
         primary key,
-    category   varchar(20)                         not null comment '板块（账号/学院/帖子/其他）',
-    question   varchar(200)                        not null comment '问题描述',
-    answer     varchar(500)                        not null comment '问题解答',
-    view_count int       default 0                 not null comment '浏览量',
-    is_pinned  boolean   default false             not null comment '是否添加到"猜你想问"',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    category   varchar(20)                            not null comment '板块（账号/学院/帖子/其他）',
+    question   varchar(200)                           not null comment '问题描述',
+    answer     varchar(500)                           not null comment '问题解答',
+    view_count int          default 0                 not null comment '浏览量',
+    is_pinned  boolean      default false             not null comment '是否添加到"猜你想问"',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table favorite
 (
-    id         bigint                              not null comment '收藏ID'
+    id         bigint                                 not null comment '收藏ID'
         primary key,
-    user_id    bigint                              not null comment '用户ID',
-    post_id    bigint                              not null comment '帖子ID',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    user_id    bigint                                 not null comment '用户ID',
+    post_id    bigint                                 not null comment '帖子ID',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table feedback
 (
-    id         bigint                              not null comment '意见反馈ID'
+    id         bigint                                 not null comment '意见反馈ID'
         primary key,
-    user_id    bigint                              not null comment '用户ID',
-    category   varchar(20)                         not null comment '反馈类别',
-    content    varchar(500)                        not null comment '反馈内容',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    user_id    bigint                                 not null comment '用户ID',
+    category   varchar(20)                            not null comment '反馈类别',
+    content    varchar(500)                           not null comment '反馈内容',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table file
 (
-    id         bigint                              not null comment '文件ID'
+    id         bigint                                 not null comment '文件ID'
         primary key,
-    blake3     varchar(300)                        not null comment '文件哈希值（使用BLAKE3算法，长度为256）',
-    object_key varchar(255)                        not null comment '文件路径',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    blake3     varchar(300)                           not null comment '文件哈希值（使用BLAKE3算法，长度为256）',
+    object_key varchar(255)                           not null comment '文件路径',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table follow
 (
-    id         bigint                              not null comment '关注ID'
+    id         bigint                                 not null comment '关注ID'
         primary key,
-    user_id    bigint                              not null comment '用户ID',
-    target_id  bigint                              not null comment '关注对象ID',
-    type       varchar(20)                         not null comment '关注类型',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    user_id    bigint                                 not null comment '用户ID',
+    target_id  bigint                                 not null comment '关注对象ID',
+    type       varchar(20)                            not null comment '关注类型',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table notice
 (
-    id            bigint                              not null comment '互动通知ID'
+    id            bigint                                 not null comment '互动通知ID'
         primary key,
-    receiver_id   bigint                              not null comment '收件人ID',
-    sender_id     bigint                              not null comment '发送人ID',
-    type          varchar(20)                         not null comment '消息类型（赞/收藏/评论/at）',
-    position_type varchar(20)                         not null comment '位置类型（帖子/评论）',
-    position_id   bigint                              not null comment '位置ID',
-    comment_id    bigint                              null comment '新评论ID（type为comment时有效）',
-    is_read       boolean                             not null comment '是否已读',
-    created_at    timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at    timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid    bigint                              not null comment '创建用户',
-    update_uid    bigint                              not null comment '更新用户',
-    deleted       boolean                             not null comment '是否被删除',
-    attribute     text                                null comment '属性列（json string）'
+    receiver_id   bigint                                 not null comment '收件人ID',
+    sender_id     bigint                                 not null comment '发送人ID',
+    type          varchar(20)                            not null comment '消息类型（赞/收藏/评论/at）',
+    position_type varchar(20)                            not null comment '位置类型（帖子/评论）',
+    position_id   bigint                                 not null comment '位置ID',
+    comment_id    bigint                                 null comment '新评论ID（type为comment时有效）',
+    is_read       boolean                                not null comment '是否已读',
+    created_at    timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at    timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid    bigint                                 not null comment '创建用户',
+    update_uid    bigint                                 not null comment '更新用户',
+    deleted       boolean                                not null comment '是否被删除',
+    attribute     text                                   null comment '属性列（json string）'
 );
 
 create table operation_log
 (
-    id             bigint                              not null comment '修改记录ID'
+    id             bigint                                 not null comment '修改记录ID'
         primary key,
-    type           varchar(20)                         not null comment '修改类型',
-    target_id      bigint                              not null comment '修改对象ID',
-    user_id        bigint                              not null comment '修改用户ID',
-    before_content text                                not null comment '修改前内容',
-    after_content  text                                not null comment '修改后内容',
-    created_at     timestamp default CURRENT_TIMESTAMP not null comment '创建时间'
+    type           varchar(20)                            not null comment '修改类型',
+    target_id      bigint                                 not null comment '修改对象ID',
+    user_id        bigint                                 not null comment '修改用户ID',
+    before_content text                                   not null comment '修改前内容',
+    after_content  text                                   not null comment '修改后内容',
+    created_at     timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间'
 );
 
 create table post
 (
-    id         bigint                              not null comment '帖子ID'
+    id         bigint                                 not null comment '帖子ID'
         primary key,
-    user_id    bigint                              not null comment '作者用户ID',
-    title      varchar(100)                        not null comment '标题',
-    content    text                                not null comment '正文',
-    category   varchar(20)                         not null comment '板块归属',
-    is_pinned  boolean                             not null comment '是否置顶（管理员）',
-    is_topped  boolean                             not null comment '是否置顶（个人主页）',
-    view_count int       default 0                 not null comment '浏览次数',
-    status     varchar(20)                         not null comment '帖子状态（normal/pending/deleted）',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除（在该表中废弃，与其他表保持统一）',
-    attribute  text                                null comment '属性列（json string）'
+    user_id    bigint                                 not null comment '作者用户ID',
+    title      varchar(100)                           not null comment '标题',
+    content    text                                   not null comment '正文',
+    category   varchar(20)                            not null comment '板块归属',
+    is_pinned  boolean                                not null comment '是否置顶（管理员）',
+    is_topped  boolean                                not null comment '是否置顶（个人主页）',
+    view_count int          default 0                 not null comment '浏览次数',
+    status     varchar(20)                            not null comment '帖子状态（normal/pending/deleted）',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除（在该表中废弃，与其他表保持统一）',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table post_topic_relation
 (
-    id         bigint                              not null comment '关联ID'
+    id         bigint                                 not null comment '关联ID'
         primary key,
-    post_id    bigint                              not null comment '帖子ID',
-    topic_id   bigint                              not null comment '话题ID',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    post_id    bigint                                 not null comment '帖子ID',
+    topic_id   bigint                                 not null comment '话题ID',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '发布时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table report
 (
-    id             bigint                              not null comment '举报ID'
+    id             bigint                                 not null comment '举报ID'
         primary key,
-    user_id        bigint                              not null comment '用户ID',
-    target_user_id bigint                              not null comment '被举报用户ID',
-    target_type    varchar(50)                         not null comment '对象类型(用户/帖子/评论)',
-    target_id      bigint                              not null comment '对象ID',
-    type           varchar(50)                         not null comment '举报类型(色情/暴力/侵权/违法/涉政/引战/谣言/其他)',
-    reason         varchar(500)                        not null comment '理由',
-    status         varchar(20)                         not null comment '处理状态(未处理/举报失败/举报成功)',
-    result         varchar(300)                        not null comment '处理结论',
-    created_at     timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at     timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid     bigint                              not null comment '创建用户',
-    update_uid     bigint                              not null comment '更新用户',
-    deleted        boolean                             not null comment '是否被删除',
-    attribute      text                                null comment '属性列（json string）'
+    user_id        bigint                                 not null comment '用户ID',
+    target_user_id bigint                                 not null comment '被举报用户ID',
+    target_type    varchar(50)                            not null comment '对象类型(用户/帖子/评论)',
+    target_id      bigint                                 not null comment '对象ID',
+    type           varchar(50)                            not null comment '举报类型(色情/暴力/侵权/违法/涉政/引战/谣言/其他)',
+    reason         varchar(500)                           not null comment '理由',
+    status         varchar(20)                            not null comment '处理状态(未处理/举报失败/举报成功)',
+    result         varchar(300)                           not null comment '处理结论',
+    created_at     timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at     timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid     bigint                                 not null comment '创建用户',
+    update_uid     bigint                                 not null comment '更新用户',
+    deleted        boolean                                not null comment '是否被删除',
+    attribute      text                                   null comment '属性列（json string）'
 );
 
 create table topic
 (
-    id         bigint                              not null comment '话题ID'
+    id         bigint                                 not null comment '话题ID'
         primary key,
-    name       varchar(50)                         not null comment '话题名',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    name       varchar(50)                            not null comment '话题名',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '发布时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table upvote
 (
-    id         bigint                              not null comment '点赞ID'
+    id         bigint                                 not null comment '点赞ID'
         primary key,
-    user_id    bigint                              not null comment '用户ID',
-    post_id    bigint                              null comment '帖子ID',
-    comment_id bigint                              null comment '评论ID',
-    status     boolean   default true              not null comment '点赞状态',
-    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
-    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
-    create_uid bigint                              not null comment '创建用户',
-    update_uid bigint                              not null comment '更新用户',
-    deleted    boolean                             not null comment '是否被删除',
-    attribute  text                                null comment '属性列（json string）'
+    user_id    bigint                                 not null comment '用户ID',
+    post_id    bigint                                 null comment '帖子ID',
+    comment_id bigint                                 null comment '评论ID',
+    status     boolean      default true              not null comment '点赞状态',
+    created_at timestamp(3) default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                                 not null comment '创建用户',
+    update_uid bigint                                 not null comment '更新用户',
+    deleted    boolean                                not null comment '是否被删除',
+    attribute  text                                   null comment '属性列（json string）'
 );
 
 create table user
@@ -271,13 +272,13 @@ create table user
     upvote_notice  boolean      default true              not null comment '点赞消息开关',
     comment_notice boolean      default true              not null comment '评论消息开关',
     role           varchar(20)                            not null comment '用户角色',
-    created_at     timestamp    default CURRENT_TIMESTAMP not null comment '注册时间',
-    updated_at     timestamp                              not null on update CURRENT_TIMESTAMP comment '更新时间',
+    created_at     timestamp(3) default CURRENT_TIMESTAMP not null comment '注册时间',
+    updated_at     timestamp(3)                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid     bigint                                 not null comment '创建用户',
     update_uid     bigint                                 not null comment '更新用户',
     deleted        boolean                                not null comment '是否被删除',
     attribute      text                                   null comment '属性列（json string）',
-    muted_until    timestamp                              null comment '禁言截止时间',
+    muted_until    timestamp(3)                           null comment '禁言截止时间',
     constraint uq_user
         unique (nickname, student_id, phone)
 );

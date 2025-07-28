@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 
 /**
@@ -16,7 +15,6 @@ import java.util.Collections;
 @SuperBuilder
 public class GetCommentListResponse extends BaseListResponse<CommentElement> {
     @Schema(description = "高亮评论")
-    @NotNull
     private CommentElement highlightComment;
 
     public static GetCommentListResponse emptyListResponse(int page, int pageSize) {

@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author qianqianzyk
@@ -45,6 +44,7 @@ public class CommentManager {
     private final UserManager userManager;
     private final PostRankManager postRankManager;
     private final NoticeManager noticeManager;
+    private final PostManager postManager;
 
     @Transactional
     public void publishComment(Long postId, Long parentId, Long targetId, String content, String pictureUrl) {
@@ -54,10 +54,9 @@ public class CommentManager {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
+        // 检查父评论链完整性检查
         Comment parentComment;
         Comment targetComment;
-
-        // 检查父评论链完整性检查
         if (parentId != 0) {
             parentComment = commentMapper.selectById(parentId);
             if (parentComment == null || !parentComment.getPostId().equals(postId)) {
@@ -87,6 +86,7 @@ public class CommentManager {
                 .postId(postId)
                 .parentId(parentId)
                 .targetId(targetId)
+                .targetUserId(targetComment == null ? 0 : targetComment.getUserId())
                 .content(content)
                 .isPinned(false)
                 .upvoteCount(0)
@@ -113,18 +113,14 @@ public class CommentManager {
         });
 
         if (parentId != 0) {
-            parentComment.setReplyCount(parentComment.getReplyCount() + 1);
-            commentMapper.updateById(parentComment);
-
+            commentMapper.incrementReplyCount(parentId);
             if (targetId != 0) {
-                targetComment.setReplyCount(targetComment.getReplyCount() + 1);
-                commentMapper.updateById(targetComment);
+                commentMapper.incrementReplyCount(targetId);
             }
         }
     }
 
     public UpvoteCommentResponse upvoteComment(Long commentId) {
-        // 检查 comment_id 合法性
         Comment comment = commentMapper.selectById(commentId);
         if (comment == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
@@ -186,15 +182,12 @@ public class CommentManager {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
 
-        // 一个帖子下仅允许置顶五个评论
+        // 一个帖子下仅允许置顶一个评论
         if (!comment.getIsPinned()) {
             LambdaQueryWrapper<Comment> pinnedCountWrapper = new LambdaQueryWrapper<>();
             pinnedCountWrapper.eq(Comment::getPostId, comment.getPostId())
-                    .eq(Comment::getIsPinned, true)
-                    .eq(Comment::getParentId, 0);
-            Long pinnedCount = commentMapper.selectCount(pinnedCountWrapper);
-
-            if (pinnedCount >= 5) {
+                    .eq(Comment::getIsPinned, true);
+            if (commentMapper.exists(pinnedCountWrapper)) {
                 throw new ApiException(ExceptionEnum.COMMENT_PINNED_LIMIT_REACHED);
             }
         }
@@ -217,37 +210,16 @@ public class CommentManager {
         if (!comment.getUserId().equals(StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
-
-        // 获取评论链
-        List<Long> commentIds;
-        if (comment.getParentId() == 0) {
-            commentIds = commentMapper.selectList(
-                    new LambdaQueryWrapper<Comment>()
-                            .eq(Comment::getParentId, commentId)
-                            .select(Comment::getId)
-            ).stream().map(Comment::getId).collect(Collectors.toList());
-            commentIds.add(commentId);
-        } else {
-            commentIds = commentMapper.getCommentIdsByTargetId(commentId);
+        if (comment.getParentId() != 0) {
+            commentMapper.decrementReplyCount(comment.getParentId());
+            if (comment.getTargetId() != 0) {
+                commentMapper.decrementReplyCount(comment.getTargetId());
+            }
         }
-
-        // 删除评论
-        if (!commentIds.isEmpty()) {
-            commentMapper.delete(new LambdaQueryWrapper<Comment>()
-                    .in(Comment::getId, commentIds));
-        }
+        commentMapper.deleteById(commentId);
     }
 
     public GetCommentListResponse getCommentList(Long postId, Integer page, Integer pageSize, Integer sort, Long highlightCommentId) {
-        // 按时间升序查询置顶评论
-        List<Comment> pinned = commentMapper.selectList(
-                new LambdaQueryWrapper<Comment>()
-                        .eq(Comment::getPostId, postId)
-                        .eq(Comment::getParentId, 0)
-                        .eq(Comment::getIsPinned, true)
-                        .orderByAsc(Comment::getCreatedAt)
-        );
-
         Long excludeId = null;
         Comment highlight = null;
         if (highlightCommentId != null && highlightCommentId != 0) {
@@ -261,25 +233,19 @@ public class CommentManager {
             }
         }
 
-        // 根据排序规则查询非置顶评论
+        // 根据排序规则查询评论（置顶在最上面）
         Page<Comment> commentPage = new Page<>(page, pageSize);
         QueryWrapper<Comment> wrapper = new QueryWrapper<Comment>()
                 .eq("post_id", postId)
                 .eq("parent_id", 0)
-                .eq("is_pinned", false);
-        if (excludeId != null) {
-            wrapper.ne("id", excludeId);
-        }
+                .orderByDesc("is_pinned")
+                .ne(excludeId != null, "id", excludeId);
         if (sort == 1) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2").orderByAsc("created_at");
-        } else {
-            wrapper.orderByAsc("created_at");
+            wrapper.orderByDesc("upvote_count + reply_count * 2");
         }
-        List<Comment> normal = commentMapper.selectPage(commentPage, wrapper).getRecords();
-
-        // 合并置顶和普通评论
-        List<Comment> allComments = Stream.concat(pinned.stream(), normal.stream()).toList();
-        if (allComments.isEmpty()) {
+        wrapper.orderByAsc("created_at");
+        List<Comment> comments = commentMapper.selectPage(commentPage, wrapper).getRecords();
+        if (comments.isEmpty()) {
             return GetCommentListResponse.emptyListResponse(page, pageSize);
         }
 
@@ -287,29 +253,32 @@ public class CommentManager {
         Long postAuthorId = post != null ? post.getUserId() : null;
 
         List<CommentElement> commentElements = new ArrayList<>();
-        for (Comment comment : allComments) {
-            List<Comment> hottestReplyList = commentMapper.selectList(new QueryWrapper<Comment>()
-                    .eq("parent_id", comment.getId())
-                    .orderByDesc("upvote_count + reply_count * 2")
-                    .orderByAsc("created_at")
-                    .last("limit 1"));
-
-            List<ReplyElement> replyElements = new ArrayList<>();
-            if (!hottestReplyList.isEmpty()) {
-                Comment hottestReply = hottestReplyList.get(0);
-                replyElements.add(buildReplyElement(hottestReply, postAuthorId));
-            }
-
+        for (Comment comment : comments) {
+            List<ReplyElement> replyElements = getHottestReplyAsList(comment, postAuthorId);
             commentElements.add(buildCommentElement(comment, replyElements, postAuthorId));
         }
 
         return GetCommentListResponse.builder()
                 .page(page)
                 .pageSize(pageSize)
-                .total(commentPage.getTotal() + pinned.size())
+                .total(commentPage.getTotal())
                 .list(commentElements)
                 .highlightComment(highlight != null ? getHighlightCommentElement(highlight) : null)
                 .build();
+    }
+
+    private List<ReplyElement> getHottestReplyAsList(Comment comment, Long postAuthorId) {
+        Comment hottestReply = commentMapper.selectOne(new QueryWrapper<Comment>()
+                .eq("parent_id", comment.getId())
+                .orderByDesc("upvote_count + reply_count * 2")
+                .orderByAsc("created_at")
+                .last("limit 1"));
+
+        List<ReplyElement> replyElements = new ArrayList<>();
+        if (hottestReply != null) {
+            replyElements.add(buildReplyElement(hottestReply, postAuthorId));
+        }
+        return replyElements;
     }
 
     public CommentElement getHighlightCommentElement(Comment highlight) {
@@ -317,45 +286,37 @@ public class CommentManager {
         Long postAuthorId = post != null ? post.getUserId() : null;
 
         if (highlight.getParentId() == 0) {
-            List<Comment> replyList = commentMapper.selectList(new QueryWrapper<Comment>()
-                    .eq("parent_id", highlight.getId())
-                    .orderByDesc("upvote_count + reply_count * 2")
-                    .orderByAsc("created_at")
-                    .last("limit 1"));
-
-            List<ReplyElement> replies = new ArrayList<>();
-            if (!replyList.isEmpty()) {
-                Comment hottestReply = replyList.get(0);
-                replies.add(buildReplyElement(hottestReply, postAuthorId));
-            }
-
-            return buildCommentElement(highlight, replies, postAuthorId);
+            List<ReplyElement> replyElements = getHottestReplyAsList(highlight, postAuthorId);
+            return buildCommentElement(highlight, replyElements, postAuthorId);
         } else {
             Comment parent = commentMapper.selectById(highlight.getParentId());
             if (parent == null) {
                 return null;
             }
-
             ReplyElement replyElement = buildReplyElement(highlight, postAuthorId);
             return buildCommentElement(parent, Collections.singletonList(replyElement), postAuthorId);
         }
     }
 
-    public BaseListResponse<ReplyElement> getReplyList(Long commentId, Integer page, Integer pageSize, Integer sort, Long[] excludeCommentIds) {
-        Page<Comment> pageParam = new Page<>(page, pageSize);
+    public BaseListResponse<ReplyElement> getReplyList(Long commentId, Integer page, Integer pageSize, Integer sort, List<Long> excludeCommentIds) {
+        Comment parent = commentMapper.selectById(commentId);
+        if (parent == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+
+        Page<Comment> replyPage = new Page<>(page, pageSize);
         QueryWrapper<Comment> wrapper = new QueryWrapper<>();
         wrapper.eq("parent_id", commentId);
-        if (excludeCommentIds != null && excludeCommentIds.length > 0) {
-            wrapper.notIn("id", Arrays.asList(excludeCommentIds));
+        if (excludeCommentIds != null && !excludeCommentIds.isEmpty()) {
+            wrapper.notIn("id", excludeCommentIds);
         }
         if (sort == 1) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2").orderByAsc("created_at");
-        } else {
-            wrapper.orderByAsc("created_at");
+            wrapper.orderByDesc("upvote_count + reply_count * 2");
         }
-        Page<Comment> replyPage = commentMapper.selectPage(pageParam, wrapper);
-        List<Comment> replies = replyPage.getRecords();
+        wrapper.orderByAsc("created_at");
 
+        commentMapper.selectPage(replyPage, wrapper);
+        List<Comment> replies = replyPage.getRecords();
         if (replies.isEmpty()) {
             return BaseListResponse.emptyListResponse(page, pageSize);
         }
@@ -363,11 +324,9 @@ public class CommentManager {
         Long postId = replies.get(0).getPostId();
         Post post = postMapper.selectById(postId);
         Long postAuthorId = post != null ? post.getUserId() : null;
-
-        List<ReplyElement> replyElements = new ArrayList<>();
-        for (Comment reply : replies) {
-            replyElements.add(buildReplyElement(reply, postAuthorId));
-        }
+        List<ReplyElement> replyElements = replies.stream()
+                .map(reply -> buildReplyElement(reply, postAuthorId))
+                .toList();
 
         return BaseListResponse.<ReplyElement>builder()
                 .page(page)
@@ -378,17 +337,15 @@ public class CommentManager {
     }
 
     public BaseListResponse<PersonalCommentElement> getPersonalComment(Integer page, Integer pageSize, Long userId) {
-        Long currentUserId = StpUtil.getLoginIdAsLong();
-        Long realUserId = (userId == null || userId.equals(currentUserId)) ? currentUserId : userId;
+        long currentUserId = StpUtil.getLoginIdAsLong();
+        Long realUserId = userId == null ? currentUserId : userId;
 
-        // 按时间升序查询当前用户的评论
-        Page<Comment> pageParam = new Page<>(page, pageSize);
-        Page<Comment> commentPage = commentMapper.selectPage(
-                pageParam,
-                new LambdaQueryWrapper<Comment>()
-                        .eq(Comment::getUserId, realUserId)
-                        .orderByAsc(Comment::getCreatedAt)
-        );
+        // 按时间降序查询当前用户的评论
+        Page<Comment> commentPage = new Page<>(page, pageSize);
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getUserId, realUserId)
+                .orderByDesc(Comment::getCreatedAt);
+        commentMapper.selectPage(commentPage, queryWrapper);
         List<Comment> commentList = commentPage.getRecords();
         if (commentList.isEmpty()) {
             return BaseListResponse.emptyListResponse(page, pageSize);
@@ -402,10 +359,7 @@ public class CommentManager {
             return BaseListResponse.emptyListResponse(page, pageSize);
         }
 
-        List<Post> posts = postMapper.selectList(
-                new LambdaQueryWrapper<Post>()
-                        .in(Post::getId, postIds)
-        );
+        List<Post> posts = postMapper.selectList(new LambdaQueryWrapper<Post>().in(Post::getId, postIds));
         Map<Long, Post> postMap = posts.stream()
                 .collect(Collectors.toMap(Post::getId, p -> p));
 
@@ -419,7 +373,7 @@ public class CommentManager {
                     .postId(post.getId())
                     .title(post.getTitle())
                     .content(StringUtils.left(post.getContent(), 50))
-                    .pictures(getCommentPictures(post.getId()))
+                    .pictures(postManager.getPostPictures(post.getId()))
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
                     .personalCommentList(Collections.singletonList(
@@ -519,16 +473,13 @@ public class CommentManager {
         if (replies.isEmpty()) {
             return BaseListResponse.emptyListResponse(page, pageSize);
         }
-
         Long postId = replies.get(0).getPostId();
         Post post = postMapper.selectById(postId);
         Long postAuthorId = post != null ? post.getUserId() : null;
 
-        List<ReplyElement> replyElements = new ArrayList<>();
-        for (Comment reply : replies) {
-            replyElements.add(buildReplyElement(reply, postAuthorId));
-        }
-
+        List<ReplyElement> replyElements = replies.stream()
+                .map(reply -> buildReplyElement(reply, postAuthorId))
+                .toList();
         return BaseListResponse.<ReplyElement>builder()
                 .page(page)
                 .pageSize(pageSize)
@@ -539,44 +490,29 @@ public class CommentManager {
 
     @IgnoreLogicDelete
     public void adminChangeCommentStatus(Long commentId, CommentOperationEnum operation) {
-        Comment comment = commentMapper.selectOne(
-                new LambdaQueryWrapper<Comment>()
-                        .eq(Comment::getId, commentId)
-        );
+        Comment comment = commentMapper.selectById(commentId);
         if (comment == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
-        List<Long> commentIds;
-        if (comment.getParentId() == 0) {
-            commentIds = commentMapper.selectList(
-                    new LambdaQueryWrapper<Comment>()
-                            .eq(Comment::getParentId, commentId)
-                            .select(Comment::getId)
-            ).stream().map(Comment::getId).collect(Collectors.toList());
-            commentIds.add(commentId);
-        } else {
-            commentIds = commentMapper.getAllCommentIdsByTargetId(commentId);
-        }
-        if (commentIds.isEmpty()) {
-            return;
+        if (comment.getParentId() != 0) {
+            Comment parent = commentMapper.selectById(comment.getParentId());
+            if (parent == null || parent.getDeleted()) {
+                throw new ApiException(ExceptionEnum.PARENT_COMMENT_DELETED);
+            }
         }
 
         if (CommentOperationEnum.DELETE.equals(operation)) {
-            commentMapper.delete(new LambdaQueryWrapper<Comment>()
-                    .in(Comment::getId, commentIds));
+            commentMapper.deleteById(commentId);
         } else {
-            commentMapper.restoreComments(commentIds);
+            commentMapper.restoreComment(commentId);
         }
     }
 
     private ReplyElement buildReplyElement(Comment reply, Long postAuthorId) {
         UserInfoDTO targetUser = null;
-        if (reply.getTargetId() != 0) {
-            Comment targetComment = commentMapper.selectById(reply.getTargetId());
-            if (targetComment != null) {
-                targetUser = userManager.getUserInfo(targetComment.getUserId());
-            }
+        if (reply.getTargetUserId() != 0) {
+            targetUser = userManager.getUserInfo(reply.getTargetUserId());
         }
         return ReplyElement.builder()
                 .replyId(reply.getId())

@@ -110,7 +110,7 @@ public class PostManager {
                 .build();
     }
 
-    private List<PictureInfoDTO> getPostPictures(Long id) {
+    public List<PictureInfoDTO> getPostPictures(Long id) {
         return attachmentMapper.selectList(new LambdaQueryWrapper<Attachment>()
                 .eq(Attachment::getTargetId, id)
                 .eq(Attachment::getTargetType, TargetTypeEnum.POST)
