@@ -58,4 +58,24 @@ public interface CommentMapper extends BaseMapper<Comment> {
 
     @Update("UPDATE comment SET upvote_count = upvote_count - 1 WHERE id = #{commentId} AND upvote_count > 0")
     void decrementUpvoteCount(@Param("commentId") Long commentId);
+
+    // 获取被删除的评论 ID 或有被删除的子回复的评论 ID
+    @Select("""
+            SELECT id FROM comment
+            WHERE post_id = #{postId}
+              AND parent_id = 0
+              AND deleted = true
+
+            UNION
+
+            SELECT id FROM comment
+            WHERE post_id = #{postId}
+              AND parent_id = 0
+              AND deleted = false
+              AND id IN (
+                  SELECT DISTINCT parent_id FROM comment
+                  WHERE deleted = true AND parent_id != 0
+              )
+            """)
+    List<Long> getDeletedOrHasDeletedReplyCommentIds(@Param("postId") Long postId);
 }
