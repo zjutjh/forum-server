@@ -7,10 +7,7 @@ import org.jh.forum.common.dto.request.GetReportListRequest;
 import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.request.ReportContentRequest;
 import org.jh.forum.common.dto.request.ReportUserRequest;
-import org.jh.forum.common.dto.response.BaseListResponse;
-import org.jh.forum.common.dto.response.GetReportDetailResponse;
-import org.jh.forum.common.dto.response.GetReportListElement;
-import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
+import org.jh.forum.common.dto.response.*;
 import org.jh.forum.server.manager.ReportManager;
 
 import jakarta.annotation.Resource;
@@ -37,8 +34,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public void handleReport(HandleReportRequest request) {
-        reportManager.handleReport(request);
+    public HandleReportResponse handleReport(HandleReportRequest request) {
+        return reportManager.handleReport(request);
     }
 
     @Override

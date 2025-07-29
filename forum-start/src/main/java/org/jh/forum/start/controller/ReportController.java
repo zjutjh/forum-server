@@ -12,10 +12,7 @@ import org.jh.forum.common.dto.request.GetReportListRequest;
 import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.request.ReportContentRequest;
 import org.jh.forum.common.dto.request.ReportUserRequest;
-import org.jh.forum.common.dto.response.BaseListResponse;
-import org.jh.forum.common.dto.response.GetReportDetailResponse;
-import org.jh.forum.common.dto.response.GetReportListElement;
-import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
+import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,9 +48,8 @@ public class ReportController {
     @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @Tag(name = "管理员")
     @PostMapping("/handle")
-    public AjaxResult<Void> handleReport(@Valid @RequestBody HandleReportRequest request) {
-        reportService.handleReport(request);
-        return AjaxResult.success();
+    public AjaxResult<HandleReportResponse> handleReport(@Valid @RequestBody HandleReportRequest request) {
+        return AjaxResult.success(reportService.handleReport(request));
     }
 
     @Operation(summary = "获取举报列表")
