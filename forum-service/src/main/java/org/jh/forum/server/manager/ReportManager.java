@@ -10,10 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.request.HandleReportRequest;
-import org.jh.forum.common.dto.response.BaseListResponse;
-import org.jh.forum.common.dto.response.GetReportDetailResponse;
-import org.jh.forum.common.dto.response.GetReportListElement;
-import org.jh.forum.common.dto.response.UserHistoryStatsResponse;
+import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.Comment;
 import org.jh.forum.common.entity.Post;
@@ -100,7 +97,7 @@ public class ReportManager {
         }
     }
 
-    public void handleReport(HandleReportRequest request) {
+    public HandleReportResponse handleReport(HandleReportRequest request) {
         Report report = reportMapper.selectById(request.getReportId());
         if (report == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
@@ -109,6 +106,10 @@ public class ReportManager {
         ReportStatusEnum status = EnumUtil.getBy(ReportStatusEnum::getValue, request.getStatus());
         if (status == null) {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+        }
+
+        if (report.getStatus() != ReportStatusEnum.PENDING) {
+            throw new ApiException(ExceptionEnum.REPORT_ALREADY_HANDLED);
         }
 
         if (request.getShouldDelete()) {
@@ -127,6 +128,14 @@ public class ReportManager {
         reportMapper.updateById(report);
 
         // Todo 发送举报结果给举报人和被举报人
+
+        Report nextReport = reportMapper.selectOne(new LambdaQueryWrapper<Report>()
+                .eq(Report::getStatus, ReportStatusEnum.PENDING)
+                .orderByAsc(Report::getCreatedAt)
+                .last("limit 1"));
+        return HandleReportResponse.builder()
+                .nextReportId(nextReport == null ? null : nextReport.getId())
+                .build();
     }
 
     public BaseListResponse<GetReportListElement> getReportList(String status, String order, Integer page, Integer pageSize) {
