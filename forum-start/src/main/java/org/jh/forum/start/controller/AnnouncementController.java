@@ -112,18 +112,6 @@ public class AnnouncementController {
     }
 
     /**
-     * 查看公告基本内容接口
-     * HTTP方法: GET
-     * 请求路径: /announcements?id=123
-     * 权限: 用户
-     */
-    @Operation(summary = "用户查看公告信息")
-    @GetMapping
-    public AjaxResult<GetAnnouncementDetailResponse> getAnnouncementDetail(@RequestParam("id") Long id) {
-        return AjaxResult.success(announcementService.getAnnouncementDetail(id));
-    }
-
-    /**
      * 查看公告全部信息接口
      * HTTP方法: GET
      * 请求路径: /announcements/see?id=123

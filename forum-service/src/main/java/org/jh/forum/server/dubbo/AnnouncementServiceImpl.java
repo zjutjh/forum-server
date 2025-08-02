@@ -83,14 +83,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     /**
-     * 根据ID查询公告详情 (用户版本)
-     */
-    @Override
-    public GetAnnouncementDetailResponse getAnnouncementDetail(Long id) {
-        return announcementManager.getAnnouncementDetail(id);
-    }
-
-    /**
      * 查询公告列表(用户版本)
      */
     @Override

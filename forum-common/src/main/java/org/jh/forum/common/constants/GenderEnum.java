@@ -13,7 +13,7 @@ import lombok.Getter;
 public enum GenderEnum {
     FEMALE("female", "女"),
     MALE("male", "男"),
-    UNKNOW("unknow", "保密");
+    UNKNOWN("unknown", "保密");
 
     @EnumValue
     @JsonValue

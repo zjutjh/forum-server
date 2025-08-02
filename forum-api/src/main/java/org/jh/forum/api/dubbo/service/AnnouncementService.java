@@ -48,15 +48,6 @@ public interface AnnouncementService {
     GetAdminAnnouncementDetailResponse getAdminAnnouncementDetail(Long id);
 
     /**
-     * 根据ID查询公告详情（用户版本）
-     * 返回简化的公告信息，不包含管理员才需要的字段
-     *
-     * @param id 公告ID
-     * @return 公告简化详情
-     */
-    GetAnnouncementDetailResponse getAnnouncementDetail(Long id);
-
-    /**
      * 用户查询公告列表
      *
      * @param request 查询请求

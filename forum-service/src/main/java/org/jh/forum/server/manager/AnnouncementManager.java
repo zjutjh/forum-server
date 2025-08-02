@@ -12,7 +12,10 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
-import org.jh.forum.common.dto.response.*;
+import org.jh.forum.common.dto.response.BaseListResponse;
+import org.jh.forum.common.dto.response.GetAdminAnnouncementDetailResponse;
+import org.jh.forum.common.dto.response.GetAdminAnnouncementListElement;
+import org.jh.forum.common.dto.response.GetAnnouncementListElement;
 import org.jh.forum.common.entity.Announcement;
 import org.jh.forum.common.entity.User;
 import org.jh.forum.common.exceptions.ApiException;
@@ -156,27 +159,6 @@ public class AnnouncementManager {
             publishedAt = publishedTime;
         }
         return publishedAt;
-    }
-
-    public GetAnnouncementDetailResponse getAnnouncementDetail(Long id) {
-        Announcement announcement = announcementMapper.selectById(id);
-        if (announcement == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-        if (announcement.getStatus() == AnnouncementStatusEnum.DRAFT) {
-            throw new ApiException(ExceptionEnum.ANNOUNCEMENT_NOT_PUBLISHED);
-        }
-        if (announcement.getPublishedAt().isAfter(LocalDateTime.now())) {
-            throw new ApiException(ExceptionEnum.ANNOUNCEMENT_NOT_PUBLISHED);
-        }
-        return GetAnnouncementDetailResponse.builder()
-                .title(announcement.getTitle())
-                .content(announcement.getContent())
-                .sticky(announcement.getSticky())
-                .type(announcement.getType())
-                .publishedAt(announcement.getPublishedAt())
-                .signatory(announcement.getSignatory())
-                .build();
     }
 
     public GetAdminAnnouncementDetailResponse getAdminAnnouncementDetail(Long id) {
