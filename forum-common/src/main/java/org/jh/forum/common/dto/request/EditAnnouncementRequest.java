@@ -41,6 +41,7 @@ public class EditAnnouncementRequest {
     private AnnouncementStatusEnum status;
 
     @NotNull
+    @Size(max = 20)
     @Schema(description = "（委托）发布人签名", example = "张三")
     private String signatory;
 
