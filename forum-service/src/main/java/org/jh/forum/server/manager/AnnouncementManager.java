@@ -48,6 +48,7 @@ public class AnnouncementManager {
                 .type(request.getType())
                 .publishedAt(getPublishedAt(request.getStatus(), request.getPublishedAt()))
                 .status(request.getStatus())
+                .signatory(request.getSignatory())
                 .sticky(false)
                 .build();
         announcementMapper.insert(announcement);
@@ -65,6 +66,7 @@ public class AnnouncementManager {
         announcement.setTitle(request.getTitle());
         announcement.setContent(request.getContent());
         announcement.setType(request.getType());
+        announcement.setSignatory(request.getSignatory());
 
         if (announcement.getPublishedAt() == null || announcement.getPublishedAt().isAfter(LocalDateTime.now())) {
             announcement.setStatus(request.getStatus());
@@ -166,7 +168,7 @@ public class AnnouncementManager {
                 .sticky(announcement.getSticky())
                 .type(announcement.getType())
                 .publishedAt(announcement.getPublishedAt())
-                .publisher(getPublisher(announcement.getCreateUid()))
+                .signatory(announcement.getSignatory())
                 .build();
     }
 
@@ -180,6 +182,7 @@ public class AnnouncementManager {
                 .content(announcement.getContent())
                 .type(announcement.getType())
                 .status(getTrueStatus(announcement.getPublishedAt(), announcement.getStatus()))
+                .signatory(announcement.getSignatory())
                 .updatedAt(announcement.getUpdatedAt())
                 .sticky(announcement.getSticky())
                 .publishedAt(announcement.getPublishedAt())
@@ -200,8 +203,9 @@ public class AnnouncementManager {
                 .map(announcement -> GetAnnouncementListElement.builder()
                         .id(announcement.getId())
                         .title(announcement.getTitle())
+                        .content(announcement.getContent())
                         .type(announcement.getType())
-                        .publisher(getPublisher(announcement.getCreateUid()))
+                        .signatory(announcement.getSignatory())
                         .publishedAt(announcement.getPublishedAt())
                         .sticky(announcement.getSticky())
                         .build())
