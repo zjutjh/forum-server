@@ -43,5 +43,5 @@ public class GetAdminAnnouncementDetailResponse {
     private LocalDateTime publishedAt;
 
     @Schema(description = "有无权限编辑")
-    private boolean canEdit;
+    private boolean editable;
 }

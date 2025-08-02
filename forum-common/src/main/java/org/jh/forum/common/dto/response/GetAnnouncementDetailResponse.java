@@ -31,7 +31,4 @@ public class GetAnnouncementDetailResponse {
 
     @Schema(description = "是否置顶")
     private Boolean sticky;
-    
-    @Schema(description = "有无权限编辑")
-    private boolean canEdit;
 }

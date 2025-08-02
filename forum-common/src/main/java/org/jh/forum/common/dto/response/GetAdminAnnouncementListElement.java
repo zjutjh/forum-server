@@ -43,4 +43,7 @@ public class GetAdminAnnouncementListElement {
 
     @Schema(description = "状态")
     private AnnouncementStatusEnum status;
+
+    @Schema(description = "有无权限编辑")
+    private boolean editable;
 }

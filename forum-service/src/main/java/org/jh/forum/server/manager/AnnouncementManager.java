@@ -1,5 +1,6 @@
 package org.jh.forum.server.manager;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -32,6 +33,9 @@ import java.util.List;
 @Slf4j
 @Component
 public class AnnouncementManager {
+
+    private static final int DEFAULT_TOPPED = 3;
+
     @Resource
     private AnnouncementMapper announcementMapper;
 
@@ -94,7 +98,7 @@ public class AnnouncementManager {
         long count = announcementMapper.selectCount(new LambdaQueryWrapper<Announcement>()
                 .ne(Announcement::getId, id)
                 .eq(Announcement::getSticky, true));
-        if (count >= 3 && Boolean.TRUE.equals(isSticky)) {
+        if (count >= DEFAULT_TOPPED && Boolean.TRUE.equals(isSticky)) {
             throw new ApiException(ExceptionEnum.ANNOUNCEMENT_STICKY_LIMIT_REACHED);
         }
         Announcement announcement = announcementMapper.selectById(id);
@@ -113,6 +117,9 @@ public class AnnouncementManager {
      */
     public boolean hasPermission(Long announcementId, Long userId) {
         User user = userMapper.selectById(userId);
+        if (user == null) {
+            return false;
+        }
         if (user.getRole() == UserTypeEnum.SUPER_ADMIN) {
             return true;
         }
@@ -135,7 +142,7 @@ public class AnnouncementManager {
                 .last("LIMIT 3"));
     }
 
-    /*
+    /**
      * 校验并获取合法的公告发布时间
      */
     private LocalDateTime getPublishedAt(AnnouncementStatusEnum status, LocalDateTime publishedTime) {
@@ -174,6 +181,7 @@ public class AnnouncementManager {
 
     public GetAdminAnnouncementDetailResponse getAdminAnnouncementDetail(Long id) {
         Announcement announcement = announcementMapper.selectById(id);
+        long currentUid = StpUtil.getLoginIdAsLong();
         if (announcement == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
@@ -187,6 +195,7 @@ public class AnnouncementManager {
                 .sticky(announcement.getSticky())
                 .publishedAt(announcement.getPublishedAt())
                 .publisher(getPublisher(announcement.getCreateUid()))
+                .editable(hasPermission(id, currentUid))
                 .build();
     }
 
@@ -227,6 +236,7 @@ public class AnnouncementManager {
     }
 
     public BaseListResponse<GetAdminAnnouncementListElement> adminQueryAnnouncements(Integer page, Integer pageSize, AnnouncementTypeEnum type, AnnouncementStatusEnum status, String order, String keyword) {
+        long currentUid = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(type != null, Announcement::getType, type)
                 .orderByDesc(Announcement::getSticky);
@@ -261,6 +271,7 @@ public class AnnouncementManager {
                         .publishedAt(announcement.getPublishedAt())
                         .updatedAt(announcement.getUpdatedAt())
                         .sticky(announcement.getSticky())
+                        .editable(hasPermission(announcement.getId(), currentUid))
                         .build()
                 ).toList();
         return BaseListResponse.<GetAdminAnnouncementListElement>builder()
