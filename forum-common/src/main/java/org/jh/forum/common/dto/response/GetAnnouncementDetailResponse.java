@@ -23,8 +23,8 @@ public class GetAnnouncementDetailResponse {
     @Schema(description = "公告类型")
     private AnnouncementTypeEnum type;
 
-    @Schema(description = "发布人")
-    private String publisher;
+    @Schema(description = "（委托）发布人签名")
+    private String signatory;
 
     @Schema(description = "发布时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime publishedAt;

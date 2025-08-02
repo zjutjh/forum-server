@@ -56,6 +56,12 @@ public class Announcement extends BaseEntity {
      */
     @TableField("status")
     private AnnouncementStatusEnum status;
+    
+    /**
+     * （委托）发布人签名
+     */
+    @TableField("signatory")
+    private String signatory;
 
     /**
      * 是否置顶

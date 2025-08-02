@@ -27,6 +27,9 @@ public class GetAdminAnnouncementDetailResponse {
     @Schema(description = "发布人")
     private String publisher;
 
+    @Schema(description = "（委托）发布人签名")
+    private String signatory;
+
     @Schema(description = "最后编辑时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
@@ -38,4 +41,7 @@ public class GetAdminAnnouncementDetailResponse {
 
     @Schema(description = "发布时间 yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime publishedAt;
+
+    @Schema(description = "有无权限编辑")
+    private boolean editable;
 }

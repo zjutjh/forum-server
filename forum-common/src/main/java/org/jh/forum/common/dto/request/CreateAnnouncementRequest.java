@@ -37,6 +37,11 @@ public class CreateAnnouncementRequest {
     @Schema(description = "公告状态")
     private AnnouncementStatusEnum status;
 
+    @NotNull
+    @Size(max = 20)
+    @Schema(description = "（委托）发布人签名", example = "张三")
+    private String signatory;
+
     @Schema(description = "定时发布时间(yyyy-MM-dd'T'HH:mm:ss, 前端发送UTC+8本地时间)")
     private LocalDateTime publishedAt;
 }
