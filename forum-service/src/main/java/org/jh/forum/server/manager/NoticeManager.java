@@ -5,14 +5,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jh.forum.common.constants.NoticePositionTypeEnum;
 import org.jh.forum.common.constants.NoticeTypeEnum;
 import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;
 import org.jh.forum.common.dto.response.UnreadNoticeCheckResponse;
+import org.jh.forum.common.entity.Comment;
 import org.jh.forum.common.entity.Notice;
+import org.jh.forum.common.entity.Post;
+import org.jh.forum.server.mapper.CommentMapper;
 import org.jh.forum.server.mapper.NoticeMapper;
+import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +33,8 @@ public class NoticeManager {
 
     private final NoticeMapper noticeMapper;
     private final UserManager userManager;
+    private final CommentMapper commentMapper;
+    private final PostMapper postMapper;
 
     /**
      * 获取用户的通知列表
@@ -68,7 +75,9 @@ public class NoticeManager {
                             .type(notice.getType())
                             .positionType(notice.getPositionType())
                             .positionId(notice.getPositionId())
-                            .commentId(notice.getCommentId())
+                            .positionContent(getContent(notice.getPositionType(), notice.getPositionId()))
+                            .newCommentId(notice.getCommentId())
+                            .newCommentContent(notice.getCommentId() == null ? null : getContent(NoticePositionTypeEnum.COMMENT, notice.getCommentId()))
                             .createdAt(notice.getCreatedAt())
                             .isRead(notice.getIsRead())
                             .build();
@@ -84,6 +93,26 @@ public class NoticeManager {
                 .build();
     }
 
+    private String getContent(NoticePositionTypeEnum positionType, Long positionId) {
+        String content;
+        if (positionType == NoticePositionTypeEnum.POST) {
+            Post post = postMapper.selectById(positionId);
+            if (post == null) {
+                content = "帖子不存在";
+            } else {
+                content = post.getTitle() + " " + post.getContent();
+            }
+        } else {
+            Comment comment = commentMapper.selectById(positionId);
+            if (comment == null) {
+                content = "评论不存在";
+            } else {
+                content = comment.getContent();
+            }
+        }
+        return StringUtils.left(content, 30);
+    }
+
     /**
      * 创建新的通知
      * 根据请求参数构建通知实体并插入数据库
@@ -95,7 +124,8 @@ public class NoticeManager {
                 .eq(Notice::getSenderId, StpUtil.getLoginIdAsLong())
                 .eq(Notice::getType, type)
                 .eq(Notice::getPositionType, positionType)
-                .eq(Notice::getPositionId, positionId);
+                .eq(Notice::getPositionId, positionId)
+                .eq(Notice::getCommentId, newCommentId);
         if (noticeMapper.exists(wrapper)) {
             return;
         }
