@@ -2,13 +2,16 @@ package org.jh.forum.server.manager;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.entity.User;
 import org.jh.forum.common.entity.UserDetail;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.UserDetailMapper;
 import org.jh.forum.server.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -46,5 +49,14 @@ public class UserManager {
                 .nickname(user.getNickname())
                 .avatar(user.getAvatar())
                 .build();
+    }
+
+    public void muteUser(long id, int hours) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        user.setMutedUntil(hours == 0 ? null : LocalDateTime.now().plusHours(hours));
+        userMapper.updateById(user);
     }
 }

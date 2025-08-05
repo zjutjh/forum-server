@@ -82,4 +82,14 @@ public class User extends BaseEntity {
      * 禁言截止时间
      */
     private LocalDateTime mutedUntil;
+
+    /**
+     * 被举报次数
+     */
+    private Integer reportCount;
+
+    /**
+     * 被处理的举报数
+     */
+    private Integer resolvedReportCount;
 }
