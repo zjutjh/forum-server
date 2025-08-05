@@ -55,6 +55,7 @@ public class ReportManager {
                 .result("")
                 .build();
         reportMapper.insert(report);
+        userMapper.incrementReportCount(targetUserId);
         for (String url : pictureUrls) {
             fileManager.bindAttachment(url, TargetTypeEnum.REPORT, report.getId());
         }
@@ -97,6 +98,7 @@ public class ReportManager {
         }
     }
 
+    @Transactional
     public HandleReportResponse handleReport(HandleReportRequest request) {
         Report report = reportMapper.selectById(request.getReportId());
         if (report == null) {
@@ -126,6 +128,10 @@ public class ReportManager {
         report.setStatus(status);
         report.setResult(request.getResult());
         reportMapper.updateById(report);
+
+        if (report.getTargetType() == TargetTypeEnum.USER) {
+            userMapper.incrementResolvedReportCount(report.getTargetUserId());
+        }
 
         // Todo 发送举报结果给举报人和被举报人
 

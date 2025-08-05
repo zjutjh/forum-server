@@ -48,7 +48,9 @@ public class LoginServiceImpl implements LoginService {
                     .password(BCrypt.hashpw(password))
                     .collegeId(1L)
                     .gender(EnumUtil.getBy(GenderEnum::getDesc, "男"))
-                    .role(loginType).build();
+                    .role(loginType)
+                    .reportCount(0)
+                    .resolvedReportCount(0).build();
             userMapper.insert(user);
             userManager.insertUserDetail(user.getId());
         } else if (!BCrypt.checkpw(password, user.getPassword()) || !user.getRole().equals(loginType)) {

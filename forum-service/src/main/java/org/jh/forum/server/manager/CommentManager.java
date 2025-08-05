@@ -219,7 +219,7 @@ public class CommentManager {
         commentMapper.deleteById(commentId);
     }
 
-    public GetCommentListResponse getCommentList(Long postId, Integer page, Integer pageSize, Integer sort, Long highlightCommentId) {
+    public GetCommentListResponse getCommentList(Long postId, Integer page, Integer pageSize, String sort, Long highlightCommentId) {
         Long excludeId = null;
         Comment highlight = null;
         if (highlightCommentId != null && highlightCommentId != 0) {
@@ -240,7 +240,7 @@ public class CommentManager {
                 .eq("parent_id", 0)
                 .orderByDesc("is_pinned")
                 .ne(excludeId != null, "id", excludeId);
-        if (sort == 1) {
+        if ("hot".equals(sort)) {
             wrapper.orderByDesc("upvote_count + reply_count * 2");
         }
         wrapper.orderByAsc("created_at");

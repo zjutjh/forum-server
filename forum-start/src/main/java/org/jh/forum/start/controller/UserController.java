@@ -11,7 +11,7 @@ import org.jh.forum.api.dubbo.service.UserService;
 import org.jh.forum.common.constants.UserTypeEnum;
 import org.jh.forum.common.dto.request.LoginRequest;
 import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
-import org.jh.forum.common.dto.response.GetUserDetailResponse;
+import org.jh.forum.common.dto.response.GetUserProfileResponse;
 import org.jh.forum.common.dto.response.LoginResponse;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +50,7 @@ public class UserController {
     @GetMapping("/profile")
     @Operation(summary = "获取个人信息")
     @SaCheckLogin
-    public AjaxResult<GetUserDetailResponse> getProfile(@RequestParam(name = "id", required = false) Long targetUserId) {
+    public AjaxResult<GetUserProfileResponse> getProfile(@RequestParam(name = "id", required = false) Long targetUserId) {
         if (targetUserId == null) {
             targetUserId = StpUtil.getLoginIdAsLong();
         }

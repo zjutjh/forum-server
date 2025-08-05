@@ -5,47 +5,43 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserStatusEnum;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * @author MeaquaOWO
+ * @author SugarMGP
  */
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class GetUserDetailResponse {
-    @Schema(description = "用户昵称")
-    private String nickname;
+@Schema(description = "用户账号列表项")
+public class GetUserListElement {
+    @Schema(description = "用户ID")
+    private Long id;
 
     @Schema(description = "用户头像URL")
     private String avatar;
 
-    @Schema(description = "用户个性签名")
-    private String signature;
+    @Schema(description = "用户昵称")
+    private String nickname;
+
+    @Schema(description = "用户学号")
+    private String studentId;
 
     @Schema(description = "用户邮箱")
     private String email;
 
-    @Schema(description = "用户性别")
-    private GenderEnum gender;
-
-    @Schema(description = "真实姓名")
-    private String realname;
-
-    @Schema(description = "学院ID")
-    private Long collegeId;
-
-    @Schema(description = "生日")
-    private LocalDate birthday;
-
     @Schema(description = "注册时间")
     private LocalDateTime createdAt;
 
+    @Schema(description = "被举报次数")
+    private Integer reportCount;
+
     @Schema(description = "状态")
     private UserStatusEnum status;
+
+    @Schema(description = "禁言时间（status为muted时生效）")
+    private LocalDateTime mutedUntil;
 }
