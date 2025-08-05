@@ -36,4 +36,6 @@ public class Report extends BaseEntity {
     private ReportStatusEnum status;
 
     private String result;
+
+    private Long reviewerId;
 }

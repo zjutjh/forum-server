@@ -221,6 +221,7 @@ create table report
     reason         varchar(500)                              not null comment '理由',
     status         varchar(20)                               not null comment '处理状态(未处理/举报失败/举报成功)',
     result         varchar(300)                              not null comment '处理结论',
+    reviewer_id    bigint                                    null comment '处理人ID',
     created_at     timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
     updated_at     timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
     create_uid     bigint                                    not null comment '创建用户',

@@ -127,6 +127,7 @@ public class ReportManager {
         // Todo 根据hours入参判断自定义禁言时长
         report.setStatus(status);
         report.setResult(request.getResult());
+        report.setReviewerId(StpUtil.getLoginIdAsLong());
         reportMapper.updateById(report);
 
         if (report.getTargetType() == TargetTypeEnum.USER) {
