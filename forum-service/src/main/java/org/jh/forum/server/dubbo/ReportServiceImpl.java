@@ -48,9 +48,4 @@ public class ReportServiceImpl implements ReportService {
     public GetReportDetailResponse getReportDetail(Long id) {
         return reportManager.getReportDetail(id);
     }
-
-    @Override
-    public UserHistoryStatsResponse getUserHistoryStats(Long userId) {
-        return reportManager.getUserHistoryStats(userId);
-    }
 }

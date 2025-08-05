@@ -177,6 +177,20 @@ public class ReportManager {
         if (report == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
+
+        Integer commentPosition = null;
+        Comment comment = null;
+        if (report.getTargetType() == TargetTypeEnum.COMMENT) {
+            comment = commentMapper.selectById(report.getTargetId());
+            if (comment == null) {
+                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            }
+            List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
+                    .eq(Comment::getPostId, comment.getPostId())
+                    .orderByAsc(Comment::getCreatedAt));
+            commentPosition = comments.indexOf(comment) + 1;
+        }
+
         return GetReportDetailResponse.builder()
                 .userId(report.getUserId())
                 .targetUserId(report.getTargetUserId())
@@ -184,11 +198,14 @@ public class ReportManager {
                 .createdAt(report.getCreatedAt())
                 .targetType(report.getTargetType())
                 .targetId(report.getTargetId())
+                .postId(comment != null ? comment.getPostId() : null)
+                .commentPosition(commentPosition)
                 .type(report.getType())
                 .reason(report.getReason())
                 .status(report.getStatus())
                 .result(report.getResult())
                 .pictures(getReportPictures(report.getId()))
+                .userHistoryStats(getUserHistoryStats(report.getTargetUserId()))
                 .build();
     }
 
@@ -208,7 +225,7 @@ public class ReportManager {
         return attachmentInfoList;
     }
 
-    public UserHistoryStatsResponse getUserHistoryStats(Long userId) {
+    private UserHistoryStatsResponse getUserHistoryStats(Long userId) {
         List<Report> reports = reportMapper.selectList(new LambdaQueryWrapper<Report>()
                 .eq(Report::getTargetUserId, userId)
                 .orderByDesc(Report::getCreatedAt));

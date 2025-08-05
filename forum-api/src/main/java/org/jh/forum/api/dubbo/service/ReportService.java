@@ -19,6 +19,4 @@ public interface ReportService {
     BaseListResponse<GetReportListElement> getReportList(GetReportListRequest request);
 
     GetReportDetailResponse getReportDetail(Long id);
-
-    UserHistoryStatsResponse getUserHistoryStats(Long userId);
 }

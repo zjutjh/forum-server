@@ -67,12 +67,4 @@ public class ReportController {
     public AjaxResult<GetReportDetailResponse> getReportDetail(@RequestParam(value = "id") Long id) {
         return AjaxResult.success(reportService.getReportDetail(id));
     }
-
-    @Operation(summary = "获取被举报用户历史统计")
-    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
-    @Tag(name = "管理员")
-    @GetMapping("/history")
-    public AjaxResult<UserHistoryStatsResponse> getUserHistoryStats(@RequestParam(value = "user_id") Long userId) {
-        return AjaxResult.success(reportService.getUserHistoryStats(userId));
-    }
 }

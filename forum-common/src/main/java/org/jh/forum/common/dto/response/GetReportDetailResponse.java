@@ -39,6 +39,12 @@ public class GetReportDetailResponse {
     @Schema(description = "举报对象ID")
     private Long targetId;
 
+    @Schema(description = "原贴ID 非评论类型时为null")
+    private Long postId;
+
+    @Schema(description = "评论位置 非评论类型时为null")
+    private Integer commentPosition;
+
     @Schema(description = "举报类型")
     private ReportTypeEnum type;
 
@@ -53,4 +59,7 @@ public class GetReportDetailResponse {
 
     @Schema(description = "举报图片列表")
     private List<PictureInfoDTO> pictures;
+
+    @Schema(description = "用户被举报历史统计")
+    private UserHistoryStatsResponse userHistoryStats;
 }
