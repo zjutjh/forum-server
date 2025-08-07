@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * FAQ详情响应对象
@@ -16,11 +16,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "FAQ详情响应数据")
-public class FAQDetailResponse implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
-    @Schema(description = "问题ID", example = "1", required = true)
-    private Long questionId;
+public class FAQDetailResponse {
     
     @Schema(description = "分类名称", example = "账号问题", required = true)
     private String category;
@@ -35,8 +31,8 @@ public class FAQDetailResponse implements Serializable {
     private Integer viewCount;
 
     @Schema(description = "创建时间", example = "2024-01-01T10:00:00")
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
     
     @Schema(description = "更新时间", example = "2024-01-01T10:00:00")
-    private java.time.LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 }

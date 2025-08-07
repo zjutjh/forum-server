@@ -1,6 +1,5 @@
 package org.jh.forum.server.dubbo;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.FAQService;
 import org.jh.forum.common.dto.request.BaseListRequest;
@@ -18,7 +17,6 @@ import java.util.List;
  * @author ZeroHzzzz
  */
 @DubboService(version = "1.0.0")
-@Slf4j
 public class FAQServiceImpl implements FAQService {
     
     @Resource
@@ -26,65 +24,32 @@ public class FAQServiceImpl implements FAQService {
 
     @Override
     public List<String> getFAQCategories() {
-        try {
-            log.info("FAQServiceImpl: 开始调用faqManager.getAllCategories()");
-            List<String> result = faqManager.getAllCategories();
-            log.info("FAQServiceImpl: faqManager.getAllCategories()返回结果，共{}个分类", result != null ? result.size() : 0);
-            return result;
-        } catch (Exception e) {
-            log.error("获取FAQ分类失败", e);
-            throw e;
-        }
+        return faqManager.getAllCategories();
     }
 
     @Override
     public BaseListResponse<FAQQuestionListResponse> getFAQQuestions(FAQQuestionListRequest categoryRequest, BaseListRequest pageRequest) {
-        try {
-            String category = categoryRequest != null ? categoryRequest.getCategory() : null;
-            return faqManager.getFAQQuestions(category, pageRequest);
-        } catch (Exception e) {
-            log.error("获取FAQ问题列表失败, categoryRequest: {}", categoryRequest, e);
-            throw e;
-        }
+        String category = categoryRequest != null ? categoryRequest.getCategory() : null;
+        return faqManager.getFAQQuestions(category, pageRequest);
     }
 
     @Override
     public FAQDetailResponse getFAQDetail(FAQQuestionDetailRequest request) {
-        try {
-            return faqManager.getFAQDetail(request.getQuestionId());
-        } catch (Exception e) {
-            log.error("获取FAQ详情失败, request: {}", request, e);
-            throw e;
-        }
+        return faqManager.getFAQDetail(request.getQuestionId());
     }
 
     @Override
     public FAQOperationResponse createFAQ(FAQQuestionCreateRequest request) {
-        try {
-            return faqManager.createFAQ(request.getCategory(), request.getQuestion(), request.getAnswer());
-        } catch (Exception e) {
-            log.error("创建FAQ失败, request: {}", request, e);
-            throw e;
-        }
+        return faqManager.createFAQ(request.getCategory(), request.getQuestion(), request.getAnswer());
     }
 
     @Override
     public FAQOperationResponse updateFAQ(FAQQuestionUpdateRequest request) {
-        try {
-            return faqManager.updateFAQ(request.getQuestionId(), request.getCategory(), request.getQuestion(), request.getAnswer());
-        } catch (Exception e) {
-            log.error("更新FAQ失败, request: {}", request, e);
-            throw e;
-        }
+        return faqManager.updateFAQ(request.getQuestionId(), request.getCategory(), request.getQuestion(), request.getAnswer());
     }
 
     @Override
     public FAQOperationResponse deleteFAQ(FAQQuestionDeleteRequest request) {
-        try {
-            return faqManager.deleteFAQ(request.getQuestionId());
-        } catch (Exception e) {
-            log.error("删除FAQ失败, request: {}", request, e);
-            throw e;
-        }
+        return faqManager.deleteFAQ(request.getQuestionId());
     }
 }

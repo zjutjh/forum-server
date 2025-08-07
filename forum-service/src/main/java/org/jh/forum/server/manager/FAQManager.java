@@ -112,7 +112,6 @@ public class FAQManager {
         faqMapper.updateById(faq);
         
         FAQDetailResponse response = new FAQDetailResponse();
-        response.setQuestionId(faq.getId());
         response.setCategory(faq.getCategory());
         response.setQuestion(faq.getQuestion());
         response.setAnswer(faq.getAnswer());

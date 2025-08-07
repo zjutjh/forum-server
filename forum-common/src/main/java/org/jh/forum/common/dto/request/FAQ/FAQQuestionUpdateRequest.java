@@ -1,14 +1,11 @@
 package org.jh.forum.common.dto.request.FAQ;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
 
 /**
  * FAQ问题更新请求
@@ -19,9 +16,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "FAQ问题更新请求参数")
-public class FAQQuestionUpdateRequest implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
+public class FAQQuestionUpdateRequest {
+
     @Schema(description = "问题ID", required = true, example = "1")
     @NotNull(message = "问题ID不能为空")
     private Long questionId;
