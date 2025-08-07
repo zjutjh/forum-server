@@ -211,22 +211,26 @@ create table post_topic_relation
 
 create table report
 (
-    id             bigint                                    not null comment '举报ID'
+    id              bigint                                    not null comment '举报ID'
         primary key,
-    user_id        bigint                                    not null comment '用户ID',
-    target_user_id bigint                                    not null comment '被举报用户ID',
-    target_type    varchar(50)                               not null comment '对象类型(用户/帖子/评论)',
-    target_id      bigint                                    not null comment '对象ID',
-    type           varchar(50)                               not null comment '举报类型(色情/暴力/侵权/违法/涉政/引战/谣言/其他)',
-    reason         varchar(500)                              not null comment '理由',
-    status         varchar(20)                               not null comment '处理状态(未处理/举报失败/举报成功)',
-    result         varchar(300)                              not null comment '处理结论',
-    created_at     timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
-    updated_at     timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
-    create_uid     bigint                                    not null comment '创建用户',
-    update_uid     bigint                                    not null comment '更新用户',
-    deleted        boolean                                   not null comment '是否被删除',
-    attribute      text                                      null comment '属性列（json string）'
+    user_id         bigint                                    not null comment '用户ID',
+    target_user_id  bigint                                    not null comment '被举报用户ID',
+    target_type     varchar(50)                               not null comment '对象类型(用户/帖子/评论)',
+    target_id       bigint                                    not null comment '对象ID',
+    type            varchar(50)                               not null comment '举报类型(色情/暴力/侵权/违法/涉政/引战/谣言/其他)',
+    reason          varchar(500)                              not null comment '理由',
+    status          varchar(20)                               not null comment '处理状态(未处理/举报失败/举报成功)',
+    result          varchar(300)                              not null comment '处理结论',
+    reviewer_id     bigint                                    null comment '处理人ID',
+    should_delete   boolean                                   null comment '是否删除原帖/评论',
+    punishment_type varchar(50)                               null comment '处罚类型',
+    mute_days       int                                       null comment '禁言天数',
+    created_at      timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
+    updated_at      timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
+    create_uid      bigint                                    not null comment '创建用户',
+    update_uid      bigint                                    not null comment '更新用户',
+    deleted         boolean                                   not null comment '是否被删除',
+    attribute       text                                      null comment '属性列（json string）'
 );
 
 create table topic

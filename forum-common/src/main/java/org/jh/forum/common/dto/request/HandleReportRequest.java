@@ -35,8 +35,8 @@ public class HandleReportRequest {
     @NotNull
     private HandleReportEnum type;
 
-    @Schema(description = "自定义禁言时长(小时)，仅当处罚类型为4时有效")
-    private Integer hours;
+    @Schema(description = "自定义禁言天数，仅当处罚类型为custom_mute时有效")
+    private Integer days;
 
     @Schema(description = "反馈信息")
     @NotBlank

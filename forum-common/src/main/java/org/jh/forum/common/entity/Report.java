@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.jh.forum.common.constants.HandleReportEnum;
 import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
@@ -36,4 +37,12 @@ public class Report extends BaseEntity {
     private ReportStatusEnum status;
 
     private String result;
+
+    private Long reviewerId;
+
+    private Boolean shouldDelete;
+
+    private HandleReportEnum punishmentType;
+
+    private Integer muteDays;
 }

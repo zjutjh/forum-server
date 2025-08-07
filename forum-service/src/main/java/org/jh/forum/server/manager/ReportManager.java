@@ -38,6 +38,7 @@ public class ReportManager {
     private final PostManager postManager;
     private final UserMapper userMapper;
     private final CommentMapper commentMapper;
+    private final UserManager userManager;
 
     @Transactional
     public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, List<String> pictureUrls) {
@@ -123,10 +124,22 @@ public class ReportManager {
             }
         }
 
-        // Todo 根据type入参判断禁言时长
-        // Todo 根据hours入参判断自定义禁言时长
+        if (HandleReportEnum.SHORT_MUTE.equals(request.getType())) {
+            userManager.muteUser(report.getTargetUserId(), 24);
+        }
+        if (HandleReportEnum.LONG_MUTE.equals(request.getType())) {
+            userManager.muteUser(report.getTargetUserId(), 168);
+        }
+        if (HandleReportEnum.CUSTOM_MUTE.equals(request.getType())) {
+            userManager.muteUser(report.getTargetUserId(), request.getDays() * 24);
+        }
+
         report.setStatus(status);
         report.setResult(request.getResult());
+        report.setReviewerId(StpUtil.getLoginIdAsLong());
+        report.setShouldDelete(request.getShouldDelete());
+        report.setPunishmentType(request.getType());
+        report.setMuteDays(request.getDays());
         reportMapper.updateById(report);
 
         if (report.getTargetType() == TargetTypeEnum.USER) {
@@ -183,6 +196,29 @@ public class ReportManager {
         if (report == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
+
+        Integer commentPosition = null;
+        LocalDateTime targetTypeCreatedAt = null;
+        Comment comment = null;
+        if (report.getTargetType() == TargetTypeEnum.COMMENT) {
+            comment = commentMapper.selectById(report.getTargetId());
+            if (comment == null) {
+                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            }
+            targetTypeCreatedAt = comment.getCreatedAt();
+            List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
+                    .eq(Comment::getPostId, comment.getPostId())
+                    .orderByAsc(Comment::getCreatedAt));
+            commentPosition = comments.indexOf(comment) + 1;
+        }
+        if (report.getTargetType() == TargetTypeEnum.POST) {
+            Post post = postMapper.selectById(report.getTargetId());
+            if (post == null) {
+                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            }
+            targetTypeCreatedAt = post.getCreatedAt();
+        }
+
         return GetReportDetailResponse.builder()
                 .userId(report.getUserId())
                 .targetUserId(report.getTargetUserId())
@@ -190,11 +226,18 @@ public class ReportManager {
                 .createdAt(report.getCreatedAt())
                 .targetType(report.getTargetType())
                 .targetId(report.getTargetId())
+                .postId(comment != null ? comment.getPostId() : null)
+                .commentPosition(commentPosition)
                 .type(report.getType())
                 .reason(report.getReason())
                 .status(report.getStatus())
                 .result(report.getResult())
                 .pictures(getReportPictures(report.getId()))
+                .userHistoryStats(getUserHistoryStats(report.getTargetUserId()))
+                .shouldDelete(report.getShouldDelete())
+                .punishmentType(report.getPunishmentType())
+                .muteDays(report.getMuteDays())
+                .targetTypeCreatedAt(targetTypeCreatedAt)
                 .build();
     }
 
@@ -214,7 +257,7 @@ public class ReportManager {
         return attachmentInfoList;
     }
 
-    public UserHistoryStatsResponse getUserHistoryStats(Long userId) {
+    private UserHistoryStatsResponse getUserHistoryStats(Long userId) {
         List<Report> reports = reportMapper.selectList(new LambdaQueryWrapper<Report>()
                 .eq(Report::getTargetUserId, userId)
                 .orderByDesc(Report::getCreatedAt));
