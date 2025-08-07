@@ -6,18 +6,21 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.NoticePositionTypeEnum;
 import org.jh.forum.common.constants.NoticeTypeEnum;
-import org.jh.forum.common.dto.UserInfoDTO;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;
 import org.jh.forum.common.dto.response.UnreadNoticeCheckResponse;
 import org.jh.forum.common.entity.Comment;
 import org.jh.forum.common.entity.Notice;
 import org.jh.forum.common.entity.Post;
+import org.jh.forum.common.entity.Upvote;
+import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.CommentMapper;
 import org.jh.forum.server.mapper.NoticeMapper;
 import org.jh.forum.server.mapper.PostMapper;
+import org.jh.forum.server.mapper.UpvoteMapper;
 import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +38,7 @@ public class NoticeManager {
     private final UserManager userManager;
     private final CommentMapper commentMapper;
     private final PostMapper postMapper;
+    private final UpvoteMapper upvoteMapper;
 
     /**
      * 获取用户的通知列表
@@ -50,14 +54,13 @@ public class NoticeManager {
         Page<Notice> noticePage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Notice::getReceiverId, receiverId);
-        if (type != 0) {
-            if (type == 1) {
-                queryWrapper.eq(Notice::getType, NoticeTypeEnum.LIKE);
-            } else if (type == 2) {
-                queryWrapper.eq(Notice::getType, NoticeTypeEnum.COLLECT);
-            } else {
-                queryWrapper.eq(Notice::getType, NoticeTypeEnum.COMMENT).or().eq(Notice::getType, NoticeTypeEnum.AT);
-            }
+        switch (type) {
+            case 0 -> queryWrapper.eq(Notice::getIsRead, false);
+            case 1 -> queryWrapper.eq(Notice::getType, NoticeTypeEnum.LIKE);
+            case 2 -> queryWrapper.eq(Notice::getType, NoticeTypeEnum.COLLECT);
+            case 3 ->
+                    queryWrapper.eq(Notice::getType, NoticeTypeEnum.COMMENT).or().eq(Notice::getType, NoticeTypeEnum.AT);
+            default -> throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
         queryWrapper.orderByDesc(Notice::getCreatedAt);
         noticeMapper.selectPage(noticePage, queryWrapper);
@@ -68,10 +71,17 @@ public class NoticeManager {
                 .toList();
         List<GetNoticeListElement> list = notices.stream()
                 .map(notice -> {
-                    UserInfoDTO senderInfo = userManager.getUserInfo(notice.getSenderId());
+                    Boolean isLiked = null;
+                    if (notice.getType() == NoticeTypeEnum.COMMENT) {
+                        LambdaQueryWrapper<Upvote> upvoteWrapper = new LambdaQueryWrapper<Upvote>()
+                                .eq(Upvote::getUserId, receiverId)
+                                .eq(Upvote::getCommentId, notice.getCommentId());
+                        Upvote upvote = upvoteMapper.selectOne(upvoteWrapper);
+                        isLiked = upvote != null && upvote.getStatus();
+                    }
                     return GetNoticeListElement.builder()
                             .id(notice.getId())
-                            .senderInfo(senderInfo)
+                            .senderInfo(userManager.getUserInfo(notice.getSenderId()))
                             .type(notice.getType())
                             .positionType(notice.getPositionType())
                             .positionId(notice.getPositionId())
@@ -80,6 +90,7 @@ public class NoticeManager {
                             .newCommentContent(notice.getCommentId() == null ? null : getContent(NoticePositionTypeEnum.COMMENT, notice.getCommentId()))
                             .createdAt(notice.getCreatedAt())
                             .isRead(notice.getIsRead())
+                            .isLiked(isLiked)
                             .build();
                 }).toList();
         if (!unreadNoticeIds.isEmpty()) {
