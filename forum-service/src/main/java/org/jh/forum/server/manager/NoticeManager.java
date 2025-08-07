@@ -55,7 +55,7 @@ public class NoticeManager {
         LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Notice::getReceiverId, receiverId);
         switch (type) {
-            case 0 -> queryWrapper.eq(Notice::getIsRead, false);
+            case 0 -> queryWrapper.orderByAsc(Notice::getIsRead);
             case 1 -> queryWrapper.eq(Notice::getType, NoticeTypeEnum.LIKE);
             case 2 -> queryWrapper.eq(Notice::getType, NoticeTypeEnum.COLLECT);
             case 3 ->

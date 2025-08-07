@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class GetNoticeListRequest extends BaseListRequest {
-    @Schema(description = "通知类型（0-未读 1-赞 2-收藏 3-评论/At）")
+    @Schema(description = "通知类型（0-全部 1-赞 2-收藏 3-评论/At）")
     @NotNull
     private Integer type;
 }

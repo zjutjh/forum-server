@@ -94,6 +94,11 @@ public class ReportManager {
                 .result("")
                 .build();
         reportMapper.insert(report);
+
+        if (report.getTargetType() == TargetTypeEnum.POST) {
+            postMapper.incrementReportCount(report.getTargetId());
+        }
+
         for (String url : pictureUrls) {
             fileManager.bindAttachment(url, TargetTypeEnum.REPORT, report.getId());
         }
@@ -145,8 +150,11 @@ public class ReportManager {
         if (report.getTargetType() == TargetTypeEnum.USER) {
             userMapper.incrementResolvedReportCount(report.getTargetUserId());
         }
+        if (report.getTargetType() == TargetTypeEnum.POST) {
+            postMapper.incrementResolvedReportCount(report.getTargetId());
+        }
 
-        // Todo 发送举报结果给举报人和被举报人
+        // TODO 发送举报结果给举报人和被举报人
 
         Report nextReport = reportMapper.selectOne(new LambdaQueryWrapper<Report>()
                 .eq(Report::getStatus, ReportStatusEnum.PENDING)
