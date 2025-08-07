@@ -83,25 +83,9 @@ public class PostManager {
         }
         queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).orderByDesc(Post::getIsPinned).orderByDesc(Post::getCreatedAt);
         postMapper.selectPage(postPage, queryWrapper);
-        List<GetPostListElement> list = new ArrayList<>();
-        for (Post post : postPage.getRecords()) {
-            List<PictureInfoDTO> pictures = getPostPictures(post.getId());
-            list.add(GetPostListElement.builder()
-                    .id(post.getId())
-                    .publisherInfo(userManager.getUserInfo(post.getUserId()))
-                    .category(post.getCategory())
-                    .topics(getPostTopics(post.getId()))
-                    .title(post.getTitle())
-                    .content(StringUtils.left(post.getContent(), 50))
-                    .likeCount(getLikeCount(post.getId()))
-                    .commentCount(getCommentCount(post.getId()))
-                    .createdAt(post.getCreatedAt())
-                    .isPinned(post.getIsPinned())
-                    .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
-                    .totalPictures(pictures.size())
-                    .build()
-            );
-        }
+        List<GetPostListElement> list = postPage.getRecords().stream()
+                .map(this::buildPostListElement)
+                .toList();
         return BaseListResponse.<GetPostListElement>builder()
                 .list(list)
                 .total(postPage.getTotal())
@@ -169,19 +153,7 @@ public class PostManager {
         PostRankManager.PageResult<Long> result = postRankManager.getHotPostIds(category, page, pageSize);
         result.getRecords().forEach(id -> {
             Post post = postMapper.selectById(id);
-            list.add(GetPostListElement.builder()
-                    .id(id)
-                    .publisherInfo(userManager.getUserInfo(post.getUserId()))
-                    .category(post.getCategory())
-                    .topics(getPostTopics(id))
-                    .title(post.getTitle())
-                    .content(StringUtils.left(post.getContent(), 50))
-                    .likeCount(getLikeCount(id))
-                    .commentCount(getCommentCount(id))
-                    .createdAt(post.getCreatedAt())
-                    .isPinned(false)
-                    .build()
-            );
+            list.add(buildPostListElement(post));
         });
         return BaseListResponse.<GetPostListElement>builder()
                 .list(list)
@@ -211,7 +183,16 @@ public class PostManager {
                 .viewCount(post.getViewCount())
                 .createdAt(post.getCreatedAt())
                 .pictures(getPostPictures(postId))
+                .isLiked(checkIsLiked(postId))
                 .build();
+    }
+
+    private boolean checkIsLiked(Long postId) {
+        LambdaQueryWrapper<Upvote> queryWrapper = new LambdaQueryWrapper<Upvote>()
+                .eq(Upvote::getUserId, StpUtil.getLoginIdAsLong())
+                .eq(Upvote::getPostId, postId);
+        Upvote upvote = upvoteMapper.selectOne(queryWrapper);
+        return upvote != null && upvote.getStatus();
     }
 
     public void deletePost(Long id, boolean isAdmin) {
@@ -419,5 +400,24 @@ public class PostManager {
         }
 
         return status;
+    }
+
+    private GetPostListElement buildPostListElement(Post post) {
+        List<PictureInfoDTO> pictures = getPostPictures(post.getId());
+        return GetPostListElement.builder()
+                .id(post.getId())
+                .publisherInfo(userManager.getUserInfo(post.getUserId()))
+                .category(post.getCategory())
+                .topics(getPostTopics(post.getId()))
+                .title(post.getTitle())
+                .content(StringUtils.left(post.getContent(), 50))
+                .likeCount(getLikeCount(post.getId()))
+                .commentCount(getCommentCount(post.getId()))
+                .createdAt(post.getCreatedAt())
+                .isPinned(post.getIsPinned())
+                .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
+                .totalPictures(pictures.size())
+                .isLiked(checkIsLiked(post.getId()))
+                .build();
     }
 }

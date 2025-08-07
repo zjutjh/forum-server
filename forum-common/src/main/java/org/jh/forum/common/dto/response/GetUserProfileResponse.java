@@ -43,7 +43,7 @@ public class GetUserProfileResponse {
     private String realname;
 
     @Schema(description = "学院（根据可见性展示，可为null）")
-    private Long collegeId;
+    private String college;
 
     @Schema(description = "生日（根据可见性展示，可为null）")
     private LocalDate birthday;

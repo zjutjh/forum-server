@@ -28,6 +28,9 @@ public class GetUserDetailResponse {
     @Schema(description = "用户个性签名")
     private String signature;
 
+    @Schema(description = "用户简介")
+    private String profile;
+
     @Schema(description = "用户邮箱")
     private String email;
 
@@ -37,8 +40,11 @@ public class GetUserDetailResponse {
     @Schema(description = "真实姓名")
     private String realname;
 
-    @Schema(description = "学院ID")
-    private Long collegeId;
+    @Schema(description = "学号")
+    private String studentId;
+
+    @Schema(description = "学院")
+    private String college;
 
     @Schema(description = "生日")
     private LocalDate birthday;

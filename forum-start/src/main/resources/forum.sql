@@ -270,7 +270,7 @@ create table user
     realname              varchar(20)                               not null comment '真实姓名',
     student_id            varchar(12)                               not null comment '学号',
     password              varchar(255)                              not null comment '密码哈希',
-    college_id            bigint                                    not null comment '学院ID',
+    college               varchar(50)                               not null comment '学院',
     gender                varchar(20)                               not null comment '性别(男,女,保密)',
     phone                 varchar(20)  default ''                   not null comment '手机号',
     avatar                varchar(255) default ''                   not null comment '头像地址',

@@ -44,9 +44,9 @@ public class User extends BaseEntity {
     private String password;
 
     /**
-     * 学院ID
+     * 学院
      */
-    private Long collegeId;
+    private String college;
 
     /**
      * 性别(男,女,保密)

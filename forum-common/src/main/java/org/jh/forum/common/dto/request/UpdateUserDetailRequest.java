@@ -36,7 +36,7 @@ public class UpdateUserDetailRequest {
     private String email;
 
     @NotNull
-    private Long collegeId;
+    private String college;
 
     private LocalDate birthday;
 

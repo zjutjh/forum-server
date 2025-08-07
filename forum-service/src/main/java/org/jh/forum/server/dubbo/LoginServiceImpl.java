@@ -46,7 +46,7 @@ public class LoginServiceImpl implements LoginService {
                     .realname("default")
                     .studentId(username)
                     .password(BCrypt.hashpw(password))
-                    .collegeId(1L)
+                    .college("")
                     .gender(EnumUtil.getBy(GenderEnum::getDesc, "男"))
                     .role(loginType)
                     .reportCount(0)

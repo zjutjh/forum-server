@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
         resp.setGender(userEntity.getGender());
         resp.setIsSelf(userId.equals(StpUtil.getLoginIdAsLong()));
         resp.setRealname(detailEntity.getRealnameVisible() ? userEntity.getRealname() : null);
-        resp.setCollegeId(detailEntity.getCollegeVisible() ? userEntity.getCollegeId() : null);
+        resp.setCollege(detailEntity.getCollegeVisible() ? userEntity.getCollege() : null);
         resp.setBirthday(detailEntity.getBirthdayVisible() ? detailEntity.getBirthday() : null);
         return resp;
     }
@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setAvatar(request.getAvatar());
         userEntity.setNickname(request.getNickname());
         userEntity.setGender(request.getGender());
-        userEntity.setCollegeId(request.getCollegeId());
+        userEntity.setCollege(request.getCollege());
         detailEntity.setSignature(request.getSignature());
         detailEntity.setEmail(request.getEmail());
         detailEntity.setBirthday(request.getBirthday());
@@ -156,10 +156,12 @@ public class UserServiceImpl implements UserService {
         resp.setEmail(detailEntity.getEmail());
         resp.setGender(userEntity.getGender());
         resp.setRealname(userEntity.getRealname());
-        resp.setCollegeId(userEntity.getCollegeId());
+        resp.setCollege(userEntity.getCollege());
         resp.setBirthday(detailEntity.getBirthday());
         resp.setCreatedAt(userEntity.getCreatedAt());
         resp.setStatus(getUserStatus(userEntity));
+        resp.setProfile(detailEntity.getProfile());
+        resp.setStudentId(userEntity.getStudentId());
         return resp;
     }
 
@@ -211,7 +213,7 @@ public class UserServiceImpl implements UserService {
 
         LambdaQueryWrapper<Report> reportWrapper = new LambdaQueryWrapper<Report>()
                 .ne(Report::getStatus, ReportStatusEnum.PENDING)
-                .eq(Report::getUpdateUid, userEntity.getId());
+                .eq(Report::getReviewerId, userEntity.getId());
         element.setReportCount(Math.toIntExact(reportMapper.selectCount(reportWrapper)));
         return element;
     }

@@ -16,6 +16,7 @@ public enum ExceptionEnum {
     NOT_LOGIN(200002, "当前未登录或登录过期, 请重新登录"),
     WRONG_USERNAME_OR_PASSWORD(200003, "用户名或密码错误"),
     PERMISSION_NOT_ALLOWED(200004, "权限不足"),
+    FILE_NOT_PICTURE(200005, "该文件无法解析为图片"),
     FILE_UPLOAD_ERROR(200006, "文件上传失败"),
     ANNOUNCEMENT_STICKY_LIMIT_REACHED(200007, "公告置顶达到上限"),
     ANNOUNCEMENT_NOT_PUBLISHED(200008, "该公告还未发布"),

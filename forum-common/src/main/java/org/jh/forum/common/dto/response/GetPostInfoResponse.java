@@ -49,4 +49,7 @@ public class GetPostInfoResponse {
 
     @Schema(description = "帖子图片列表")
     private List<PictureInfoDTO> pictures;
+
+    @Schema(description = "是否已点赞")
+    private Boolean isLiked;
 }

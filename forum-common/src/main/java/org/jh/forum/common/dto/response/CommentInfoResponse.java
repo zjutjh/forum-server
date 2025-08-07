@@ -12,26 +12,23 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * @author qianqianzyk
+ * @author SugarMGP
  */
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ReplyElement {
-    @Schema(description = "回复ID")
-    private Long replyId;
+public class CommentInfoResponse {
+    @Schema(description = "评论ID")
+    private Long commentId;
 
-    @Schema(description = "回复人信息")
+    @Schema(description = "评论人信息")
     private UserInfoDTO publisherInfo;
 
-    @Schema(description = "被回复的用户信息")
-    private UserInfoDTO targetUser;
-
-    @Schema(description = "回复内容")
+    @Schema(description = "评论内容")
     private String content;
 
-    @Schema(description = "图片列表")
+    @Schema(description = "附件列表")
     private List<PictureInfoDTO> pictures;
 
     @Schema(description = "是否置顶")
