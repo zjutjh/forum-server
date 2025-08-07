@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.validation.ValidFAQCategory;
 
 /**
  * FAQ问题创建请求
@@ -20,7 +21,8 @@ import lombok.NoArgsConstructor;
 public class FAQQuestionCreateRequest{
     
     @Schema(description = "FAQ类别", required = true, example = "猜你想问")
-    @NotNull(message = "分类ID不能为空")
+    @NotNull(message = "分类不能为空")
+    @ValidFAQCategory(message = "无效的FAQ分类，请选择：账号问题、学院问题、帖子问题、猜你想问")
     private String category;
     
     @Schema(description = "问题描述", required = true, example = "如何重置密码？")

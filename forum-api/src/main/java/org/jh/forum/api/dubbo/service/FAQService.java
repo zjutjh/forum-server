@@ -38,21 +38,19 @@ public interface FAQService {
     /**
      * 创建FAQ问题
      * @param request 创建请求参数
-     * @return 操作结果
+     * @return 创建的问题ID
      */
-    FAQOperationResponse createFAQ(FAQQuestionCreateRequest request);
+    Long createFAQ(FAQQuestionCreateRequest request);
     
     /**
      * 更新FAQ问题
      * @param request 更新请求参数
-     * @return 操作结果
      */
-    FAQOperationResponse updateFAQ(FAQQuestionUpdateRequest request);
+    void updateFAQ(FAQQuestionUpdateRequest request);
     
     /**
      * 删除FAQ问题
      * @param request 删除请求参数
-     * @return 操作结果
      */
-    FAQOperationResponse deleteFAQ(FAQQuestionDeleteRequest request);
+    void deleteFAQ(FAQQuestionDeleteRequest request);
 }

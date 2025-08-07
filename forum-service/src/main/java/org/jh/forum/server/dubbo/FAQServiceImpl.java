@@ -39,17 +39,17 @@ public class FAQServiceImpl implements FAQService {
     }
 
     @Override
-    public FAQOperationResponse createFAQ(FAQQuestionCreateRequest request) {
+    public Long createFAQ(FAQQuestionCreateRequest request) {
         return faqManager.createFAQ(request.getCategory(), request.getQuestion(), request.getAnswer());
     }
 
     @Override
-    public FAQOperationResponse updateFAQ(FAQQuestionUpdateRequest request) {
-        return faqManager.updateFAQ(request.getQuestionId(), request.getCategory(), request.getQuestion(), request.getAnswer());
+    public void updateFAQ(FAQQuestionUpdateRequest request) {
+        faqManager.updateFAQ(request.getQuestionId(), request.getCategory(), request.getQuestion(), request.getAnswer());
     }
 
     @Override
-    public FAQOperationResponse deleteFAQ(FAQQuestionDeleteRequest request) {
-        return faqManager.deleteFAQ(request.getQuestionId());
+    public void deleteFAQ(FAQQuestionDeleteRequest request) {
+        faqManager.deleteFAQ(request.getQuestionId());
     }
 }
