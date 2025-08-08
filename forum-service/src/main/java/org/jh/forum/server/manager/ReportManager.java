@@ -117,6 +117,7 @@ public class ReportManager {
                 .result("")
                 .build();
         reportMapper.insert(report);
+        userMapper.incrementReportCount(targetUserId);
 
         if (report.getTargetType() == TargetTypeEnum.POST) {
             postMapper.incrementReportCount(report.getTargetId());
@@ -170,9 +171,7 @@ public class ReportManager {
         report.setMuteDays(request.getDays());
         reportMapper.updateById(report);
 
-        if (report.getTargetType() == TargetTypeEnum.USER) {
-            userMapper.incrementResolvedReportCount(report.getTargetUserId());
-        }
+        userMapper.incrementResolvedReportCount(report.getTargetUserId());
         if (report.getTargetType() == TargetTypeEnum.POST) {
             postMapper.incrementResolvedReportCount(report.getTargetId());
         }

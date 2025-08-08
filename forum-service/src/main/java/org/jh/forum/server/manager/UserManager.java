@@ -63,7 +63,7 @@ public class UserManager {
         if (user == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
-        user.setMutedUntil(hours == 0 ? null : LocalDateTime.now().plusHours(hours));
+        user.setMutedUntil(LocalDateTime.now().plusHours(hours));
         userMapper.updateById(user);
     }
 }
