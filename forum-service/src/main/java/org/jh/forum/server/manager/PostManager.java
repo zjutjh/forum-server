@@ -195,13 +195,13 @@ public class PostManager {
     public void deletePost(Long id, boolean isAdmin) {
         Post post = postMapper.selectById(id);
         if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            return;
         }
         if (!post.getUserId().equals(StpUtil.getLoginIdAsLong()) && !isAdmin) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         postRankManager.removePost(id);
-        postMapper.deleteById(post);
+        postMapper.deleteById(id);
     }
 
     @IgnoreLogicDelete

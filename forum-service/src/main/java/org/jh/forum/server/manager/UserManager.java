@@ -12,6 +12,7 @@ import org.jh.forum.server.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,12 +39,18 @@ public class UserManager {
     }
 
     public List<String> getRoleList(Long userId) {
-        String role = userMapper.selectById(userId).getRole().getValue();
-        return List.of(role);
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Collections.emptyList();
+        }
+        return List.of(user.getRole().getValue());
     }
 
     public UserInfoDTO getUserInfo(Long userId) {
         User user = userMapper.selectById(userId);
+        if (user == null) {
+            return UserInfoDTO.builder().build();
+        }
         return UserInfoDTO.builder()
                 .id(userId)
                 .nickname(user.getNickname())

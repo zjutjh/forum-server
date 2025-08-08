@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.CommentService;
+import org.jh.forum.common.annotation.CheckMuted;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
@@ -29,6 +30,7 @@ public class CommentController {
 
     @Operation(summary = "发布评论/回复")
     @PostMapping("/publish")
+    @CheckMuted
     public AjaxResult<Void> publishComment(@Valid @RequestBody PublishCommentRequest request) {
         commentService.publishComment(request);
         return AjaxResult.success();

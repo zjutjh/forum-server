@@ -28,6 +28,8 @@ public enum ExceptionEnum {
     COMMENT_PINNED_LIMIT_REACHED(200014, "只能置顶一个评论"),
     PARENT_COMMENT_DELETED(200015, "父评论已被删除"),
     REPORT_ALREADY_HANDLED(200016, "该举报已被处理"),
+    REPORT_ALREADY_EXISTS(200017, "您已举报过该内容"),
+    USER_MUTED(200018, "您已被禁言"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试"),

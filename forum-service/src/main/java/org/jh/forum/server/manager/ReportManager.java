@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jh.forum.common.annotation.IgnoreLogicDelete;
 import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.request.HandleReportRequest;
@@ -42,12 +43,22 @@ public class ReportManager {
 
     @Transactional
     public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, List<String> pictureUrls) {
-        if (targetUserId.equals(StpUtil.getLoginIdAsLong())) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        if (targetUserId.equals(userId)) {
             throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
         }
+
+        if (reportMapper.exists(new LambdaQueryWrapper<Report>()
+                .eq(Report::getTargetType, TargetTypeEnum.USER)
+                .eq(Report::getTargetId, targetUserId)
+                .eq(Report::getUserId, userId)
+                .eq(Report::getStatus, ReportStatusEnum.PENDING))) {
+            throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
+        }
+
         Report report = Report.builder()
                 .type(type)
-                .userId(StpUtil.getLoginIdAsLong())
+                .userId(userId)
                 .targetUserId(targetUserId)
                 .reason(reason)
                 .targetId(targetUserId)
@@ -64,6 +75,8 @@ public class ReportManager {
 
     @Transactional
     public void reportContent(ReportTypeEnum type, String reason, Long targetId, TargetTypeEnum target, List<String> pictureUrls) {
+        Long userId = StpUtil.getLoginIdAsLong();
+
         Long targetUserId;
         if (target == TargetTypeEnum.POST) {
             Post post = postMapper.selectById(targetId);
@@ -80,12 +93,22 @@ public class ReportManager {
         } else {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
-        if (targetUserId.equals(StpUtil.getLoginIdAsLong())) {
+
+        if (targetUserId.equals(userId)) {
             throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
         }
+
+        if (reportMapper.exists(new LambdaQueryWrapper<Report>()
+                .eq(Report::getTargetType, target)
+                .eq(Report::getTargetId, targetId)
+                .eq(Report::getUserId, userId)
+                .eq(Report::getStatus, ReportStatusEnum.PENDING))) {
+            throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
+        }
+
         Report report = Report.builder()
                 .type(type)
-                .userId(StpUtil.getLoginIdAsLong())
+                .userId(userId)
                 .targetUserId(targetUserId)
                 .reason(reason)
                 .targetId(targetId)
@@ -199,6 +222,7 @@ public class ReportManager {
                 .build();
     }
 
+    @IgnoreLogicDelete
     public GetReportDetailResponse getReportDetail(Long id) {
         Report report = reportMapper.selectById(id);
         if (report == null) {
