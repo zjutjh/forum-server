@@ -17,4 +17,8 @@ import org.jh.forum.common.constants.UserTypeEnum;
 public class LoginResponse {
     @Schema(description = "用户类型")
     private UserTypeEnum userType;
+
+    @Schema(description = "统一学生信息")
+    private OauthUserInfoElement userInfo;
+
 }
