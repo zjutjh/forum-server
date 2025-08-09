@@ -300,6 +300,7 @@ create table user_detail
     profile          varchar(50) default ''   not null comment '个人简介',
     email            varchar(50) default ''   not null comment '个人邮箱',
     birthday         date                     null comment '生日',
+    background_image varchar(255) default ''  not null comment '背景图地址',
     birthday_visible boolean     default true not null comment '生日可见性',
     college_visible  boolean     default true not null comment '学院可见性',
     realname_visible boolean     default true not null comment '实名可见性'

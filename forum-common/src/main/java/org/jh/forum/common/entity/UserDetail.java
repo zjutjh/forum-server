@@ -31,6 +31,8 @@ public class UserDetail {
 
     private LocalDate birthday;
 
+    private String backgroundImage;
+
     private Boolean birthdayVisible;
 
     private Boolean collegeVisible;
