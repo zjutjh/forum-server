@@ -61,6 +61,7 @@ public class UserServiceImpl implements UserService {
         resp.setEmail(detailEntity.getEmail());
         resp.setGender(userEntity.getGender());
         resp.setIsSelf(userId.equals(StpUtil.getLoginIdAsLong()));
+        resp.setBackground(detailEntity.getBackgroundImage());
         resp.setRealname(detailEntity.getRealnameVisible() ? userEntity.getRealname() : null);
         resp.setCollege(detailEntity.getCollegeVisible() ? userEntity.getCollege() : null);
         resp.setBirthday(detailEntity.getBirthdayVisible() ? detailEntity.getBirthday() : null);
