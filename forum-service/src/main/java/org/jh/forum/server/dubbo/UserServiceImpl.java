@@ -12,10 +12,7 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.UserStatusEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
-import org.jh.forum.common.dto.request.GetAdminListRequest;
-import org.jh.forum.common.dto.request.GetUserListRequest;
-import org.jh.forum.common.dto.request.MuteUserRequest;
-import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.entity.User;
@@ -89,6 +86,16 @@ public class UserServiceImpl implements UserService {
         detailEntity.setRealnameVisible(request.getRealnameVisible());
 
         userMapper.updateById(userEntity);
+        userDetailMapper.updateById(detailEntity);
+    }
+
+    @Override
+    public void updateBackgroundImage(UpdateBackgroundImageRequest request) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        UserDetail detailEntity = userDetailMapper.selectById(userId);
+
+        detailEntity.setBackgroundImage(request.getBackgroundImage());
+
         userDetailMapper.updateById(detailEntity);
     }
 
