@@ -38,6 +38,10 @@ public class GetUserProfileResponse {
     @Schema(description = "是否为自己")
     private Boolean isSelf;
 
+
+    @Schema(description = "用户背景图URL")
+    private String background;
+
     // 动态字段（根据权限显示）
     @Schema(description = "真实姓名（根据可见性展示，可为null）")
     private String realname;
