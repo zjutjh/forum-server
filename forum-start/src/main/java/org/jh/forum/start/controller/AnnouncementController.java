@@ -56,8 +56,7 @@ public class AnnouncementController {
     @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @Tag(name = "管理员")
     @PostMapping
-    public AjaxResult<Void> createAnnouncement(
-            @Valid @RequestBody CreateAnnouncementRequest request) {
+    public AjaxResult<Void> createAnnouncement(@Valid @RequestBody CreateAnnouncementRequest request) {
         announcementService.createAnnouncement(request);
         return AjaxResult.success();
     }

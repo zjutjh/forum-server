@@ -15,9 +15,9 @@ public interface CommentService {
 
     void removeComment(Long id);
 
-    GetCommentListResponse getCommentList(GetCommentListRequest request);
+    BaseListResponse<CommentElement> getCommentList(GetCommentListRequest request);
 
-    BaseListResponse<ReplyElement> getReplyList(GetReplyListRequest request);
+    GetCommentReplyListResponse getReplyList(GetReplyListRequest request);
 
     BaseListResponse<PersonalCommentElement> getPersonalCommentList(GetPersonalCommentRequest request);
 

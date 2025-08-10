@@ -20,7 +20,4 @@ public class GetReplyListAdminRequest extends BaseListRequest {
     @Schema(description = "评论状态")
     @NotNull
     private CommentStatusEnum status;
-
-    @Schema(description = "该列表中的回复将不会出现在获取到的回复列表中，前端需要持续传值，否则回复列表将会错序")
-    private Long[] excludeCommentIds;
 }

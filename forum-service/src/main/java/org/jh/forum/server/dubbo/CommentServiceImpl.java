@@ -15,7 +15,7 @@ import jakarta.annotation.Resource;
  */
 @DubboService
 @Slf4j
-public class CommentServerImpl implements CommentService {
+public class CommentServiceImpl implements CommentService {
     @Resource
     private CommentManager commentManager;
 
@@ -40,13 +40,13 @@ public class CommentServerImpl implements CommentService {
     }
 
     @Override
-    public GetCommentListResponse getCommentList(GetCommentListRequest request) {
+    public BaseListResponse<CommentElement> getCommentList(GetCommentListRequest request) {
         return commentManager.getCommentList(request.getId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getHighlightCommentId());
     }
 
     @Override
-    public BaseListResponse<ReplyElement> getReplyList(GetReplyListRequest request) {
-        return commentManager.getReplyList(request.getId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getExcludeCommentIds());
+    public GetCommentReplyListResponse getReplyList(GetReplyListRequest request) {
+        return commentManager.getReplyList(request.getId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getHighlightReplyId());
     }
 
     @Override
@@ -61,7 +61,7 @@ public class CommentServerImpl implements CommentService {
 
     @Override
     public BaseListResponse<ReplyElement> getAdminReplyList(GetReplyListAdminRequest request) {
-        return commentManager.getAdminReplyList(request.getId(), request.getPage(), request.getPageSize(), request.getStatus(), request.getExcludeCommentIds());
+        return commentManager.getAdminReplyList(request.getId(), request.getPage(), request.getPageSize(), request.getStatus());
     }
 
     @Override

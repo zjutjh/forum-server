@@ -73,6 +73,12 @@ public class CustomExceptionHandler {
     @ExceptionHandler(CubeException.class)
     @ResponseBody
     public AjaxResult<Object> handleCubeException(CubeException e, HttpServletRequest request) {
+        if (e.getCode() == 200504) {
+            return AjaxResult.fail(ExceptionEnum.FILE_NOT_PICTURE);
+        }
+        if (e.getCode() == 200503) {
+            return AjaxResult.fail(ExceptionEnum.FILE_SIZE_EXCEEDED);
+        }
         HandlerUtils.logException(e, request);
         return AjaxResult.fail(e.getCode(), e.getMessage());
     }

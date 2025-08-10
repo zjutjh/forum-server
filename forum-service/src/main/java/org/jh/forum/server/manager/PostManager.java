@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jh.forum.common.annotation.IgnoreLogicDelete;
 import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.request.GetAdminPostListRequest;
@@ -25,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -60,7 +60,8 @@ public class PostManager {
                 .isPinned(false)
                 .isTopped(false)
                 .viewCount(0)
-                .status(PostStatusEnum.NORMAL)
+                .reportCount(0)
+                .resolvedReportCount(0)
                 .build();
         postMapper.insert(post);
         for (String topic : request.getTopics()) {
@@ -81,27 +82,11 @@ public class PostManager {
         if (category != null) {
             queryWrapper.eq(Post::getCategory, category);
         }
-        queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).orderByDesc(Post::getIsPinned).orderByDesc(Post::getCreatedAt);
+        queryWrapper.orderByDesc(Post::getIsPinned).orderByDesc(Post::getCreatedAt);
         postMapper.selectPage(postPage, queryWrapper);
-        List<GetPostListElement> list = new ArrayList<>();
-        for (Post post : postPage.getRecords()) {
-            List<PictureInfoDTO> pictures = getPostPictures(post.getId());
-            list.add(GetPostListElement.builder()
-                    .id(post.getId())
-                    .publisherInfo(userManager.getUserInfo(post.getUserId()))
-                    .category(post.getCategory())
-                    .topics(getPostTopics(post.getId()))
-                    .title(post.getTitle())
-                    .content(StringUtils.left(post.getContent(), 50))
-                    .likeCount(getLikeCount(post.getId()))
-                    .commentCount(getCommentCount(post.getId()))
-                    .createdAt(post.getCreatedAt())
-                    .isPinned(post.getIsPinned())
-                    .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
-                    .totalPictures(pictures.size())
-                    .build()
-            );
-        }
+        List<GetPostListElement> list = postPage.getRecords().stream()
+                .map(this::buildPostListElement)
+                .toList();
         return BaseListResponse.<GetPostListElement>builder()
                 .list(list)
                 .total(postPage.getTotal())
@@ -125,9 +110,9 @@ public class PostManager {
         IPage<Post> postPage = new Page<>(request.getPage(), request.getPageSize());
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         if (request.getId() == null || request.getId().equals(StpUtil.getLoginIdAsLong())) {
-            queryWrapper.ne(Post::getStatus, PostStatusEnum.DELETED).eq(Post::getUserId, StpUtil.getLoginIdAsLong());
+            queryWrapper.eq(Post::getUserId, StpUtil.getLoginIdAsLong());
         } else {
-            queryWrapper.eq(Post::getStatus, PostStatusEnum.NORMAL).eq(Post::getUserId, request.getId());
+            queryWrapper.eq(Post::getUserId, request.getId());
         }
         if (StringUtils.isNotBlank(request.getKeyword())) {
             queryWrapper.like(Post::getTitle, request.getKeyword())
@@ -150,7 +135,6 @@ public class PostManager {
                     .viewCount(post.getViewCount())
                     .createdAt(post.getCreatedAt())
                     .isTopped(post.getIsTopped())
-                    .status(post.getStatus())
                     .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
                     .totalPictures(pictures.size())
                     .build()
@@ -169,19 +153,7 @@ public class PostManager {
         PostRankManager.PageResult<Long> result = postRankManager.getHotPostIds(category, page, pageSize);
         result.getRecords().forEach(id -> {
             Post post = postMapper.selectById(id);
-            list.add(GetPostListElement.builder()
-                    .id(id)
-                    .publisherInfo(userManager.getUserInfo(post.getUserId()))
-                    .category(post.getCategory())
-                    .topics(getPostTopics(id))
-                    .title(post.getTitle())
-                    .content(StringUtils.left(post.getContent(), 50))
-                    .likeCount(getLikeCount(id))
-                    .commentCount(getCommentCount(id))
-                    .createdAt(post.getCreatedAt())
-                    .isPinned(false)
-                    .build()
-            );
+            list.add(buildPostListElement(post));
         });
         return BaseListResponse.<GetPostListElement>builder()
                 .list(list)
@@ -193,11 +165,8 @@ public class PostManager {
 
     public GetPostInfoResponse getPostInfo(Long postId, Long userId) {
         Post post = postMapper.selectById(postId);
-        if (post == null || post.getStatus() == PostStatusEnum.DELETED) {
+        if (post == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-        if (post.getStatus() == PostStatusEnum.PENDING && !Objects.equals(post.getUserId(), userId)) {
-            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         updateViewCount(postId, userId, post.getCategory());
         return GetPostInfoResponse.builder()
@@ -211,29 +180,47 @@ public class PostManager {
                 .viewCount(post.getViewCount())
                 .createdAt(post.getCreatedAt())
                 .pictures(getPostPictures(postId))
+                .isLiked(checkIsLiked(postId))
                 .build();
+    }
+
+    private boolean checkIsLiked(Long postId) {
+        LambdaQueryWrapper<Upvote> queryWrapper = new LambdaQueryWrapper<Upvote>()
+                .eq(Upvote::getUserId, StpUtil.getLoginIdAsLong())
+                .eq(Upvote::getPostId, postId);
+        Upvote upvote = upvoteMapper.selectOne(queryWrapper);
+        return upvote != null && upvote.getStatus();
     }
 
     public void deletePost(Long id, boolean isAdmin) {
         Post post = postMapper.selectById(id);
-        if (post == null || post.getStatus() == PostStatusEnum.DELETED) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        if (post == null) {
+            return;
         }
         if (!post.getUserId().equals(StpUtil.getLoginIdAsLong()) && !isAdmin) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         postRankManager.removePost(id);
-        post.setStatus(PostStatusEnum.DELETED);
-        post.setIsTopped(false);
-        post.setIsPinned(false);
-        postMapper.updateById(post);
+        postMapper.deleteById(id);
     }
 
+    @IgnoreLogicDelete
     public BaseListResponse<GetAdminPostListElement> getAdminPostList(GetAdminPostListRequest request) {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(StringUtils.isNotBlank(request.getTitle()), Post::getTitle, request.getTitle())
-                .eq(request.getCategory() != null, Post::getCategory, request.getCategory())
-                .eq(request.getStatus() != null, Post::getStatus, request.getStatus());
+                .eq(request.getCategory() != null, Post::getCategory, request.getCategory());
+
+        if (request.getStatus() != null) {
+            if (request.getStatus() == PostStatusEnum.DELETED) {
+                queryWrapper.eq(Post::getDeleted, true);
+            }
+            if (request.getStatus() == PostStatusEnum.NORMAL) {
+                queryWrapper.eq(Post::getDeleted, false).apply("report_count = resolved_report_count");
+            }
+            if (request.getStatus() == PostStatusEnum.PENDING) {
+                queryWrapper.eq(Post::getDeleted, false).apply("report_count > resolved_report_count");
+            }
+        }
 
         // 模糊查询发布人
         if (StringUtils.isNotBlank(request.getPublisher())) {
@@ -267,7 +254,7 @@ public class PostManager {
                     .likeCount(getLikeCount(post.getId()))
                     .commentCount(getCommentCount(post.getId()))
                     .viewCount(post.getViewCount())
-                    .status(post.getStatus())
+                    .status(getPostStatus(post))
                     .isPinned(post.getIsPinned())
                     .createdAt(post.getCreatedAt())
                     .build()
@@ -281,6 +268,7 @@ public class PostManager {
                 .build();
     }
 
+    @IgnoreLogicDelete
     public GetAdminPostInfoResponse getAdminPostInfo(Long id) {
         Post post = postMapper.selectById(id);
         if (post == null) {
@@ -296,10 +284,20 @@ public class PostManager {
                 .commentCount(getCommentCount(id))
                 .viewCount(post.getViewCount())
                 .createdAt(post.getCreatedAt())
-                .status(post.getStatus())
+                .status(getPostStatus(post))
                 .isPinned(post.getIsPinned())
                 .pictures(getPostPictures(id))
                 .build();
+    }
+
+    private PostStatusEnum getPostStatus(Post post) {
+        if (Boolean.TRUE.equals(post.getDeleted())) {
+            return PostStatusEnum.DELETED;
+        }
+        if (post.getReportCount() > post.getResolvedReportCount()) {
+            return PostStatusEnum.PENDING;
+        }
+        return PostStatusEnum.NORMAL;
     }
 
     private List<String> getPostTopics(Long postId) {
@@ -313,7 +311,7 @@ public class PostManager {
 
     private Integer getLikeCount(Long postId) {
         long count = upvoteMapper.selectCount(new LambdaQueryWrapper<Upvote>()
-                .eq(Upvote::getPostId, postId));
+                .eq(Upvote::getPostId, postId).eq(Upvote::getStatus, true));
         return Math.toIntExact(count);
     }
 
@@ -342,13 +340,13 @@ public class PostManager {
         return Collections.emptyList();
     }
 
+    @IgnoreLogicDelete
     public void restorePost(Long id) {
         Post post = postMapper.selectById(id);
-        if (post == null || post.getStatus() != PostStatusEnum.DELETED) {
+        if (post == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
-        post.setStatus(PostStatusEnum.NORMAL);
-        postMapper.updateById(post);
+        postMapper.restorePost(id);
     }
 
     public void pinPost(Long id, Boolean pinned) {
@@ -359,7 +357,7 @@ public class PostManager {
             throw new ApiException(ExceptionEnum.POST_PINNED_LIMIT_REACHED);
         }
         Post post = postMapper.selectById(id);
-        if (post == null || post.getStatus() != PostStatusEnum.NORMAL) {
+        if (post == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         post.setIsPinned(pinned);
@@ -368,7 +366,7 @@ public class PostManager {
 
     public void topPost(Long id, Boolean topped) {
         Post post = postMapper.selectById(id);
-        if (post == null || post.getStatus() != PostStatusEnum.NORMAL) {
+        if (post == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         if (!post.getUserId().equals(StpUtil.getLoginIdAsLong())) {
@@ -387,7 +385,7 @@ public class PostManager {
 
     public Boolean upvotePost(Long id) {
         Post post = postMapper.selectById(id);
-        if (post == null || post.getStatus() != PostStatusEnum.NORMAL) {
+        if (post == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
         Long userId = StpUtil.getLoginIdAsLong();
@@ -419,5 +417,24 @@ public class PostManager {
         }
 
         return status;
+    }
+
+    private GetPostListElement buildPostListElement(Post post) {
+        List<PictureInfoDTO> pictures = getPostPictures(post.getId());
+        return GetPostListElement.builder()
+                .id(post.getId())
+                .publisherInfo(userManager.getUserInfo(post.getUserId()))
+                .category(post.getCategory())
+                .topics(getPostTopics(post.getId()))
+                .title(post.getTitle())
+                .content(StringUtils.left(post.getContent(), 50))
+                .likeCount(getLikeCount(post.getId()))
+                .commentCount(getCommentCount(post.getId()))
+                .createdAt(post.getCreatedAt())
+                .isPinned(post.getIsPinned())
+                .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
+                .totalPictures(pictures.size())
+                .isLiked(checkIsLiked(post.getId()))
+                .build();
     }
 }

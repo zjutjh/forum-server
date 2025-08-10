@@ -55,4 +55,7 @@ public class GetPostListElement {
 
     @Schema(description = "帖子图片总数")
     private Integer totalPictures;
+
+    @Schema(description = "是否已点赞")
+    private Boolean isLiked;
 }

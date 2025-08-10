@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.PostService;
+import org.jh.forum.common.annotation.CheckMuted;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
@@ -35,6 +36,7 @@ public class PostController {
 
     @Operation(summary = "创建帖子")
     @PostMapping("/create")
+    @CheckMuted
     public AjaxResult<Void> createPost(@Valid @RequestBody PublishPostRequest request) {
         postService.publishPost(request);
         return AjaxResult.success();

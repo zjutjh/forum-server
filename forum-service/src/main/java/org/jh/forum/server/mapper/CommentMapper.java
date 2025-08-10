@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.jh.forum.common.entity.Comment;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -47,6 +48,10 @@ public interface CommentMapper extends BaseMapper<Comment> {
             """)
     List<Long> getDeletedOrHasDeletedReplyCommentIds(@Param("postId") Long postId);
 
-    @Update("UPDATE comment SET deleted = false, is_pinned = false WHERE id = #{id}")
+    @Update("UPDATE comment SET deleted = false WHERE id = #{id}")
     void restoreComment(@Param("id") Long id);
+
+    @Override
+    @Update("UPDATE comment SET deleted = true, is_pinned = false WHERE id = #{id}")
+    int deleteById(Serializable id);
 }

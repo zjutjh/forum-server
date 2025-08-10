@@ -37,7 +37,7 @@ public class CreateAnnouncementRequest {
     @Schema(description = "公告状态")
     private AnnouncementStatusEnum status;
 
-    @NotNull
+    @NotBlank
     @Size(max = 20)
     @Schema(description = "（委托）发布人签名", example = "张三")
     private String signatory;

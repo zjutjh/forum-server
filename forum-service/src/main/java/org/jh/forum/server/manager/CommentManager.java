@@ -154,8 +154,8 @@ public class CommentManager {
         Boolean status = upvote.getStatus();
 
         if (Boolean.TRUE.equals(status)) {
-            AsyncUtil.runAsyncWithLogging(
-                    () -> noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null)
+            AsyncUtil.runAsyncWithLogging(() ->
+                    noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null)
             );
         }
 
@@ -219,11 +219,15 @@ public class CommentManager {
         commentMapper.deleteById(commentId);
     }
 
-    public GetCommentListResponse getCommentList(Long postId, Integer page, Integer pageSize, String sort, Long highlightCommentId) {
+    public BaseListResponse<CommentElement> getCommentList(Long postId, Integer page, Integer pageSize, String sort, Long highlightCommentId) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+
         Long excludeId = null;
-        Comment highlight = null;
         if (highlightCommentId != null && highlightCommentId != 0) {
-            highlight = commentMapper.selectById(highlightCommentId);
+            Comment highlight = commentMapper.selectById(highlightCommentId);
             if (highlight != null) {
                 if (highlight.getParentId() == 0) {
                     excludeId = highlightCommentId;
@@ -233,106 +237,96 @@ public class CommentManager {
             }
         }
 
-        // 根据排序规则查询评论（置顶在最上面）
+        // 根据排序规则查询评论
         Page<Comment> commentPage = new Page<>(page, pageSize);
         QueryWrapper<Comment> wrapper = new QueryWrapper<Comment>()
                 .eq("post_id", postId)
-                .eq("parent_id", 0)
-                .orderByDesc("is_pinned")
-                .ne(excludeId != null, "id", excludeId);
+                .eq("parent_id", 0);
+
+        if (excludeId != null) {
+            if (page == 1) {
+                wrapper.orderByAsc("CASE WHEN id = " + excludeId + " THEN 0 ELSE 1 END");
+            } else {
+                // 其他页排除高亮评论，防止重复
+                wrapper.ne("id", excludeId);
+            }
+        }
+
+        wrapper.orderByDesc("is_pinned");
         if ("hot".equals(sort)) {
             wrapper.orderByDesc("upvote_count + reply_count * 2");
         }
         wrapper.orderByAsc("created_at");
-        List<Comment> comments = commentMapper.selectPage(commentPage, wrapper).getRecords();
-        if (comments.isEmpty()) {
-            return GetCommentListResponse.emptyListResponse(page, pageSize);
-        }
+        commentMapper.selectPage(commentPage, wrapper);
 
-        Post post = postMapper.selectById(postId);
-        Long postAuthorId = post != null ? post.getUserId() : null;
-
-        List<CommentElement> commentElements = new ArrayList<>();
-        for (Comment comment : comments) {
-            List<ReplyElement> replyElements = getHottestReplyAsList(comment, postAuthorId);
-            commentElements.add(buildCommentElement(comment, replyElements, postAuthorId));
-        }
-
-        return GetCommentListResponse.builder()
+        List<CommentElement> commentElements = commentPage.getRecords().stream()
+                .map(comment -> buildCommentElement(comment, getHotReplyAsList(comment, post.getUserId()), post.getUserId()))
+                .toList();
+        return BaseListResponse.<CommentElement>builder()
                 .page(page)
                 .pageSize(pageSize)
                 .total(commentPage.getTotal())
                 .list(commentElements)
-                .highlightComment(highlight != null ? getHighlightCommentElement(highlight) : null)
                 .build();
     }
 
-    private List<ReplyElement> getHottestReplyAsList(Comment comment, Long postAuthorId) {
-        Comment hottestReply = commentMapper.selectOne(new QueryWrapper<Comment>()
+    private List<ReplyElement> getHotReplyAsList(Comment comment, Long postAuthorId) {
+        List<Comment> hottestReply = commentMapper.selectList(new QueryWrapper<Comment>()
                 .eq("parent_id", comment.getId())
                 .orderByDesc("upvote_count + reply_count * 2")
                 .orderByAsc("created_at")
-                .last("limit 1"));
-
-        List<ReplyElement> replyElements = new ArrayList<>();
-        if (hottestReply != null) {
-            replyElements.add(buildReplyElement(hottestReply, postAuthorId));
-        }
-        return replyElements;
+                .last("limit 2"));
+        return hottestReply.stream()
+                .map(reply -> buildReplyElement(reply, postAuthorId))
+                .toList();
     }
 
-    public CommentElement getHighlightCommentElement(Comment highlight) {
-        Post post = postMapper.selectById(highlight.getPostId());
-        Long postAuthorId = post != null ? post.getUserId() : null;
-
-        if (highlight.getParentId() == 0) {
-            List<ReplyElement> replyElements = getHottestReplyAsList(highlight, postAuthorId);
-            return buildCommentElement(highlight, replyElements, postAuthorId);
-        } else {
-            Comment parent = commentMapper.selectById(highlight.getParentId());
-            if (parent == null) {
-                return null;
-            }
-            ReplyElement replyElement = buildReplyElement(highlight, postAuthorId);
-            return buildCommentElement(parent, Collections.singletonList(replyElement), postAuthorId);
-        }
-    }
-
-    public BaseListResponse<ReplyElement> getReplyList(Long commentId, Integer page, Integer pageSize, Integer sort, List<Long> excludeCommentIds) {
+    public GetCommentReplyListResponse getReplyList(Long commentId, Integer page, Integer pageSize, String sort, Long highlightReplyId) {
         Comment parent = commentMapper.selectById(commentId);
         if (parent == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
-        Page<Comment> replyPage = new Page<>(page, pageSize);
-        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
-        wrapper.eq("parent_id", commentId);
-        if (excludeCommentIds != null && !excludeCommentIds.isEmpty()) {
-            wrapper.notIn("id", excludeCommentIds);
+        Long excludeId = null;
+        if (highlightReplyId != null && highlightReplyId != 0) {
+            Comment highlight = commentMapper.selectById(highlightReplyId);
+            if (highlight != null) {
+                if (Objects.equals(highlight.getParentId(), parent.getId())) {
+                    excludeId = highlightReplyId;
+                }
+            }
         }
-        if (sort == 1) {
+
+        Page<Comment> replyPage = new Page<>(page, pageSize);
+        QueryWrapper<Comment> wrapper = new QueryWrapper<Comment>()
+                .eq("parent_id", commentId);
+
+        if (excludeId != null) {
+            if (page == 1) {
+                wrapper.orderByAsc("CASE WHEN id = " + excludeId + " THEN 0 ELSE 1 END");
+            } else {
+                // 其他页排除高亮回复，防止重复
+                wrapper.ne("id", excludeId);
+            }
+        }
+        if ("hot".equals(sort)) {
             wrapper.orderByDesc("upvote_count + reply_count * 2");
         }
         wrapper.orderByAsc("created_at");
 
         commentMapper.selectPage(replyPage, wrapper);
-        List<Comment> replies = replyPage.getRecords();
-        if (replies.isEmpty()) {
-            return BaseListResponse.emptyListResponse(page, pageSize);
-        }
-
-        Long postId = replies.get(0).getPostId();
-        Post post = postMapper.selectById(postId);
+        Post post = postMapper.selectById(parent.getPostId());
         Long postAuthorId = post != null ? post.getUserId() : null;
-        List<ReplyElement> replyElements = replies.stream()
+
+        List<ReplyElement> replyElements = replyPage.getRecords().stream()
                 .map(reply -> buildReplyElement(reply, postAuthorId))
                 .toList();
-
-        return BaseListResponse.<ReplyElement>builder()
+        return GetCommentReplyListResponse.builder()
                 .page(page)
                 .pageSize(pageSize)
                 .total(replyPage.getTotal())
                 .list(replyElements)
+                .commentInfo(buildCommentInfo(parent, postAuthorId))
                 .build();
     }
 
@@ -436,12 +430,9 @@ public class CommentManager {
                 replyWrapper.eq(Comment::getDeleted, false);
             }
             List<Comment> replies = commentMapper.selectList(replyWrapper);
-
-            List<ReplyElement> replyElements = new ArrayList<>();
-            for (Comment reply : replies) {
-                replyElements.add(buildReplyElement(reply, postAuthorId));
-            }
-
+            List<ReplyElement> replyElements = replies.stream()
+                    .map(reply -> buildReplyElement(reply, postAuthorId))
+                    .toList();
             list.add(buildCommentElement(comment, replyElements, postAuthorId));
         }
 
@@ -454,29 +445,24 @@ public class CommentManager {
     }
 
     @IgnoreLogicDelete
-    public BaseListResponse<ReplyElement> getAdminReplyList(Long commentId, Integer page, Integer pageSize, CommentStatusEnum status, Long[] excludeCommentIds) {
-        Page<Comment> pageParam = new Page<>(page, pageSize);
-        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Comment::getParentId, commentId)
+    public BaseListResponse<ReplyElement> getAdminReplyList(Long commentId, Integer page, Integer pageSize, CommentStatusEnum status) {
+        Page<Comment> replyPage = new Page<>(page, pageSize);
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getParentId, commentId)
                 .orderByAsc(Comment::getCreatedAt);
-        if (excludeCommentIds != null && excludeCommentIds.length > 0) {
-            wrapper.notIn(Comment::getId, Arrays.asList(excludeCommentIds));
-        }
         if (CommentStatusEnum.DELETED.equals(status)) {
             wrapper.eq(Comment::getDeleted, true);
         } else if (CommentStatusEnum.NORMAL.equals(status)) {
             wrapper.eq(Comment::getDeleted, false);
         }
 
-        Page<Comment> replyPage = commentMapper.selectPage(pageParam, wrapper);
+        commentMapper.selectPage(replyPage, wrapper);
         List<Comment> replies = replyPage.getRecords();
         if (replies.isEmpty()) {
             return BaseListResponse.emptyListResponse(page, pageSize);
         }
-        Long postId = replies.get(0).getPostId();
-        Post post = postMapper.selectById(postId);
+        Post post = postMapper.selectById(replies.get(0).getPostId());
         Long postAuthorId = post != null ? post.getUserId() : null;
-
         List<ReplyElement> replyElements = replies.stream()
                 .map(reply -> buildReplyElement(reply, postAuthorId))
                 .toList();
@@ -526,6 +512,7 @@ public class CommentManager {
                 .createdAt(reply.getCreatedAt())
                 .upvoteCount(reply.getUpvoteCount())
                 .replyCount(reply.getReplyCount())
+                .isLiked(checkIsLiked(reply.getId()))
                 .build();
     }
 
@@ -542,6 +529,31 @@ public class CommentManager {
                 .upvoteCount(comment.getUpvoteCount())
                 .replyCount(comment.getReplyCount())
                 .replies(replies)
+                .isLiked(checkIsLiked(comment.getId()))
+                .build();
+    }
+
+    private boolean checkIsLiked(Long commentId) {
+        LambdaQueryWrapper<Upvote> queryWrapper = new LambdaQueryWrapper<Upvote>()
+                .eq(Upvote::getUserId, StpUtil.getLoginIdAsLong())
+                .eq(Upvote::getCommentId, commentId);
+        Upvote upvote = upvoteMapper.selectOne(queryWrapper);
+        return upvote != null && upvote.getStatus();
+    }
+
+    private CommentInfoResponse buildCommentInfo(Comment comment, Long postAuthorId) {
+        return CommentInfoResponse.builder()
+                .commentId(comment.getId())
+                .publisherInfo(userManager.getUserInfo(comment.getUserId()))
+                .content(comment.getContent())
+                .pictures(getCommentPictures(comment.getId()))
+                .isPinned(comment.getIsPinned())
+                .isAuthor(comment.getUserId().equals(postAuthorId))
+                .isDeleted(comment.getDeleted())
+                .createdAt(comment.getCreatedAt())
+                .upvoteCount(comment.getUpvoteCount())
+                .replyCount(comment.getReplyCount())
+                .isLiked(checkIsLiked(comment.getId()))
                 .build();
     }
 

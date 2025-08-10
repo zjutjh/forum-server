@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.api.dubbo.service.UserService;
-import org.jh.forum.common.constants.UserTypeEnum;
 import org.jh.forum.common.dto.request.LoginRequest;
 import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
 import org.jh.forum.common.dto.response.GetUserProfileResponse;
@@ -35,8 +34,7 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     public AjaxResult<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
-        UserTypeEnum userType = loginService.login(request.getUsername(), request.getPassword(), request.getLoginType());
-        return AjaxResult.success(new LoginResponse(userType));
+        return AjaxResult.success(loginService.login(request.getUsername(), request.getPassword(), request.getLoginType()));
     }
 
     @PostMapping("/logout")

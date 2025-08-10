@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.HandleReportEnum;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -36,6 +37,7 @@ public class HandleReportRequest {
     private HandleReportEnum type;
 
     @Schema(description = "自定义禁言天数，仅当处罚类型为custom_mute时有效")
+    @Min(1)
     private Integer days;
 
     @Schema(description = "反馈信息")

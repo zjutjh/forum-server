@@ -63,8 +63,8 @@ public class LogicDeleteInterceptor implements Interceptor {
             return invocation.proceed();
         }
 
-        // 替换 deleted = 0 为 1=1
-        String modifiedSql = originalSql.replaceAll("(?i)(\\s|\\()([\\w.]*[`\"]?deleted[`\"]?)\\s*=\\s*0", " 1=1 ");
+        // 替换 deleted = 0 为 deleted > -1
+        String modifiedSql = originalSql.replaceAll("(?i)(\\s|\\()([\\w.]*[`\"]?deleted[`\"]?)\\s*=\\s*0", " deleted>-1 ");
         log.info("[LogicDeleteInterceptor] 原始 SQL: {}", originalSql);
         log.info("[LogicDeleteInterceptor] 修改后 SQL: {}", modifiedSql);
 

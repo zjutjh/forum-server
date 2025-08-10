@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 import org.jh.forum.common.entity.Post;
 
+import java.io.Serializable;
+
 /**
  * @author SugarMGP
  * @description 针对表【post】的数据库操作Mapper
@@ -14,6 +16,19 @@ import org.jh.forum.common.entity.Post;
 public interface PostMapper extends BaseMapper<Post> {
     @Update("UPDATE post SET view_count = view_count + 1 WHERE id = #{postId}")
     void incrementViewCount(@Param("postId") Long postId);
+
+    @Update("UPDATE post SET deleted = false WHERE id = #{id}")
+    void restorePost(@Param("id") Long id);
+
+    @Update("UPDATE post SET report_count = report_count + 1 WHERE id = #{id}")
+    void incrementReportCount(@Param("id") Long id);
+
+    @Update("UPDATE post SET resolved_report_count = resolved_report_count + 1 WHERE id = #{id}")
+    void incrementResolvedReportCount(@Param("id") Long id);
+
+    @Override
+    @Update("UPDATE post SET deleted = true, is_pinned = false, is_topped = false WHERE id = #{id}")
+    int deleteById(Serializable id);
 }
 
 

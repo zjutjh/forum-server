@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.CategoryEnum;
-import org.jh.forum.common.constants.PostStatusEnum;
 
 /**
  * @author SugarMGP
@@ -34,5 +33,7 @@ public class Post extends BaseEntity {
 
     private Integer viewCount;
 
-    private PostStatusEnum status;
+    private Integer reportCount;
+
+    private Integer resolvedReportCount;
 }

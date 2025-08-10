@@ -9,6 +9,7 @@ create table announcement
     published_at timestamp(3)                              null comment '发布时间',
     status       varchar(20)                               not null comment '公告状态',
     signatory    varchar(20)                               not null comment '（委托）发布人签名',
+    target_uid   bigint       default -1                   not null comment '公告目标用户ID（-1L表示所有用户）',
     created_at   timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
     updated_at   timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
     create_uid   bigint                                    not null comment '创建用户ID',
@@ -176,22 +177,23 @@ create table operation_log
 
 create table post
 (
-    id         bigint                                    not null comment '帖子ID'
+    id                    bigint                                    not null comment '帖子ID'
         primary key,
-    user_id    bigint                                    not null comment '作者用户ID',
-    title      varchar(100)                              not null comment '标题',
-    content    text                                      not null comment '正文',
-    category   varchar(20)                               not null comment '板块归属',
-    is_pinned  boolean                                   not null comment '是否置顶（管理员）',
-    is_topped  boolean                                   not null comment '是否置顶（个人主页）',
-    view_count int          default 0                    not null comment '浏览次数',
-    status     varchar(20)                               not null comment '帖子状态（normal/pending/deleted）',
-    created_at timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
-    updated_at timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
-    create_uid bigint                                    not null comment '创建用户',
-    update_uid bigint                                    not null comment '更新用户',
-    deleted    boolean                                   not null comment '是否被删除（在该表中废弃，与其他表保持统一）',
-    attribute  text                                      null comment '属性列（json string）'
+    user_id               bigint                                    not null comment '作者用户ID',
+    title                 varchar(100)                              not null comment '标题',
+    content               text                                      not null comment '正文',
+    category              varchar(20)                               not null comment '板块归属',
+    is_pinned             boolean                                   not null comment '是否置顶（管理员）',
+    is_topped             boolean                                   not null comment '是否置顶（个人主页）',
+    view_count            int          default 0                    not null comment '浏览次数',
+    report_count          int          default 0                    not null comment '被举报次数',
+    resolved_report_count int          default 0                    not null comment '被处理的举报数',
+    created_at            timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
+    updated_at            timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
+    create_uid            bigint                                    not null comment '创建用户',
+    update_uid            bigint                                    not null comment '更新用户',
+    deleted               boolean                                   not null comment '是否被删除（在该表中废弃，与其他表保持统一）',
+    attribute             text                                      null comment '属性列（json string）'
 );
 
 create table post_topic_relation
@@ -269,7 +271,7 @@ create table user
     realname              varchar(20)                               not null comment '真实姓名',
     student_id            varchar(12)                               not null comment '学号',
     password              varchar(255)                              not null comment '密码哈希',
-    college_id            bigint                                    not null comment '学院ID',
+    college               varchar(50)                               not null comment '学院',
     gender                varchar(20)                               not null comment '性别(男,女,保密)',
     phone                 varchar(20)  default ''                   not null comment '手机号',
     avatar                varchar(255) default ''                   not null comment '头像地址',
