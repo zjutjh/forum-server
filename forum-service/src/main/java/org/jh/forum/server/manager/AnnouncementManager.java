@@ -99,7 +99,17 @@ public class AnnouncementManager {
             announcement.setStatus(request.getStatus());
             announcement.setPublishedAt(getPublishedAt(request.getStatus(), request.getPublishedAt()));
             announcement.setType(request.getType());
-        // TODO :修改已发布的公告的部分字段时的报错提醒
+        } else {
+            // 如果尝试修改状态、发布时间、类型等关键字段，则报错（兜底用的）
+            boolean attemptChangePublishTime = request.getPublishedAt() != null &&
+                    !request.getPublishedAt().equals(announcement.getPublishedAt());
+            boolean attemptChangeStatus = request.getStatus() != null &&
+                    !request.getStatus().equals(announcement.getStatus());
+            boolean attemptChangeType = request.getType() != null &&
+                    !request.getType().equals(announcement.getType());
+            if (attemptChangePublishTime || attemptChangeStatus || attemptChangeType) {
+                throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+            }
         }
 
         announcementMapper.updateById(announcement);
@@ -214,11 +224,11 @@ public class AnnouncementManager {
     public BaseListResponse<GetAnnouncementListElement> userListAnnouncements(Integer page, Integer pageSize, AnnouncementTypeEnum type) {
         long currentUserId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
-        
+
         // 基础查询条件
         queryWrapper.ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
                 .le(Announcement::getPublishedAt, LocalDateTime.now());
-        
+
         if (type != null) {
             // 指定类型查询
             if (type == AnnouncementTypeEnum.SYSTEMATIC) {
@@ -233,7 +243,7 @@ public class AnnouncementManager {
             queryWrapper.and(wrapper -> wrapper.eq(Announcement::getTargetUid, ALL_USER_ID)
                     .or().eq(Announcement::getTargetUid, currentUserId));
         }
-        
+
         queryWrapper.orderByDesc(Announcement::getSticky)
                 .orderByDesc(Announcement::getPublishedAt);
         IPage<Announcement> pageResult = new Page<>(page, pageSize);

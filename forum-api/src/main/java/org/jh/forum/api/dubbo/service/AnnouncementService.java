@@ -74,9 +74,9 @@ public interface AnnouncementService {
     /**
      * 发送系统通知（RPC接口）
      *
-     * @param title 通知标题
-     * @param content 通知内容
-     * @param targetUserId 目标用户ID，null表示全体用户
+     * @param title        通知标题
+     * @param content      通知内容
+     * @param targetUserId 目标用户ID，-1L表示全体用户
      */
     void sendSystemNotification(String title, String content, Long targetUserId);
 
