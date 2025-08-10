@@ -118,4 +118,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         return new StickyAnnouncementList(topAnnouncements);
     }
+
+    /**
+     * 发送系统通知（RPC接口）
+     */
+    @Override
+    public void sendSystemNotification(String title, String content, Long targetUserId) {
+        log.debug("发送系统通知: title={}, targetUserId={}", title, targetUserId);
+        announcementManager.sendSystemNotification(title, content, targetUserId);
+        //TODO : 完善通知发送
+    }
+
 }
