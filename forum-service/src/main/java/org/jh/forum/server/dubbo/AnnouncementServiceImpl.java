@@ -120,13 +120,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     /**
-     * 发送系统通知（RPC接口）
+     * 发送系统通知
      */
     @Override
     public void sendSystemNotification(String title, String content, Long targetUserId) {
         log.debug("发送系统通知: title={}, targetUserId={}", title, targetUserId);
         announcementManager.sendSystemNotification(title, content, targetUserId);
-        //TODO : 完善通知发送
     }
 
 }

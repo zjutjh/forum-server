@@ -171,7 +171,6 @@ public class AnnouncementManager {
                 .orderByDesc(Announcement::getUpdatedAt)
                 .last("LIMIT 6"));
     }
-    // TODO : 这里改成3+3
 
     /**
      * 校验并获取合法的公告发布时间
