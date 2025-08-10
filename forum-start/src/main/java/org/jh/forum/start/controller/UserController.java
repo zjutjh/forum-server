@@ -9,6 +9,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.api.dubbo.service.UserService;
 import org.jh.forum.common.dto.request.LoginRequest;
+import org.jh.forum.common.dto.request.UpdateBackgroundImageRequest;
 import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
 import org.jh.forum.common.dto.response.GetUserProfileResponse;
 import org.jh.forum.common.dto.response.LoginResponse;
@@ -60,6 +61,14 @@ public class UserController {
     @SaCheckLogin
     public AjaxResult<Void> updateMyProfile(@Valid @RequestBody UpdateUserDetailRequest request) {
         userService.updateUserProfile(request);
+        return AjaxResult.success();
+    }
+
+    @PutMapping("/background")
+    @Operation(summary = "更新个人背景")
+    @SaCheckLogin
+    public AjaxResult<Void> updateMyBackgroundImage(@Valid @RequestBody UpdateBackgroundImageRequest request) {
+        userService.updateBackgroundImage(request);
         return AjaxResult.success();
     }
 }

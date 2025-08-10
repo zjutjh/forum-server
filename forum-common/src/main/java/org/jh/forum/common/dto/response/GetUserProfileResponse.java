@@ -38,13 +38,20 @@ public class GetUserProfileResponse {
     @Schema(description = "是否为自己")
     private Boolean isSelf;
 
+    @Schema(description = "用户背景图URL")
+    private String background;
+
     // 动态字段（根据权限显示）
     @Schema(description = "真实姓名（根据可见性展示，可为null）")
     private String realname;
 
-    @Schema(description = "学院（根据可见性展示，可为null）")
-    private String college;
+    @Schema(description = "学号（根据可见性展示，可为null）")
+    private String studentId;
+
+    @Schema(description = "学院Id（根据可见性展示，可为null）")
+    private String collegeId;
 
     @Schema(description = "生日（根据可见性展示，可为null）")
     private LocalDate birthday;
+
 }

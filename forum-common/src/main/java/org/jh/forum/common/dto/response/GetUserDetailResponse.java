@@ -25,6 +25,10 @@ public class GetUserDetailResponse {
     @Schema(description = "用户头像URL")
     private String avatar;
 
+
+    @Schema(description = "用户背景图URL")
+    private String background;
+
     @Schema(description = "用户个性签名")
     private String signature;
 
@@ -43,8 +47,8 @@ public class GetUserDetailResponse {
     @Schema(description = "学号")
     private String studentId;
 
-    @Schema(description = "学院")
-    private String college;
+    @Schema(description = "学院id")
+    private String collegeId;
 
     @Schema(description = "生日")
     private LocalDate birthday;

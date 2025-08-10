@@ -12,10 +12,7 @@ import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.UserStatusEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
-import org.jh.forum.common.dto.request.GetAdminListRequest;
-import org.jh.forum.common.dto.request.GetUserListRequest;
-import org.jh.forum.common.dto.request.MuteUserRequest;
-import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.entity.User;
@@ -64,9 +61,11 @@ public class UserServiceImpl implements UserService {
         resp.setEmail(detailEntity.getEmail());
         resp.setGender(userEntity.getGender());
         resp.setIsSelf(userId.equals(StpUtil.getLoginIdAsLong()));
+        resp.setBackground(detailEntity.getBackgroundImage());
         resp.setRealname(detailEntity.getRealnameVisible() ? userEntity.getRealname() : null);
-        resp.setCollege(detailEntity.getCollegeVisible() ? userEntity.getCollege() : null);
+        resp.setCollegeId(detailEntity.getCollegeVisible() ? userEntity.getCollegeId() : null);
         resp.setBirthday(detailEntity.getBirthdayVisible() ? detailEntity.getBirthday() : null);
+        resp.setStudentId(detailEntity.getStudentIdVisible() ? userEntity.getStudentId() : null);
         return resp;
     }
 
@@ -79,7 +78,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setAvatar(request.getAvatar());
         userEntity.setNickname(request.getNickname());
         userEntity.setGender(request.getGender());
-        userEntity.setCollege(request.getCollege());
+        userEntity.setCollegeId(request.getCollegeId());
         detailEntity.setSignature(request.getSignature());
         detailEntity.setEmail(request.getEmail());
         detailEntity.setBirthday(request.getBirthday());
@@ -87,8 +86,19 @@ public class UserServiceImpl implements UserService {
         detailEntity.setBirthdayVisible(request.getBirthdayVisible());
         detailEntity.setCollegeVisible(request.getCollegeVisible());
         detailEntity.setRealnameVisible(request.getRealnameVisible());
+        detailEntity.setStudentIdVisible(request.getStudentIdVisible());
 
         userMapper.updateById(userEntity);
+        userDetailMapper.updateById(detailEntity);
+    }
+
+    @Override
+    public void updateBackgroundImage(UpdateBackgroundImageRequest request) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        UserDetail detailEntity = userDetailMapper.selectById(userId);
+
+        detailEntity.setBackgroundImage(request.getBackgroundImage());
+
         userDetailMapper.updateById(detailEntity);
     }
 
@@ -152,11 +162,12 @@ public class UserServiceImpl implements UserService {
         GetUserDetailResponse resp = new GetUserDetailResponse();
         resp.setNickname(userEntity.getNickname());
         resp.setAvatar(userEntity.getAvatar());
+        resp.setBackground(detailEntity.getBackgroundImage());
         resp.setSignature(detailEntity.getSignature());
         resp.setEmail(detailEntity.getEmail());
         resp.setGender(userEntity.getGender());
         resp.setRealname(userEntity.getRealname());
-        resp.setCollege(userEntity.getCollege());
+        resp.setCollegeId(userEntity.getCollegeId());
         resp.setBirthday(detailEntity.getBirthday());
         resp.setCreatedAt(userEntity.getCreatedAt());
         resp.setStatus(getUserStatus(userEntity));

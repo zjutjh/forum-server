@@ -36,7 +36,7 @@ public class UpdateUserDetailRequest {
     private String email;
 
     @NotNull
-    private String college;
+    private String collegeId;
 
     private LocalDate birthday;
 
@@ -48,4 +48,7 @@ public class UpdateUserDetailRequest {
 
     @NotNull
     private Boolean realnameVisible;
+
+    @NotNull
+    private Boolean studentIdVisible;
 }

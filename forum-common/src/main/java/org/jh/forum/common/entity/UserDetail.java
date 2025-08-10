@@ -31,9 +31,13 @@ public class UserDetail {
 
     private LocalDate birthday;
 
+    private String backgroundImage;
+
     private Boolean birthdayVisible;
 
     private Boolean collegeVisible;
 
     private Boolean realnameVisible;
+
+    private Boolean studentIdVisible;
 }

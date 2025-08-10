@@ -1,9 +1,6 @@
 package org.jh.forum.api.dubbo.service;
 
-import org.jh.forum.common.dto.request.GetAdminListRequest;
-import org.jh.forum.common.dto.request.GetUserListRequest;
-import org.jh.forum.common.dto.request.MuteUserRequest;
-import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 
 /**
@@ -21,4 +18,6 @@ public interface UserService {
     GetUserDetailResponse getUserDetail(Long id);
 
     BaseListResponse<GetAdminListElement> getAdminList(GetAdminListRequest request);
+
+    void updateBackgroundImage(UpdateBackgroundImageRequest request);
 }
