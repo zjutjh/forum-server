@@ -160,6 +160,7 @@ public class UserServiceImpl implements UserService {
         GetUserDetailResponse resp = new GetUserDetailResponse();
         resp.setNickname(userEntity.getNickname());
         resp.setAvatar(userEntity.getAvatar());
+        resp.setBackground(detailEntity.getBackgroundImage());
         resp.setSignature(detailEntity.getSignature());
         resp.setEmail(detailEntity.getEmail());
         resp.setGender(userEntity.getGender());
