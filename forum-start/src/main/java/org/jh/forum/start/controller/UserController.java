@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.api.dubbo.service.UserService;
-import org.jh.forum.common.constants.UserTypeEnum;
 import org.jh.forum.common.dto.request.LoginRequest;
 import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
 import org.jh.forum.common.dto.response.GetUserProfileResponse;

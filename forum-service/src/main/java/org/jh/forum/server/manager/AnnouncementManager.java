@@ -90,6 +90,9 @@ public class AnnouncementManager {
         if (announcement == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
+        if (announcement.getTargetUid() != ALL_USER_ID) {
+            throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+        }
 
         announcement.setTitle(request.getTitle());
         announcement.setContent(request.getContent());
@@ -101,13 +104,9 @@ public class AnnouncementManager {
             announcement.setType(request.getType());
         } else {
             // 如果尝试修改状态、发布时间、类型等关键字段，则报错（兜底用的）
-            boolean attemptChangePublishTime = request.getPublishedAt() != null &&
-                    !request.getPublishedAt().equals(announcement.getPublishedAt());
-            boolean attemptChangeStatus = request.getStatus() != null &&
-                    !request.getStatus().equals(announcement.getStatus());
-            boolean attemptChangeType = request.getType() != null &&
-                    !request.getType().equals(announcement.getType());
-            if (attemptChangePublishTime || attemptChangeStatus || attemptChangeType) {
+            if ((request.getPublishedAt() != null && !request.getPublishedAt().equals(announcement.getPublishedAt()))
+                    || (request.getStatus() != null && !request.getStatus().equals(announcement.getStatus()))
+                    || (request.getType() != null && !request.getType().equals(announcement.getType()))) {
                 throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
             }
         }

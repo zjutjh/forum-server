@@ -30,9 +30,10 @@ public enum ExceptionEnum {
     REPORT_ALREADY_HANDLED(200016, "该举报已被处理"),
     REPORT_ALREADY_EXISTS(200017, "您已举报过该内容"),
     USER_MUTED(200018, "您已被禁言"),
-    OAUTH_CLOSED(200019,"统一身份认证夜间不对外开放"),
-    USER_EXISTED(200020,"用户已经存在"),
-    OAUTH_NOT_ACTIVATED(200021,"统一账号未激活"),
+    OAUTH_CLOSED(200019, "统一身份认证夜间不对外开放"),
+    USER_EXISTED(200020, "用户已经存在"),
+    OAUTH_NOT_ACTIVATED(200021, "统一账号未激活"),
+
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试"),
     ;

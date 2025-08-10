@@ -1,7 +1,6 @@
 package org.jh.forum.server.dubbo;
 
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.BCrypt;
@@ -11,19 +10,19 @@ import com.google.protobuf.Value;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.jh.forum.common.dto.response.LoginResponse;
-import org.jh.forum.common.dto.response.OauthUserInfoElement;
-import org.jh.forum.server.utils.UserCenterUtils;
-import org.jh.usercenter.api.LoginRequest;
-import org.jh.usercenter.api.Response;
-import org.jh.usercenter.api.UserCenterService;
 import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
+import org.jh.forum.common.dto.response.LoginResponse;
+import org.jh.forum.common.dto.response.OauthUserInfoElement;
 import org.jh.forum.common.entity.User;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.manager.UserManager;
 import org.jh.forum.server.mapper.UserMapper;
+import org.jh.forum.server.utils.UserCenterUtils;
+import org.jh.usercenter.api.LoginRequest;
+import org.jh.usercenter.api.Response;
+import org.jh.usercenter.api.UserCenterService;
 
 import java.util.Objects;
 
@@ -52,7 +51,7 @@ public class LoginServiceImpl implements LoginService {
                 // 首次登录, 数据库创建对象
                 // 统一登录,下面的字段从统一拿
                 user = User.builder()
-                        .nickname("精小弘")
+                        .nickname(getRandomNickname())
                         .realname(oauthLoginData.getName())
                         .studentId(username)
                         .password(BCrypt.hashpw(password))
@@ -81,35 +80,29 @@ public class LoginServiceImpl implements LoginService {
     }
 
     private OauthUserInfoElement oauthLogin(String username, String password) {
-        try {
-            LoginRequest loginRequest = LoginRequest.newBuilder()
-                    .setStudentId(username)
-                    .setPassword(password)
-                    .build();
-            Response resp = userCenterService.oauthLogin(loginRequest);
-            Integer code = resp.getCode();
-            ExceptionEnum exceptionEnum = UserCenterUtils.toForumException(code);
-            if (exceptionEnum != null) {
-                throw new ApiException(exceptionEnum);
-            }
+        LoginRequest loginRequest = LoginRequest.newBuilder()
+                .setStudentId(username)
+                .setPassword(password)
+                .build();
+        Response resp = userCenterService.oauthLogin(loginRequest);
+        Integer code = resp.getCode();
+        ExceptionEnum exceptionEnum = UserCenterUtils.toForumException(code);
+        if (exceptionEnum != null) {
+            throw new ApiException(exceptionEnum);
+        }
 
-            Value data = resp.getData();
-            if (data.getKindCase() != Value.KindCase.STRUCT_VALUE) {
-                log.error("用户中心请求结果类型异常");
-                throw new ApiException(ExceptionEnum.SERVER_ERROR);
-            }
-            Struct dataStruct = data.getStructValue();
-            return OauthUserInfoElement.builder()
-                    .studentId(dataStruct.getFieldsOrThrow("studentId").getStringValue())
-                    .name(dataStruct.getFieldsOrThrow("name").getStringValue())
-                    .gender(UserCenterUtils.toGenderEnum(dataStruct.getFieldsOrThrow("gender").getStringValue()))
-                    .studentType(dataStruct.getFieldsOrThrow("userTypeDesc").getStringValue())
-                    .build();
-        } catch (ApiException e) {
-            throw e;
-        } catch (Exception e) {
+        Value data = resp.getData();
+        if (data.getKindCase() != Value.KindCase.STRUCT_VALUE) {
+            log.error("用户中心请求结果类型异常");
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
+        Struct dataStruct = data.getStructValue();
+        return OauthUserInfoElement.builder()
+                .studentId(dataStruct.getFieldsOrThrow("studentId").getStringValue())
+                .name(dataStruct.getFieldsOrThrow("name").getStringValue())
+                .gender(UserCenterUtils.toGenderEnum(dataStruct.getFieldsOrThrow("gender").getStringValue()))
+                .studentType(dataStruct.getFieldsOrThrow("userTypeDesc").getStringValue())
+                .build();
     }
 
     private String getRandomNickname() {
