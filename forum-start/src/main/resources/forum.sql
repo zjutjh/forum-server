@@ -9,6 +9,7 @@ create table announcement
     published_at timestamp(3)                              null comment '发布时间',
     status       varchar(20)                               not null comment '公告状态',
     signatory    varchar(20)                               not null comment '（委托）发布人签名',
+    target_uid   bigint       default -1                   not null comment '公告目标用户ID（-1L表示所有用户）',
     created_at   timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
     updated_at   timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
     create_uid   bigint                                    not null comment '创建用户ID',

@@ -311,7 +311,7 @@ public class PostManager {
 
     private Integer getLikeCount(Long postId) {
         long count = upvoteMapper.selectCount(new LambdaQueryWrapper<Upvote>()
-                .eq(Upvote::getPostId, postId));
+                .eq(Upvote::getPostId, postId).eq(Upvote::getStatus, true));
         return Math.toIntExact(count);
     }
 

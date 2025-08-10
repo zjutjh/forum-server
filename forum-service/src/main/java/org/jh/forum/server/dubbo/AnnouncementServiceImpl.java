@@ -24,6 +24,8 @@ import java.util.List;
 @Service
 @DubboService
 public class AnnouncementServiceImpl implements AnnouncementService {
+    private static final String SU_ADMIN = "super_admin";
+    private static final String ADMIN = "admin";
     @Resource
     private AnnouncementManager announcementManager;
 
@@ -32,7 +34,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      */
     @Override
     public void createAnnouncement(CreateAnnouncementRequest request) {
-        if (!StpUtil.hasRole("super_admin") && !StpUtil.hasRole("admin")) {
+        if (!StpUtil.hasRole(SU_ADMIN) && !StpUtil.hasRole(ADMIN)) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         announcementManager.createAnnouncement(request);
@@ -118,4 +120,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         return new StickyAnnouncementList(topAnnouncements);
     }
+
+    /**
+     * 发送系统通知
+     */
+    @Override
+    public void sendSystemNotification(String title, String content, Long targetUserId) {
+        log.debug("发送系统通知: title={}, targetUserId={}", title, targetUserId);
+        announcementManager.sendSystemNotification(title, content, targetUserId);
+    }
+
 }

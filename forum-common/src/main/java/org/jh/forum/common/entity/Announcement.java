@@ -68,4 +68,10 @@ public class Announcement extends BaseEntity {
      */
     @TableField("sticky")
     private Boolean sticky;
+
+    /**
+     * 收件用户ID - -1L表示全体用户，其他值表示指定用户
+     */
+    @TableField("target_uid")
+    private Long targetUid;
 }

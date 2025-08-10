@@ -1,6 +1,9 @@
 package org.jh.forum.server.dubbo;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.EnumUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.protobuf.Struct;
@@ -44,7 +47,6 @@ public class LoginServiceImpl implements LoginService {
     public LoginResponse login(String username, String password, UserTypeEnum loginType) {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, username));
         if (loginType == UserTypeEnum.STUDENT) {
-//          学生登陆逻辑
             OauthUserInfoElement oauthLoginData = oauthLogin(username, password);
             if (Objects.isNull(user)) {
                 // 首次登录, 数据库创建对象
@@ -85,7 +87,6 @@ public class LoginServiceImpl implements LoginService {
                     .setPassword(password)
                     .build();
             Response resp = userCenterService.oauthLogin(loginRequest);
-//            错误处理
             Integer code = resp.getCode();
             ExceptionEnum exceptionEnum = UserCenterUtils.toForumException(code);
             if (exceptionEnum != null) {
@@ -109,5 +110,15 @@ public class LoginServiceImpl implements LoginService {
         } catch (Exception e) {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
+    }
+
+    private String getRandomNickname() {
+        for (int i = 0; i < 10; i++) {
+            String nickname = "精小弘" + RandomUtil.randomNumbers(6);
+            if (!userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getNickname, nickname))) {
+                return nickname;
+            }
+        }
+        return "精小弘" + IdUtil.objectId();
     }
 }
