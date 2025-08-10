@@ -76,6 +76,7 @@ public class LoginServiceImpl implements LoginService {
             // 数据库密码校验错误
             throw new ApiException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
         }
+        StpUtil.login(user.getId());
         return LoginResponse.builder().userType(user.getRole()).build();
     }
 
