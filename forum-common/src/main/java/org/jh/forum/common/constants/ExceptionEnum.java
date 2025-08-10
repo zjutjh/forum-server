@@ -33,6 +33,7 @@ public enum ExceptionEnum {
     OAUTH_CLOSED(200019, "统一身份认证夜间不对外开放"),
     USER_EXISTED(200020, "用户已经存在"),
     OAUTH_NOT_ACTIVATED(200021, "统一账号未激活"),
+    FAQ_NOT_FOUND(200022, "FAQ问题不存在"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试"),

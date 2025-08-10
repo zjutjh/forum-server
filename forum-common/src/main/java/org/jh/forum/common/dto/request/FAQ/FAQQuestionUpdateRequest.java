@@ -1,0 +1,37 @@
+package org.jh.forum.common.dto.request.FAQ;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.jh.forum.common.validation.ValidOptionalFAQCategory;
+
+/**
+ * FAQ问题更新请求
+ *
+ * @author ZeroHzzzz
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Schema(description = "FAQ问题更新请求参数")
+public class FAQQuestionUpdateRequest {
+
+    @Schema(description = "问题ID", required = true, example = "1")
+    @NotNull(message = "问题ID不能为空")
+    private Long questionId;
+    
+    @Schema(description = "FAQ类别", example = "账号问题")
+    @ValidOptionalFAQCategory(message = "无效的FAQ分类，请选择：账号问题、学院问题、帖子问题、猜你想问")
+    private String category;
+    
+    @Schema(description = "问题描述", example = "如何重置密码？")
+    @Size(max = 200, message = "问题描述最多200字符")
+    private String question;
+    
+    @Schema(description = "问题答案", example = "1. 点击登录页面的\"忘记密码\"\n2. 输入您的注册邮箱\n3. 按照邮件中的指引重置密码")
+    @Size(max = 500, message = "问题答案最多500字符")
+    private String answer;
+}

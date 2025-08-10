@@ -74,17 +74,16 @@ create table faq
 (
     id         bigint                                    not null comment '常见问题ID'
         primary key,
-    category   varchar(20)                               not null comment '板块（账号/学院/帖子/其他）',
-    question   varchar(200)                              not null comment '问题描述',
-    answer     varchar(500)                              not null comment '问题解答',
-    view_count int          default 0                    not null comment '浏览量',
-    is_pinned  boolean      default false                not null comment '是否添加到"猜你想问"',
-    created_at timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
-    updated_at timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
-    create_uid bigint                                    not null comment '创建用户',
-    update_uid bigint                                    not null comment '更新用户',
-    deleted    boolean                                   not null comment '是否被删除',
-    attribute  text                                      null comment '属性列（json string）'
+    category   varchar(20)                         not null comment '板块（账号/学院/帖子/其他）',
+    question   varchar(200)                        not null comment '问题描述',
+    answer     varchar(500)                        not null comment '问题解答',
+    view_count int       default 0                 not null comment '浏览量',
+    created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_uid bigint                              not null comment '创建用户',
+    update_uid bigint                              not null comment '更新用户',
+    deleted    boolean                             not null comment '是否被删除',
+    attribute  text                                null comment '属性列（json string）'
 );
 
 create table favorite
