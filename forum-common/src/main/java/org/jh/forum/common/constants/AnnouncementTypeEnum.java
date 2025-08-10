@@ -12,8 +12,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum AnnouncementTypeEnum {
-    SYSTEMATIC("systematic", "系统公告"),
-    SCHOLASTIC("scholastic", "学校公告");
+    SCHOLASTIC("scholastic", "学校公告"),
+    SYSTEMATIC("systematic", "系统公告/系统通知");
 
     @EnumValue
     @JsonValue
