@@ -272,7 +272,7 @@ create table user
     realname              varchar(20)                               not null comment '真实姓名',
     student_id            varchar(12)                               not null comment '学号',
     password              varchar(255)                              not null comment '密码哈希',
-    college               varchar(50)                               not null comment '学院',
+    college_id            varchar(255)                              not null comment '学院ID',
     gender                varchar(20)                               not null comment '性别(男,女,保密)',
     phone                 varchar(20)  default ''                   not null comment '手机号',
     avatar                varchar(255) default ''                   not null comment '头像地址',
@@ -303,6 +303,7 @@ create table user_detail
     background_image varchar(255) default ''  not null comment '背景图地址',
     birthday_visible boolean     default true not null comment '生日可见性',
     college_visible  boolean     default true not null comment '学院可见性',
-    realname_visible boolean     default true not null comment '实名可见性'
+    realname_visible boolean     default true not null comment '实名可见性',
+    student_id_visible boolean   default true not null comment '学号可见性'
 );
 

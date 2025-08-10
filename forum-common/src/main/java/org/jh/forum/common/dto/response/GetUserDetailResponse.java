@@ -47,8 +47,8 @@ public class GetUserDetailResponse {
     @Schema(description = "学号")
     private String studentId;
 
-    @Schema(description = "学院")
-    private String college;
+    @Schema(description = "学院id")
+    private String collegeId;
 
     @Schema(description = "生日")
     private LocalDate birthday;

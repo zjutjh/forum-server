@@ -38,4 +38,6 @@ public class UserDetail {
     private Boolean collegeVisible;
 
     private Boolean realnameVisible;
+
+    private Boolean studentIdVisible;
 }

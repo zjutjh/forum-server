@@ -55,7 +55,7 @@ public class LoginServiceImpl implements LoginService {
                         .realname(oauthLoginData.getName())
                         .studentId(username)
                         .password(BCrypt.hashpw(password))
-                        .college("")
+                        .collegeId("")
                         .gender(oauthLoginData.getGender())
                         .role(loginType)
                         .reportCount(0)
