@@ -35,8 +35,7 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     public AjaxResult<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
-        UserTypeEnum userType = loginService.login(request.getUsername(), request.getPassword(), request.getLoginType());
-        return AjaxResult.success(new LoginResponse(userType));
+        return AjaxResult.success(loginService.login(request.getUsername(), request.getPassword(), request.getLoginType()));
     }
 
     @PostMapping("/logout")

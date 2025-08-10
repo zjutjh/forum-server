@@ -153,6 +153,11 @@
             <artifactId>cube-spring-boot3-starter</artifactId>
             <version>1.5</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.MangoGovo</groupId>
+            <artifactId>jh-user-center-java-sdk</artifactId>
+            <version>1.1.4</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

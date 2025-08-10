@@ -53,6 +53,11 @@
             <artifactId>commons-codec</artifactId>
             <version>1.18.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.MangoGovo.jh-user-center-java-sdk</groupId>
+            <artifactId>jh-user-center-spring-boot-3-dubbo-starter</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
     </dependencyManagement>
