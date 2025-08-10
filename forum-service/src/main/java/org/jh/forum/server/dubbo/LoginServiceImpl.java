@@ -2,6 +2,8 @@ package org.jh.forum.server.dubbo;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.EnumUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
@@ -42,7 +44,7 @@ public class LoginServiceImpl implements LoginService {
             // 首次登录, 数据库创建对象
             // 统一登录,下面的字段从统一拿
             user = User.builder()
-                    .nickname("default")
+                    .nickname(getRandomNickname())
                     .realname("default")
                     .studentId(username)
                     .password(BCrypt.hashpw(password))
@@ -59,5 +61,15 @@ public class LoginServiceImpl implements LoginService {
         }
         StpUtil.login(user.getId());
         return user.getRole();
+    }
+
+    private String getRandomNickname() {
+        for (int i = 0; i < 10; i++) {
+            String nickname = "精小弘" + RandomUtil.randomNumbers(6);
+            if (!userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getNickname, nickname))) {
+                return nickname;
+            }
+        }
+        return "精小弘" + IdUtil.objectId();
     }
 }
