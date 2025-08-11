@@ -158,7 +158,7 @@ public class AnnouncementController {
      * 请求路径: /announcements/top
      * 权限: 用户
      */
-    @Operation(summary = "获取置顶公告", description = "获取置顶的三条公告，不够的话最新更新的来凑")
+    @Operation(summary = "获取置顶公告", description = "获取置顶的公告（最多三条），然后剩下的用最新的凑到六条")
     @GetMapping("/top")
     public AjaxResult<StickyAnnouncementList> getTopAnnouncements() {
         return AjaxResult.success(announcementService.getTopAnnouncements());

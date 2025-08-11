@@ -72,7 +72,7 @@ create table comment
 
 create table faq
 (
-    id         bigint                                    not null comment '常见问题ID'
+    id         bigint                              not null comment '常见问题ID'
         primary key,
     category   varchar(20)                         not null comment '板块（账号/学院/帖子/其他）',
     question   varchar(200)                        not null comment '问题描述',
@@ -284,7 +284,7 @@ create table user
     realname              varchar(20)                               not null comment '真实姓名',
     student_id            varchar(12)                               not null comment '学号',
     password              varchar(255)                              not null comment '密码哈希',
-    college_id            varchar(255)                              not null comment '学院ID',
+    college_id            varchar(10)                               not null comment '学院ID',
     gender                varchar(20)                               not null comment '性别(男,女,保密)',
     phone                 varchar(20)  default ''                   not null comment '手机号',
     avatar                varchar(255) default ''                   not null comment '头像地址',
@@ -306,16 +306,16 @@ create table user
 
 create table user_detail
 (
-    user_id          bigint                   not null comment '用户ID'
+    user_id            bigint                    not null comment '用户ID'
         primary key,
-    signature        varchar(20) default ''   not null comment '个性签名',
-    profile          varchar(50) default ''   not null comment '个人简介',
-    email            varchar(50) default ''   not null comment '个人邮箱',
-    birthday         date                     null comment '生日',
-    background_image varchar(255) default ''  not null comment '背景图地址',
-    birthday_visible boolean     default true not null comment '生日可见性',
-    college_visible  boolean     default true not null comment '学院可见性',
-    realname_visible boolean     default true not null comment '实名可见性',
-    student_id_visible boolean   default true not null comment '学号可见性'
+    signature          varchar(20)  default ''   not null comment '个性签名',
+    profile            varchar(50)  default ''   not null comment '个人简介',
+    email              varchar(50)  default ''   not null comment '个人邮箱',
+    birthday           date                      null comment '生日',
+    background_image   varchar(255) default ''   not null comment '背景图地址',
+    birthday_visible   boolean      default true not null comment '生日可见性',
+    college_visible    boolean      default true not null comment '学院可见性',
+    realname_visible   boolean      default true not null comment '实名可见性',
+    student_id_visible boolean      default true not null comment '学号可见性'
 );
 

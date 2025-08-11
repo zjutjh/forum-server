@@ -429,9 +429,9 @@ public class ReportManager {
         for (ReportInfo reportInfo : reportInfoList) {
             announcementManager.sendSystemNotification(
                     "举报结果通知",
-                        getContent(report, userMapper.selectById(reportInfo.getUserId()).getNickname(),
-                                targetDescription),
-                        reportInfo.getUserId()
+                    getContent(report, userMapper.selectById(reportInfo.getUserId()).getNickname(),
+                            targetDescription),
+                    reportInfo.getUserId()
             );
         }
     }

@@ -1,5 +1,8 @@
 package org.jh.forum.common.constants;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -8,39 +11,17 @@ import lombok.Getter;
  * @author ZeroHzzzz
  */
 @Getter
+@AllArgsConstructor
 public enum FAQCategoryEnum {
-    ACCOUNT("账号问题"),
-    COLLEGE("学院问题"),
-    POST("帖子问题"),
-    GUESS("猜你想问");
+    ACCOUNT("account", "账号问题"),
+    COLLEGE("college", "学院问题"),
+    POST("post", "帖子问题"),
+    OTHER("other", "其他问题"),
+    GUESS("guess", "猜你想问");
 
-    private final String description;
+    @JsonValue
+    @EnumValue
+    private final String value;
 
-    FAQCategoryEnum(String description) {
-        this.description = description;
-    }
-
-    /**
-     * 根据描述获取枚举
-     */
-    public static FAQCategoryEnum getByDescription(String description) {
-        for (FAQCategoryEnum category : values()) {
-            if (category.description.equals(description)) {
-                return category;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * 获取所有分类描述
-     */
-    public static String[] getAllDescriptions() {
-        FAQCategoryEnum[] values = values();
-        String[] descriptions = new String[values.length];
-        for (int i = 0; i < values.length; i++) {
-            descriptions[i] = values[i].description;
-        }
-        return descriptions;
-    }
+    private final String desc;
 }
