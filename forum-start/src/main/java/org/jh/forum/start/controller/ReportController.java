@@ -8,14 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.ReportService;
-import org.jh.forum.common.dto.request.GetReportListRequest;
-import org.jh.forum.common.dto.request.HandleReportRequest;
-import org.jh.forum.common.dto.request.ReportContentRequest;
-import org.jh.forum.common.dto.request.ReportUserRequest;
-import org.jh.forum.common.dto.response.BaseListResponse;
-import org.jh.forum.common.dto.response.GetReportDetailResponse;
-import org.jh.forum.common.dto.response.GetReportListElement;
-import org.jh.forum.common.dto.response.HandleReportResponse;
+import org.jh.forum.common.dto.request.*;
+import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,5 +63,13 @@ public class ReportController {
     @GetMapping("/detail")
     public AjaxResult<GetReportDetailResponse> getReportDetail(@RequestParam(value = "id") Long id) {
         return AjaxResult.success(reportService.getReportDetail(id));
+    }
+
+    @Operation(summary = "获取举报信息列表")
+    @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
+    @Tag(name = "管理员")
+    @GetMapping("/info/list")
+    public AjaxResult<BaseListResponse<GetReportInfoElement>> getReportInfoList(@Valid GetReportInfoListRequest request) {
+        return AjaxResult.success(reportService.getReportInfoList(request));
     }
 }

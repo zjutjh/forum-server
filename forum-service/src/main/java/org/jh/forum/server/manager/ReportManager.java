@@ -12,10 +12,7 @@ import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.request.HandleReportRequest;
 import org.jh.forum.common.dto.response.*;
-import org.jh.forum.common.entity.Attachment;
-import org.jh.forum.common.entity.Comment;
-import org.jh.forum.common.entity.Post;
-import org.jh.forum.common.entity.Report;
+import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.*;
 import org.springframework.stereotype.Service;
@@ -40,6 +37,8 @@ public class ReportManager {
     private final UserMapper userMapper;
     private final CommentMapper commentMapper;
     private final UserManager userManager;
+    private final ReportInfoMapper reportInfoMapper;
+    private final AnnouncementManager announcementManager;
 
     @Transactional
     public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, List<String> pictureUrls) {
@@ -48,28 +47,40 @@ public class ReportManager {
             throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
         }
 
-        if (reportMapper.exists(new LambdaQueryWrapper<Report>()
+        Report existingReport = reportMapper.selectOne(new LambdaQueryWrapper<Report>()
                 .eq(Report::getTargetType, TargetTypeEnum.USER)
                 .eq(Report::getTargetId, targetUserId)
-                .eq(Report::getUserId, userId)
-                .eq(Report::getStatus, ReportStatusEnum.PENDING))) {
-            throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
+                .eq(Report::getStatus, ReportStatusEnum.PENDING));
+
+        if (existingReport != null) {
+            if (reportInfoMapper.exists(new LambdaQueryWrapper<ReportInfo>()
+                    .eq(ReportInfo::getReportId, existingReport.getId())
+                    .eq(ReportInfo::getUserId, userId))) {
+                throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
+            }
         }
 
         Report report = Report.builder()
-                .type(type)
-                .userId(userId)
                 .targetUserId(targetUserId)
-                .reason(reason)
                 .targetId(targetUserId)
                 .targetType(TargetTypeEnum.USER)
                 .status(ReportStatusEnum.PENDING)
                 .result("")
                 .build();
         reportMapper.insert(report);
+
+        ReportInfo reportInfo = ReportInfo.builder()
+                .reportId(report.getId())
+                .userId(userId)
+                .type(type)
+                .reason(reason)
+                .build();
+        reportInfoMapper.insert(reportInfo);
+
         userMapper.incrementReportCount(targetUserId);
+
         for (String url : pictureUrls) {
-            fileManager.bindAttachment(url, TargetTypeEnum.REPORT, report.getId());
+            fileManager.bindAttachment(url, TargetTypeEnum.REPORT, reportInfo.getId());
         }
     }
 
@@ -98,33 +109,56 @@ public class ReportManager {
             throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
         }
 
-        if (reportMapper.exists(new LambdaQueryWrapper<Report>()
+        Report existingReport = reportMapper.selectOne(new LambdaQueryWrapper<Report>()
                 .eq(Report::getTargetType, target)
                 .eq(Report::getTargetId, targetId)
-                .eq(Report::getUserId, userId)
-                .eq(Report::getStatus, ReportStatusEnum.PENDING))) {
-            throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
+                .eq(Report::getStatus, ReportStatusEnum.PENDING));
+        if (existingReport != null) {
+            if (reportInfoMapper.exists(new LambdaQueryWrapper<ReportInfo>()
+                    .eq(ReportInfo::getReportId, existingReport.getId())
+                    .eq(ReportInfo::getUserId, userId))) {
+                throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
+            }
+
+            ReportInfo reportInfo = ReportInfo.builder()
+                    .reportId(existingReport.getId())
+                    .userId(userId)
+                    .type(type)
+                    .reason(reason)
+                    .build();
+            reportInfoMapper.insert(reportInfo);
+
+            for (String url : pictureUrls) {
+                fileManager.bindAttachment(url, TargetTypeEnum.REPORT, reportInfo.getId());
+            }
+        } else {
+            Report report = Report.builder()
+                    .targetUserId(targetUserId)
+                    .targetId(targetId)
+                    .targetType(target)
+                    .status(ReportStatusEnum.PENDING)
+                    .result("")
+                    .build();
+            reportMapper.insert(report);
+            existingReport = report;
+
+            ReportInfo reportInfo = ReportInfo.builder()
+                    .reportId(report.getId())
+                    .userId(userId)
+                    .type(type)
+                    .reason(reason)
+                    .build();
+            reportInfoMapper.insert(reportInfo);
+
+            for (String url : pictureUrls) {
+                fileManager.bindAttachment(url, TargetTypeEnum.REPORT, reportInfo.getId());
+            }
         }
 
-        Report report = Report.builder()
-                .type(type)
-                .userId(userId)
-                .targetUserId(targetUserId)
-                .reason(reason)
-                .targetId(targetId)
-                .targetType(target)
-                .status(ReportStatusEnum.PENDING)
-                .result("")
-                .build();
-        reportMapper.insert(report);
         userMapper.incrementReportCount(targetUserId);
 
-        if (report.getTargetType() == TargetTypeEnum.POST) {
-            postMapper.incrementReportCount(report.getTargetId());
-        }
-
-        for (String url : pictureUrls) {
-            fileManager.bindAttachment(url, TargetTypeEnum.REPORT, report.getId());
+        if (target == TargetTypeEnum.POST) {
+            postMapper.incrementReportCount(existingReport.getTargetId());
         }
     }
 
@@ -142,15 +176,6 @@ public class ReportManager {
 
         if (report.getStatus() != ReportStatusEnum.PENDING) {
             throw new ApiException(ExceptionEnum.REPORT_ALREADY_HANDLED);
-        }
-
-        if (request.getShouldDelete()) {
-            TargetTypeEnum targetType = report.getTargetType();
-            if (targetType == TargetTypeEnum.POST) {
-                postManager.deletePost(report.getTargetId(), true);
-            } else if (targetType == TargetTypeEnum.COMMENT) {
-                commentMapper.deleteById(report.getTargetId());
-            }
         }
 
         if (HandleReportEnum.SHORT_MUTE.equals(request.getType())) {
@@ -176,7 +201,17 @@ public class ReportManager {
             postMapper.incrementResolvedReportCount(report.getTargetId());
         }
 
-        // TODO 发送举报结果给举报人和被举报人
+        sendResultToReportUser(report);
+        announcementManager.sendSystemNotification("举报结果通知", request.getResult(), report.getTargetUserId());
+
+        if (request.getShouldDelete()) {
+            TargetTypeEnum targetType = report.getTargetType();
+            if (targetType == TargetTypeEnum.POST) {
+                postManager.deletePost(report.getTargetId(), true);
+            } else if (targetType == TargetTypeEnum.COMMENT) {
+                commentMapper.deleteById(report.getTargetId());
+            }
+        }
 
         Report nextReport = reportMapper.selectOne(new LambdaQueryWrapper<Report>()
                 .eq(Report::getStatus, ReportStatusEnum.PENDING)
@@ -202,12 +237,17 @@ public class ReportManager {
         reportMapper.selectPage(reportPage, queryWrapper);
         List<GetReportListElement> list = new ArrayList<>();
         for (Report report : reportPage.getRecords()) {
+            ReportInfo firstReportInfo = reportInfoMapper.selectOne(new LambdaQueryWrapper<ReportInfo>()
+                    .eq(ReportInfo::getReportId, report.getId())
+                    .orderByAsc(ReportInfo::getCreatedAt)
+                    .last("limit 1"));
+
             list.add(GetReportListElement.builder()
                     .id(report.getId())
                     .status(report.getStatus())
                     .targetType(report.getTargetType())
-                    .type(report.getType())
-                    .reason(report.getReason())
+                    .type(firstReportInfo.getType())
+                    .reason(firstReportInfo.getReason())
                     .userId(report.getTargetUserId())
                     .targetNickname(userMapper.selectById(report.getTargetUserId()).getNickname())
                     .createdAt(report.getCreatedAt())
@@ -231,6 +271,8 @@ public class ReportManager {
         Integer commentPosition = null;
         LocalDateTime targetTypeCreatedAt = null;
         Comment comment = null;
+        Long parentId = null;
+        Integer replyPosition = null;
         if (report.getTargetType() == TargetTypeEnum.COMMENT) {
             comment = commentMapper.selectById(report.getTargetId());
             if (comment == null) {
@@ -239,8 +281,19 @@ public class ReportManager {
             targetTypeCreatedAt = comment.getCreatedAt();
             List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
                     .eq(Comment::getPostId, comment.getPostId())
+                    .eq(Comment::getParentId, 0L)
                     .orderByAsc(Comment::getCreatedAt));
-            commentPosition = comments.indexOf(comment) + 1;
+            if (comment.getParentId() == 0) {
+                commentPosition = comments.indexOf(comment) + 1;
+            } else {
+                commentPosition = comments.indexOf(commentMapper.selectById(comment.getParentId())) + 1;
+                parentId = comment.getParentId();
+                List<Comment> replies = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
+                        .eq(Comment::getPostId, comment.getPostId())
+                        .eq(Comment::getParentId, comment.getParentId())
+                        .orderByAsc(Comment::getCreatedAt));
+                replyPosition = replies.indexOf(comment) + 1;
+            }
         }
         if (report.getTargetType() == TargetTypeEnum.POST) {
             Post post = postMapper.selectById(report.getTargetId());
@@ -251,24 +304,53 @@ public class ReportManager {
         }
 
         return GetReportDetailResponse.builder()
-                .userId(report.getUserId())
                 .targetUserId(report.getTargetUserId())
                 .targetNickname(userMapper.selectById(report.getTargetUserId()).getNickname())
-                .createdAt(report.getCreatedAt())
                 .targetType(report.getTargetType())
                 .targetId(report.getTargetId())
                 .postId(comment != null ? comment.getPostId() : null)
                 .commentPosition(commentPosition)
-                .type(report.getType())
-                .reason(report.getReason())
+                .parentId(parentId)
+                .replyPosition(replyPosition)
                 .status(report.getStatus())
                 .result(report.getResult())
-                .pictures(getReportPictures(report.getId()))
                 .userHistoryStats(getUserHistoryStats(report.getTargetUserId()))
                 .shouldDelete(report.getShouldDelete())
                 .punishmentType(report.getPunishmentType())
                 .muteDays(report.getMuteDays())
                 .targetTypeCreatedAt(targetTypeCreatedAt)
+                .build();
+    }
+
+    public BaseListResponse<GetReportInfoElement> getReportInfoList(Long reportId, Integer page, Integer pageSize) {
+        Report report = reportMapper.selectById(reportId);
+        if (report == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+
+        IPage<ReportInfo> reportInfoPage = new Page<>(page, pageSize);
+        LambdaQueryWrapper<ReportInfo> queryWrapper = new LambdaQueryWrapper<ReportInfo>()
+                .eq(ReportInfo::getReportId, reportId)
+                .orderByAsc(ReportInfo::getCreatedAt);
+
+        reportInfoMapper.selectPage(reportInfoPage, queryWrapper);
+
+        List<GetReportInfoElement> list = new ArrayList<>();
+        for (ReportInfo reportInfo : reportInfoPage.getRecords()) {
+            list.add(GetReportInfoElement.builder()
+                    .userId(reportInfo.getUserId())
+                    .type(reportInfo.getType())
+                    .reason(reportInfo.getReason())
+                    .createdAt(reportInfo.getCreatedAt())
+                    .pictures(getReportPictures(reportInfo.getId()))
+                    .build());
+        }
+
+        return BaseListResponse.<GetReportInfoElement>builder()
+                .list(list)
+                .total(reportInfoPage.getTotal())
+                .page(page)
+                .pageSize(pageSize)
                 .build();
     }
 
@@ -324,5 +406,68 @@ public class ReportManager {
                         .filter(report -> report.getUpdatedAt().isAfter(LocalDateTime.now().minusDays(60)))
                         .count())
                 .build();
+    }
+
+    private void sendResultToReportUser(Report report) {
+        List<ReportInfo> reportInfoList = reportInfoMapper.selectList(new LambdaQueryWrapper<ReportInfo>()
+                .eq(ReportInfo::getReportId, report.getId()));
+
+        String targetDescription;
+        if (report.getTargetType() == TargetTypeEnum.POST) {
+            Post post = postMapper.selectById(report.getTargetId());
+            targetDescription = post != null ? String.format("帖子《%s》", post.getTitle()) : "帖子";
+        } else if (report.getTargetType() == TargetTypeEnum.COMMENT) {
+            Comment comment = commentMapper.selectById(report.getTargetId());
+            targetDescription = comment != null ? String.format("评论\"%s\"", comment.getContent()) : "评论";
+        } else if (report.getTargetType() == TargetTypeEnum.USER) {
+            User user = userMapper.selectById(report.getTargetUserId());
+            targetDescription = user != null ? String.format("用户@%s", user.getNickname()) : "用户";
+        } else {
+            targetDescription = "内容";
+        }
+
+        for (ReportInfo reportInfo : reportInfoList) {
+            announcementManager.sendSystemNotification(
+                    "举报结果通知",
+                        getContent(report, userMapper.selectById(reportInfo.getUserId()).getNickname(),
+                                targetDescription),
+                        reportInfo.getUserId()
+            );
+        }
+    }
+
+    private String getContent(Report report, String userNickname, String targetDescription) {
+        String notificationContent;
+        if (report.getStatus() == ReportStatusEnum.SUCCESS) {
+            String targetTypeDesc;
+            if (report.getTargetType() == TargetTypeEnum.POST) {
+                targetTypeDesc = "该条帖子";
+            } else if (report.getTargetType() == TargetTypeEnum.COMMENT) {
+                targetTypeDesc = "该条评论";
+            } else if (report.getTargetType() == TargetTypeEnum.USER) {
+                targetTypeDesc = "该用户";
+            } else {
+                targetTypeDesc = "该内容";
+            }
+            notificationContent = String.format(
+                    "尊敬的%s，经核实，您举报的%s存在违规，%s已被处理。感谢您对精弘论坛美好氛围的贡献！",
+                    userNickname,
+                    targetDescription,
+                    targetTypeDesc
+            );
+        } else if (report.getStatus() == ReportStatusEnum.FAILURE) {
+            notificationContent = String.format(
+                    "尊敬的%s，我们暂时无法判定您举报的%s存在违规，已对其重点关注！建议举报时可以" +
+                            "1、丰富举报描述。2、附上违规截图等材料。感谢您对精弘论坛美好氛围的贡献！",
+                    userNickname,
+                    targetDescription
+            );
+        } else {
+            notificationContent = String.format(
+                    "尊敬的%s，您的举报已被处理。感谢您对精弘论坛美好氛围的贡献！",
+                    userNickname
+            );
+        }
+        return notificationContent;
     }
 }

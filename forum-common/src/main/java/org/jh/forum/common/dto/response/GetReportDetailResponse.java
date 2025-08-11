@@ -7,12 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.HandleReportEnum;
 import org.jh.forum.common.constants.ReportStatusEnum;
-import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
-import org.jh.forum.common.dto.PictureInfoDTO;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * @author zzb
@@ -22,17 +19,11 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class GetReportDetailResponse {
-    @Schema(description = "举报人ID")
-    private Long userId;
-
     @Schema(description = "被举报人ID")
     private Long targetUserId;
 
     @Schema(description = "被举报用户名称")
     private String targetNickname;
-
-    @Schema(description = "举报时间")
-    private LocalDateTime createdAt;
 
     @Schema(description = "举报对象类型")
     private TargetTypeEnum targetType;
@@ -43,23 +34,20 @@ public class GetReportDetailResponse {
     @Schema(description = "原贴ID 非评论类型时为null")
     private Long postId;
 
-    @Schema(description = "评论位置 非评论类型时为null")
+    @Schema(description = "评论位置 非评论/回复类型时为null")
     private Integer commentPosition;
 
-    @Schema(description = "举报类型")
-    private ReportTypeEnum type;
+    @Schema(description = "上级评论ID 非回复类型时为null")
+    private Long parentId;
 
-    @Schema(description = "详细描述")
-    private String reason;
+    @Schema(description = "回复位置 非回复类型时为null")
+    private Integer replyPosition;
 
     @Schema(description = "处理状态")
     private ReportStatusEnum status;
 
     @Schema(description = "处理结论")
     private String result;
-
-    @Schema(description = "举报图片列表")
-    private List<PictureInfoDTO> pictures;
 
     @Schema(description = "用户被举报历史统计")
     private UserHistoryStatsResponse userHistoryStats;
