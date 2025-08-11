@@ -222,12 +222,13 @@ public class AnnouncementManager {
      */
     public BaseListResponse<GetAnnouncementListElement> userListAnnouncements(Integer page, Integer pageSize, AnnouncementTypeEnum type) {
         long currentUserId = StpUtil.getLoginIdAsLong();
-        LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<>();
+        User user = userMapper.selectById(currentUserId);
+        user.setLastAnnouncementReadAt(LocalDateTime.now());
+        userMapper.updateById(user);
 
-        // 基础查询条件
-        queryWrapper.ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
+        LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<Announcement>()
+                .ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
                 .le(Announcement::getPublishedAt, LocalDateTime.now());
-
         if (type != null) {
             // 指定类型查询
             if (type == AnnouncementTypeEnum.SYSTEMATIC) {

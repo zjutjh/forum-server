@@ -8,7 +8,7 @@ import org.jh.forum.api.dubbo.service.NoticeService;
 import org.jh.forum.common.dto.request.GetNoticeListRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;
-import org.jh.forum.common.dto.response.UnreadNoticeCheckResponse;
+import org.jh.forum.common.dto.response.UnreadCheckResponse;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +36,7 @@ public class NoticeController {
 
     @GetMapping("/unread")
     @Operation(summary = "检查未读消息")
-    public AjaxResult<UnreadNoticeCheckResponse> checkUnreadNotices() {
-        return AjaxResult.success(noticeService.checkUnreadNotices());
+    public AjaxResult<UnreadCheckResponse> checkUnreadNotices() {
+        return AjaxResult.success(noticeService.unreadCheck());
     }
 }

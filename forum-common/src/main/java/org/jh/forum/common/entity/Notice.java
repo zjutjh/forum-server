@@ -26,5 +26,4 @@ public class Notice extends BaseEntity {
     private NoticePositionTypeEnum positionType;
     private Long positionId;
     private Long commentId;
-    private Boolean isRead;
 }

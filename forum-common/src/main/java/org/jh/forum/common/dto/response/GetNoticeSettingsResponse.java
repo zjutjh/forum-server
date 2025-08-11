@@ -7,13 +7,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author lyyzzz
+ * @author SugarMGP
  */
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UnreadNoticeCheckResponse {
-    @Schema(description = "未读通知数")
-    private Integer unreadCount;
+public class GetNoticeSettingsResponse {
+    @Schema(description = "点赞提醒开关")
+    private Boolean upvoteNotice;
+
+    @Schema(description = "评论提醒开关")
+    private Boolean commentNotice;
 }
