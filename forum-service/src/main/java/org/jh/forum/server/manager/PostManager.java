@@ -24,8 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -149,12 +149,12 @@ public class PostManager {
     }
 
     public BaseListResponse<GetPostListElement> getHotPostList(CategoryEnum category, Integer page, Integer pageSize) {
-        List<GetPostListElement> list = new ArrayList<>();
         PostRankManager.PageResult<Long> result = postRankManager.getHotPostIds(category, page, pageSize);
-        result.getRecords().forEach(id -> {
-            Post post = postMapper.selectById(id);
-            list.add(buildPostListElement(post));
-        });
+        List<GetPostListElement> list = result.getRecords().stream()
+                .map(postMapper::selectById)
+                .filter(Objects::nonNull)
+                .map(this::buildPostListElement)
+                .toList();
         return BaseListResponse.<GetPostListElement>builder()
                 .list(list)
                 .total(result.getTotal())
@@ -334,10 +334,10 @@ public class PostManager {
 
     public List<Post> getTopFivePosts() {
         List<Long> postIds = postRankManager.getTopFiveHotPostIds();
-        if (postIds != null && !postIds.isEmpty()) {
-            return postMapper.selectByIds(postIds);
-        }
-        return Collections.emptyList();
+        return postIds.stream()
+                .map(postMapper::selectById)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     @IgnoreLogicDelete
