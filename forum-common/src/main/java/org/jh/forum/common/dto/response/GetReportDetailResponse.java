@@ -7,9 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.HandleReportEnum;
 import org.jh.forum.common.constants.ReportStatusEnum;
+import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author zzb
@@ -64,4 +66,7 @@ public class GetReportDetailResponse {
 
     @Schema(description = "举报对象发布时间")
     private LocalDateTime targetTypeCreatedAt;
+
+    @Schema(description = "举报类型")
+    private List<ReportTypeEnum> reportTypes;
 }

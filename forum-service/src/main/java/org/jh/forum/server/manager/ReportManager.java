@@ -303,6 +303,15 @@ public class ReportManager {
             targetTypeCreatedAt = post.getCreatedAt();
         }
 
+        List<ReportInfo> reportInfos = reportInfoMapper.selectList(new LambdaQueryWrapper<ReportInfo>()
+                .eq(ReportInfo::getReportId, report.getId()));
+        List<ReportTypeEnum> reportTypes = new ArrayList<>();
+        for (ReportInfo reportInfo : reportInfos) {
+            if (!reportTypes.contains(reportInfo.getType())) {
+                reportTypes.add(reportInfo.getType());
+            }
+        }
+
         return GetReportDetailResponse.builder()
                 .targetUserId(report.getTargetUserId())
                 .targetNickname(userMapper.selectById(report.getTargetUserId()).getNickname())
@@ -319,6 +328,7 @@ public class ReportManager {
                 .punishmentType(report.getPunishmentType())
                 .muteDays(report.getMuteDays())
                 .targetTypeCreatedAt(targetTypeCreatedAt)
+                .reportTypes(reportTypes)
                 .build();
     }
 
