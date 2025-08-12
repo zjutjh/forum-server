@@ -7,5 +7,7 @@ import org.jh.forum.common.dto.response.LoginResponse;
  * @author SugarMGP
  */
 public interface LoginService {
-    LoginResponse login(String username, String password, UserTypeEnum loginType);
+    LoginResponse userLogin(String username, String password);
+    LoginResponse adminLogin(String username, String password);
+
 }

@@ -1,8 +1,6 @@
 package org.jh.forum.server.dubbo;
 
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.protobuf.Struct;
@@ -43,36 +41,47 @@ public class LoginServiceImpl implements LoginService {
      * @return LoginResponse
      */
     @Override
-    public LoginResponse login(String username, String password, UserTypeEnum loginType) {
+    public LoginResponse userLogin(String username, String password) {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, username));
-        if (loginType == UserTypeEnum.STUDENT) {
-            OauthUserInfoElement oauthLoginData = oauthLogin(username, password);
-            if (Objects.isNull(user)) {
-                // 首次登录, 数据库创建对象
-                // 统一登录,下面的字段从统一拿
-                user = User.builder()
-                        .nickname(getRandomNickname())
-                        .realname(oauthLoginData.getName())
-                        .studentId(username)
-                        .password(BCrypt.hashpw(password))
-                        .collegeId("")
-                        .gender(oauthLoginData.getGender())
-                        .role(loginType)
-                        .reportCount(0)
-                        .resolvedReportCount(0).build();
-                userMapper.insert(user);
-                userManager.insertUserDetail(user.getId());
-            }
-            StpUtil.login(user.getId());
-            return LoginResponse.builder()
-                    .userType(UserTypeEnum.STUDENT)
-                    .userInfo(oauthLoginData).build();
+        OauthUserInfoElement oauthLoginData = oauthLogin(username, password);
+        if (Objects.isNull(user)) {
+            // 首次登录, 数据库创建对象
+            // 统一登录,下面的字段从统一拿
+            user = User.builder()
+                    .nickname(userManager.generateRandomNickname())
+                    .realname(oauthLoginData.getName())
+                    .studentId(username)
+                    .password(BCrypt.hashpw(password))
+                    .collegeId("000000")
+                    .gender(oauthLoginData.getGender())
+                    .role(UserTypeEnum.STUDENT)
+                    .reportCount(0)
+                    .resolvedReportCount(0).build();
+            userMapper.insert(user);
+            userManager.insertUserDetail(user.getId());
         }
-        // 管理员登陆逻辑
+        StpUtil.login(user.getId());
+        return LoginResponse.builder()
+                .userType(UserTypeEnum.STUDENT)
+                .userInfo(oauthLoginData).build();
+    }
+
+    /**
+     * 管理员登陆
+     *
+     * @return LoginResponse
+     */
+    @Override
+    public LoginResponse adminLogin(String username, String password) {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, username));
         if (Objects.isNull(user)) {
             throw new ApiException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
         }
-        if (!BCrypt.checkpw(password, user.getPassword()) || !user.getRole().equals(loginType)) {
+        UserTypeEnum userType = user.getRole();
+        if (!userType.equals(UserTypeEnum.ADMIN) && !userType.equals(UserTypeEnum.SUPER_ADMIN)) {
+            throw new ApiException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
+        }
+        if (!BCrypt.checkpw(password, user.getPassword())) {
             // 数据库密码校验错误
             throw new ApiException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
         }
@@ -104,15 +113,5 @@ public class LoginServiceImpl implements LoginService {
                 .gender(UserCenterUtils.toGenderEnum(dataStruct.getFieldsOrThrow("gender").getStringValue()))
                 .studentType(dataStruct.getFieldsOrThrow("userTypeDesc").getStringValue())
                 .build();
-    }
-
-    private String getRandomNickname() {
-        for (int i = 0; i < 10; i++) {
-            String nickname = "精小弘" + RandomUtil.randomNumbers(6);
-            if (!userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getNickname, nickname))) {
-                return nickname;
-            }
-        }
-        return "精小弘" + IdUtil.objectId();
     }
 }
