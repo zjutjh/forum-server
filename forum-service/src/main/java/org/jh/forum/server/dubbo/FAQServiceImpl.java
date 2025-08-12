@@ -38,7 +38,7 @@ public class FAQServiceImpl implements FAQService {
 
     @Override
     public void updateFaq(FAQQuestionUpdateRequest request) {
-        faqManager.updateFaq(request.getQuestionId(), request.getCategory(), request.getQuestion(), request.getAnswer());
+        faqManager.updateFaq(request.getQuestionId(), request.getCategory(), request.getQuestion(), request.getAnswer(), request.getIsPicked());
     }
 
     @Override

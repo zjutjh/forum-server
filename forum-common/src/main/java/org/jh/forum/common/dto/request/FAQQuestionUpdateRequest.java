@@ -37,4 +37,8 @@ public class FAQQuestionUpdateRequest {
     @Size(max = 500)
     @NotBlank
     private String answer;
+
+    @Schema(description = "是否精选")
+    @NotNull
+    private Boolean isPicked;
 }

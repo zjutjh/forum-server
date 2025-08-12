@@ -23,7 +23,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/faq")
-@Tag(name = "FAQ管理", description = "提供FAQ问题和分类的增、删、改、查功能")
+@Tag(name = "FAQ管理", description = "FAQ相关接口")
 @SaCheckLogin
 public class FAQController {
 
@@ -45,15 +45,14 @@ public class FAQController {
     @Operation(summary = "获取问题详情", description = "根据问题ID获取FAQ问题的详细信息")
     @GetMapping("/question/detail")
     public AjaxResult<FAQDetailResponse> getQuestionDetail(@Valid FAQQuestionDetailRequest request) {
-        FAQDetailResponse detail = faqService.getFaqDetail(request);
-        return AjaxResult.success(detail);
+        return AjaxResult.success(faqService.getFaqDetail(request));
     }
 
     /**
      * 创建新的FAQ问题
      */
     @Operation(summary = "创建问题", description = "创建新的FAQ问题")
-    @PostMapping("/create")
+    @PostMapping("/question")
     @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @Tag(name = "管理员")
     public AjaxResult<Void> createQuestion(@RequestBody @Valid FAQQuestionCreateRequest request) {
@@ -65,7 +64,7 @@ public class FAQController {
      * 更新FAQ问题
      */
     @Operation(summary = "更新问题", description = "更新已有的FAQ问题")
-    @PostMapping("/update")
+    @PutMapping("/question")
     @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @Tag(name = "管理员")
     public AjaxResult<Void> updateQuestion(@RequestBody @Valid FAQQuestionUpdateRequest request) {
@@ -77,10 +76,10 @@ public class FAQController {
      * 删除FAQ问题
      */
     @Operation(summary = "删除问题", description = "删除指定的FAQ问题")
-    @PostMapping("/delete")
+    @DeleteMapping("/question")
     @SaCheckRole(value = {"admin", "super_admin"}, mode = SaMode.OR)
     @Tag(name = "管理员")
-    public AjaxResult<Void> deleteQuestion(@RequestBody @Valid FAQQuestionDeleteRequest request) {
+    public AjaxResult<Void> deleteQuestion(@Valid FAQQuestionDeleteRequest request) {
         faqService.deleteFaq(request);
         return AjaxResult.success();
     }

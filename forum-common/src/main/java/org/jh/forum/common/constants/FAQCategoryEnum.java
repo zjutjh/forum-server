@@ -13,11 +13,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum FAQCategoryEnum {
-    ACCOUNT("account", "账号问题"),
-    COLLEGE("college", "学院问题"),
-    POST("post", "帖子问题"),
-    OTHER("other", "其他问题"),
-    GUESS("guess", "猜你想问");
+    ACCOUNT("account", "账号相关问题"),
+    REPORT("report", "举报相关问题"),
+    POST("post", "帖子相关问题"),
+    OTHER("other", "其他问题");
 
     @JsonValue
     @EnumValue

@@ -303,14 +303,14 @@ public class ReportManager {
             targetTypeCreatedAt = post.getCreatedAt();
         }
 
-        List<ReportInfo> reportInfos = reportInfoMapper.selectList(new LambdaQueryWrapper<ReportInfo>()
-                .eq(ReportInfo::getReportId, report.getId()));
-        List<ReportTypeEnum> reportTypes = new ArrayList<>();
-        for (ReportInfo reportInfo : reportInfos) {
-            if (!reportTypes.contains(reportInfo.getType())) {
-                reportTypes.add(reportInfo.getType());
-            }
-        }
+        List<ReportTypeEnum> reportTypes = reportInfoMapper.selectList(
+                        new LambdaQueryWrapper<ReportInfo>()
+                                .select(ReportInfo::getType)
+                                .eq(ReportInfo::getReportId, report.getId())
+                                .groupBy(ReportInfo::getType)
+                ).stream()
+                .map(ReportInfo::getType)
+                .toList();
 
         return GetReportDetailResponse.builder()
                 .targetUserId(report.getTargetUserId())

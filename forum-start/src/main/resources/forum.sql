@@ -78,6 +78,7 @@ create table faq
     question   varchar(200)                        not null comment '问题描述',
     answer     varchar(500)                        not null comment '问题解答',
     view_count int       default 0                 not null comment '浏览量',
+    is_picked  boolean   default false             not null comment '是否被精选',
     created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     updated_at timestamp                           not null on update CURRENT_TIMESTAMP comment '更新时间',
     create_uid bigint                              not null comment '创建用户',

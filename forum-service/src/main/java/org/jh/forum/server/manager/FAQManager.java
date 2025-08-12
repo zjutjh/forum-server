@@ -32,17 +32,22 @@ public class FAQManager {
      */
     public BaseListResponse<FAQQuestionListElement> getFaqQuestions(FAQQuestionListRequest request) {
         IPage<FAQ> page = new Page<>(request.getPage(), request.getPageSize());
-        LambdaQueryWrapper<FAQ> wrapper = new LambdaQueryWrapper<FAQ>()
-                .eq(FAQ::getCategory, request.getCategory())
-                .orderByDesc(FAQ::getCreatedAt);
-        faqMapper.selectPage(page, wrapper);
+        LambdaQueryWrapper<FAQ> wrapper = new LambdaQueryWrapper<>();
 
+        if (request.getCategory() == null) {
+            wrapper.eq(FAQ::getIsPicked, true);
+        } else {
+            wrapper.eq(FAQ::getCategory, request.getCategory());
+        }
+        wrapper.orderByDesc(FAQ::getUpdatedAt);
+
+        faqMapper.selectPage(page, wrapper);
         List<FAQQuestionListElement> questionList = page.getRecords().stream()
                 .map(faq -> FAQQuestionListElement.builder()
                         .questionId(faq.getId())
                         .question(faq.getQuestion())
                         .category(faq.getCategory())
-                        .createdAt(faq.getCreatedAt())
+                        .updatedAt(faq.getUpdatedAt())
                         .build())
                 .toList();
 
@@ -67,11 +72,9 @@ public class FAQManager {
                 .category(faq.getCategory())
                 .answer(faq.getAnswer())
                 .viewCount(faq.getViewCount())
-                .createdAt(faq.getCreatedAt())
                 .updatedAt(faq.getUpdatedAt())
                 .question(faq.getQuestion())
                 .build();
-
         faqMapper.incrementViewCount(questionId);
         return response;
     }
@@ -92,7 +95,7 @@ public class FAQManager {
     /**
      * 更新FAQ
      */
-    public void updateFaq(Long questionId, FAQCategoryEnum category, String question, String answer) {
+    public void updateFaq(Long questionId, FAQCategoryEnum category, String question, String answer, Boolean isPicked) {
         FAQ faq = faqMapper.selectById(questionId);
         if (faq == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
@@ -101,6 +104,7 @@ public class FAQManager {
         faq.setCategory(category);
         faq.setQuestion(question);
         faq.setAnswer(answer);
+        faq.setIsPicked(isPicked);
         faqMapper.updateById(faq);
     }
 

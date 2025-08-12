@@ -7,8 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.FAQCategoryEnum;
 
-import jakarta.validation.constraints.NotNull;
-
 /**
  * @author ZeroHzzzz
  */
@@ -18,7 +16,6 @@ import jakarta.validation.constraints.NotNull;
 @NoArgsConstructor
 @Schema(description = "FAQ问题列表请求参数")
 public class FAQQuestionListRequest extends BaseListRequest {
-    @Schema(description = "FAQ类别")
-    @NotNull
+    @Schema(description = "FAQ类别（空字符串则为猜你想问）")
     private FAQCategoryEnum category;
 }
