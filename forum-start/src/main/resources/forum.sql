@@ -72,7 +72,7 @@ create table comment
 
 create table faq
 (
-    id         bigint                                    not null comment '常见问题ID'
+    id         bigint                              not null comment '常见问题ID'
         primary key,
     category   varchar(20)                         not null comment '板块（账号/学院/帖子/其他）',
     question   varchar(200)                        not null comment '问题描述',
@@ -154,7 +154,6 @@ create table notice
     position_type varchar(20)                               not null comment '位置类型（帖子/评论）',
     position_id   bigint                                    not null comment '位置ID',
     comment_id    bigint                                    null comment '新评论ID（type为comment时有效）',
-    is_read       boolean                                   not null comment '是否已读',
     created_at    timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
     updated_at    timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
     create_uid    bigint                                    not null comment '创建用户',
@@ -278,44 +277,46 @@ create table upvote
 
 create table user
 (
-    id                    bigint                                    not null comment '用户ID'
+    id                        bigint                                    not null comment '用户ID'
         primary key,
-    nickname              varchar(50)                               not null comment '用户昵称',
-    realname              varchar(20)                               not null comment '真实姓名',
-    student_id            varchar(12)                               not null comment '学号',
-    password              varchar(255)                              not null comment '密码哈希',
-    college_id            varchar(255)                              not null comment '学院ID',
-    gender                varchar(20)                               not null comment '性别(男,女,保密)',
-    phone                 varchar(20)  default ''                   not null comment '手机号',
-    avatar                varchar(255) default ''                   not null comment '头像地址',
-    upvote_notice         boolean      default true                 not null comment '点赞消息开关',
-    comment_notice        boolean      default true                 not null comment '评论消息开关',
-    role                  varchar(20)                               not null comment '用户角色',
-    report_count          int          default 0                    not null comment '被举报次数',
-    resolved_report_count int          default 0                    not null comment '被处理的举报数',
-    created_at            timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '注册时间',
-    updated_at            timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
-    create_uid            bigint                                    not null comment '创建用户',
-    update_uid            bigint                                    not null comment '更新用户',
-    deleted               boolean                                   not null comment '是否被删除',
-    attribute             text                                      null comment '属性列（json string）',
-    muted_until           timestamp(3)                              null comment '禁言截止时间',
+    nickname                  varchar(50)                               not null comment '用户昵称',
+    realname                  varchar(20)                               not null comment '真实姓名',
+    student_id                varchar(12)                               not null comment '学号',
+    password                  varchar(255)                              not null comment '密码哈希',
+    college_id                varchar(10)                               not null comment '学院ID',
+    gender                    varchar(20)                               not null comment '性别(男,女,保密)',
+    phone                     varchar(20)  default ''                   not null comment '手机号',
+    avatar                    varchar(255) default ''                   not null comment '头像地址',
+    upvote_notice             boolean      default true                 not null comment '点赞消息开关',
+    comment_notice            boolean      default true                 not null comment '评论消息开关',
+    role                      varchar(20)                               not null comment '用户角色',
+    report_count              int          default 0                    not null comment '被举报次数',
+    resolved_report_count     int          default 0                    not null comment '被处理的举报数',
+    last_notice_read_at       timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '最后查看消息时间',
+    last_announcement_read_at timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '最后查看公告时间',
+    created_at                timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '注册时间',
+    updated_at                timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
+    create_uid                bigint                                    not null comment '创建用户',
+    update_uid                bigint                                    not null comment '更新用户',
+    deleted                   boolean                                   not null comment '是否被删除',
+    attribute                 text                                      null comment '属性列（json string）',
+    muted_until               timestamp(3)                              null comment '禁言截止时间',
     constraint uq_user
         unique (nickname, student_id, phone)
 );
 
 create table user_detail
 (
-    user_id          bigint                   not null comment '用户ID'
+    user_id            bigint                    not null comment '用户ID'
         primary key,
-    signature        varchar(20) default ''   not null comment '个性签名',
-    profile          varchar(50) default ''   not null comment '个人简介',
-    email            varchar(50) default ''   not null comment '个人邮箱',
-    birthday         date                     null comment '生日',
-    background_image varchar(255) default ''  not null comment '背景图地址',
-    birthday_visible boolean     default true not null comment '生日可见性',
-    college_visible  boolean     default true not null comment '学院可见性',
-    realname_visible boolean     default true not null comment '实名可见性',
-    student_id_visible boolean   default true not null comment '学号可见性'
+    signature          varchar(20)  default ''   not null comment '个性签名',
+    profile            varchar(50)  default ''   not null comment '个人简介',
+    email              varchar(50)  default ''   not null comment '个人邮箱',
+    birthday           date                      null comment '生日',
+    background_image   varchar(255) default ''   not null comment '背景图地址',
+    birthday_visible   boolean      default true not null comment '生日可见性',
+    college_visible    boolean      default true not null comment '学院可见性',
+    realname_visible   boolean      default true not null comment '实名可见性',
+    student_id_visible boolean      default true not null comment '学号可见性'
 );
 

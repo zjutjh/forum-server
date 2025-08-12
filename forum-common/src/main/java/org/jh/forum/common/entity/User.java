@@ -92,4 +92,14 @@ public class User extends BaseEntity {
      * 被处理的举报数
      */
     private Integer resolvedReportCount;
+
+    /**
+     * 最后查看消息时间
+     */
+    private LocalDateTime lastNoticeReadAt;
+
+    /**
+     * 最后查看公告时间
+     */
+    private LocalDateTime lastAnnouncementReadAt;
 }

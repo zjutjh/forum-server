@@ -414,6 +414,10 @@ public class PostManager {
                 postRankManager.recordAction(id, post.getCategory(), postRankManager.LIKE);
                 noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.POST, id, null);
             });
+        } else {
+            AsyncUtil.runAsyncWithLogging(() ->
+                    noticeManager.cancelLike(post.getUserId(), NoticePositionTypeEnum.POST, id)
+            );
         }
 
         return status;

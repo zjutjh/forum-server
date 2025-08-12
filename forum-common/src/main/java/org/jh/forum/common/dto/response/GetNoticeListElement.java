@@ -44,11 +44,8 @@ public class GetNoticeListElement {
     @Schema(description = "新评论内容（截取30字）")
     private String newCommentContent;
 
-    @Schema(description = "是否已读")
-    private Boolean isRead;
-
-    @Schema(description = "创建时间")
-    private LocalDateTime createdAt;
+    @Schema(description = "发送时间")
+    private LocalDateTime updatedAt;
 
     @Schema(description = "是否已赞（仅在comment类型中生效，其他情况下为null）")
     private Boolean isLiked;

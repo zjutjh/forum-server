@@ -103,6 +103,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public GetNoticeSettingsResponse getNoticeSettings() {
+        User user = userMapper.selectById(StpUtil.getLoginIdAsLong());
+        return GetNoticeSettingsResponse.builder()
+                .upvoteNotice(user.getUpvoteNotice())
+                .commentNotice(user.getCommentNotice())
+                .build();
+    }
+
+    @Override
+    public void updateNoticeSettings(UpdateNoticeSettingsRequest request) {
+        User user = userMapper.selectById(StpUtil.getLoginIdAsLong());
+        user.setUpvoteNotice(request.getUpvoteNotice());
+        user.setCommentNotice(request.getCommentNotice());
+        userMapper.updateById(user);
+    }
+
+    @Override
     public BaseListResponse<GetUserListElement> getUserList(GetUserListRequest request) {
         IPage<User> page = new Page<>(request.getPage(), request.getPageSize());
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();

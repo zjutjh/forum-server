@@ -20,23 +20,23 @@ import jakarta.validation.Valid;
  */
 @Slf4j
 @RestController
-@Tag(name = "举报", description = "举报相关接口")
 @RequestMapping("/report")
 @SaCheckLogin
+@Tag(name = "举报", description = "举报相关接口")
 public class ReportController {
     @DubboReference
     private ReportService reportService;
 
     @Operation(summary = "举报用户")
     @PostMapping("/user")
-    AjaxResult<Void> reportUser(@Valid @RequestBody ReportUserRequest request) {
+    public AjaxResult<Void> reportUser(@Valid @RequestBody ReportUserRequest request) {
         reportService.reportUser(request);
         return AjaxResult.success();
     }
 
     @Operation(summary = "举报帖子/评论")
     @PostMapping("/content")
-    AjaxResult<Void> reportContent(@Valid @RequestBody ReportContentRequest request) {
+    public AjaxResult<Void> reportContent(@Valid @RequestBody ReportContentRequest request) {
         reportService.reportContent(request);
         return AjaxResult.success();
     }

@@ -20,4 +20,8 @@ public interface UserService {
     BaseListResponse<GetAdminListElement> getAdminList(GetAdminListRequest request);
 
     void updateBackgroundImage(UpdateBackgroundImageRequest request);
+
+    GetNoticeSettingsResponse getNoticeSettings();
+
+    void updateNoticeSettings(UpdateNoticeSettingsRequest request);
 }

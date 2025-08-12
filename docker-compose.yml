@@ -10,7 +10,6 @@ services:
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - ./forum-start/src/main/resources/forum.sql:/docker-entrypoint-initdb.d/forum.sql
-#      - ./data/mysql:/var/lib/mysql
     networks:
       - jh-network
 

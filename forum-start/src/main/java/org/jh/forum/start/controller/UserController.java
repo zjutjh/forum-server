@@ -10,7 +10,9 @@ import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.api.dubbo.service.UserService;
 import org.jh.forum.common.dto.request.LoginRequest;
 import org.jh.forum.common.dto.request.UpdateBackgroundImageRequest;
+import org.jh.forum.common.dto.request.UpdateNoticeSettingsRequest;
 import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
+import org.jh.forum.common.dto.response.GetNoticeSettingsResponse;
 import org.jh.forum.common.dto.response.GetUserProfileResponse;
 import org.jh.forum.common.dto.response.LoginResponse;
 import org.jh.forum.start.models.AjaxResult;
@@ -69,6 +71,21 @@ public class UserController {
     @SaCheckLogin
     public AjaxResult<Void> updateMyBackgroundImage(@Valid @RequestBody UpdateBackgroundImageRequest request) {
         userService.updateBackgroundImage(request);
+        return AjaxResult.success();
+    }
+
+    @GetMapping("/notice")
+    @Operation(summary = "获取消息设置")
+    @SaCheckLogin
+    public AjaxResult<GetNoticeSettingsResponse> getNoticeSettings() {
+        return AjaxResult.success(userService.getNoticeSettings());
+    }
+
+    @PostMapping("/notice")
+    @Operation(summary = "修改消息设置")
+    @SaCheckLogin
+    public AjaxResult<Void> updateNoticeSettings(@Valid @RequestBody UpdateNoticeSettingsRequest request) {
+        userService.updateNoticeSettings(request);
         return AjaxResult.success();
     }
 }

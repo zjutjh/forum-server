@@ -17,7 +17,7 @@ import org.jh.forum.common.constants.ReportTypeEnum;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReportInfo extends BaseEntity{
+public class ReportInfo extends BaseEntity {
     private Long reportId;
 
     private Long userId;

@@ -157,6 +157,10 @@ public class CommentManager {
             AsyncUtil.runAsyncWithLogging(() ->
                     noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null)
             );
+        } else {
+            AsyncUtil.runAsyncWithLogging(() ->
+                    noticeManager.cancelLike(comment.getUserId(), NoticePositionTypeEnum.COMMENT, commentId)
+            );
         }
 
         return new UpvoteCommentResponse(status);
