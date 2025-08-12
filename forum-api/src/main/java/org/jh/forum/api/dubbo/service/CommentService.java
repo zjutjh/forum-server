@@ -19,7 +19,7 @@ public interface CommentService {
 
     GetCommentReplyListResponse getReplyList(GetReplyListRequest request);
 
-    BaseListResponse<PersonalCommentElement> getPersonalCommentList(GetPersonalCommentRequest request);
+    BaseListResponse<PersonalCommentListElement> getPersonalCommentList(BaseListRequest request);
 
     BaseListResponse<CommentElement> getAdminCommentList(GetCommentListAdminRequest request);
 

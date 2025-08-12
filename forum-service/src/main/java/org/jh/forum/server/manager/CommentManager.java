@@ -25,8 +25,9 @@ import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author qianqianzyk
@@ -44,7 +45,6 @@ public class CommentManager {
     private final UserManager userManager;
     private final PostRankManager postRankManager;
     private final NoticeManager noticeManager;
-    private final PostManager postManager;
 
     @Transactional
     public void publishComment(Long postId, Long parentId, Long targetId, String content, String pictureUrl) {
@@ -334,9 +334,8 @@ public class CommentManager {
                 .build();
     }
 
-    public BaseListResponse<PersonalCommentElement> getPersonalComment(Integer page, Integer pageSize, Long userId) {
-        long currentUserId = StpUtil.getLoginIdAsLong();
-        Long realUserId = userId == null ? currentUserId : userId;
+    public BaseListResponse<PersonalCommentListElement> getPersonalComment(Integer page, Integer pageSize) {
+        Long realUserId = StpUtil.getLoginIdAsLong();
 
         // 按时间降序查询当前用户的评论
         Page<Comment> commentPage = new Page<>(page, pageSize);
@@ -344,55 +343,48 @@ public class CommentManager {
                 .eq(Comment::getUserId, realUserId)
                 .orderByDesc(Comment::getCreatedAt);
         commentMapper.selectPage(commentPage, queryWrapper);
-        List<Comment> commentList = commentPage.getRecords();
-        if (commentList.isEmpty()) {
-            return BaseListResponse.emptyListResponse(page, pageSize);
-        }
-
-        // 查询所有相关帖子的详情
-        Set<Long> postIds = commentList.stream()
-                .map(Comment::getPostId)
-                .collect(Collectors.toSet());
-        if (postIds.isEmpty()) {
-            return BaseListResponse.emptyListResponse(page, pageSize);
-        }
-
-        List<Post> posts = postMapper.selectList(new LambdaQueryWrapper<Post>().in(Post::getId, postIds));
-        Map<Long, Post> postMap = posts.stream()
-                .collect(Collectors.toMap(Post::getId, p -> p));
-
-        List<PersonalCommentElement> resultList = commentList.stream().map(comment -> {
-            Post post = postMap.get(comment.getPostId());
-            if (post == null) {
-                return null;
-            }
-
-            return PersonalCommentElement.builder()
-                    .postId(post.getId())
-                    .title(post.getTitle())
-                    .content(StringUtils.left(post.getContent(), 50))
-                    .pictures(postManager.getPostPictures(post.getId()))
-                    .createdAt(post.getCreatedAt())
-                    .updatedAt(post.getUpdatedAt())
-                    .personalCommentList(Collections.singletonList(
-                            PersonalCommentListElement.builder()
-                                    .commentId(comment.getId())
-                                    .content(comment.getContent())
-                                    .pictures(getCommentPictures(comment.getId()))
-                                    .createdAt(comment.getCreatedAt())
-                                    .upvoteCount(comment.getUpvoteCount())
-                                    .replyCount(comment.getReplyCount())
-                                    .build()
-                    ))
-                    .build();
-        }).filter(Objects::nonNull).collect(Collectors.toList());
-
-        return BaseListResponse.<PersonalCommentElement>builder()
+        List<PersonalCommentListElement> list = commentPage.getRecords().stream()
+                .map(comment -> PersonalCommentListElement
+                        .builder()
+                        .postId(comment.getPostId())
+                        .parentId(comment.getParentId())
+                        .commentId(comment.getId())
+                        .replyContent(getReplyContent(comment))
+                        .content(comment.getContent())
+                        .pictures(getCommentPictures(comment.getId()))
+                        .createdAt(comment.getCreatedAt())
+                        .upvoteCount(comment.getUpvoteCount())
+                        .replyCount(comment.getReplyCount())
+                        .build()
+                ).toList();
+        return BaseListResponse.<PersonalCommentListElement>builder()
                 .page(page)
                 .pageSize(pageSize)
                 .total(commentPage.getTotal())
-                .list(resultList)
+                .list(list)
                 .build();
+    }
+
+    private String getReplyContent(Comment comment) {
+        Long parentId = comment.getParentId();
+        Long targetId = comment.getTargetId();
+
+        // 如果是直接评论帖子
+        if (parentId == 0) {
+            Post post = postMapper.selectById(comment.getPostId());
+            if (post != null) {
+                return StringUtils.left(post.getTitle() + " " + post.getContent(), 30);
+            }
+        }
+        // 如果是回复某个评论（优先 targetId，否则用 parentId）
+        else {
+            Long commentId = targetId != 0 ? targetId : parentId;
+            Comment targetComment = commentMapper.selectById(commentId);
+            if (targetComment != null) {
+                return StringUtils.left(targetComment.getContent(), 30);
+            }
+        }
+        return "内容不存在";
     }
 
     @IgnoreLogicDelete

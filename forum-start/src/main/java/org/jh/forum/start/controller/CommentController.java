@@ -75,7 +75,7 @@ public class CommentController {
 
     @Operation(summary = "获取个人评论")
     @GetMapping("/personal")
-    public AjaxResult<BaseListResponse<PersonalCommentElement>> getPersonalComment(@Valid GetPersonalCommentRequest request) {
+    public AjaxResult<BaseListResponse<PersonalCommentListElement>> getPersonalComment(@Valid BaseListRequest request) {
         return AjaxResult.success(commentService.getPersonalCommentList(request));
     }
 

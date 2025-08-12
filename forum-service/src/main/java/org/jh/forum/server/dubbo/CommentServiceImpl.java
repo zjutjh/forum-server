@@ -50,8 +50,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public BaseListResponse<PersonalCommentElement> getPersonalCommentList(GetPersonalCommentRequest request) {
-        return commentManager.getPersonalComment(request.getPage(), request.getPageSize(), request.getId());
+    public BaseListResponse<PersonalCommentListElement> getPersonalCommentList(BaseListRequest request) {
+        return commentManager.getPersonalComment(request.getPage(), request.getPageSize());
     }
 
     @Override

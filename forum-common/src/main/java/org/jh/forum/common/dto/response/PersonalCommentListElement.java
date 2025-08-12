@@ -18,8 +18,17 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class PersonalCommentListElement {
+    @Schema(description = "帖子ID")
+    private Long postId;
+
+    @Schema(description = "父级评论ID（若没有则为0）")
+    private Long parentId;
+
     @Schema(description = "评论ID")
     private Long commentId;
+
+    @Schema(description = "回复的对象内容（如果有被回复评论则为被回复评论内容，反之则为被回复帖子内容，截取前30个字）")
+    private String replyContent;
 
     @Schema(description = "评论内容")
     private String content;
