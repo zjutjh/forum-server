@@ -252,6 +252,7 @@ public class UserServiceImpl implements UserService {
                 .reportCount(0)
                 .resolvedReportCount(0).build();
         userMapper.insert(user);
+        userManager.insertUserDetail(user.getId());
     }
 
     private GetUserListElement buildUserListElement(User userEntity) {
