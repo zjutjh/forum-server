@@ -8,10 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.api.dubbo.service.UserService;
-import org.jh.forum.common.dto.request.LoginRequest;
-import org.jh.forum.common.dto.request.UpdateBackgroundImageRequest;
-import org.jh.forum.common.dto.request.UpdateNoticeSettingsRequest;
-import org.jh.forum.common.dto.request.UpdateUserDetailRequest;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.GetNoticeSettingsResponse;
 import org.jh.forum.common.dto.response.GetUserProfileResponse;
 import org.jh.forum.common.dto.response.LoginResponse;
@@ -37,7 +34,14 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     public AjaxResult<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
-        return AjaxResult.success(loginService.login(request.getUsername(), request.getPassword(), request.getLoginType()));
+        return AjaxResult.success(loginService.userLogin(request.getUsername(), request.getPassword()));
+    }
+
+    @Operation(summary = "通用注册")
+    @PostMapping("/register")
+    public AjaxResult<Void> register(@RequestBody @Valid AdminRegisterRequest request) {
+        userService.AdminRegister(request);
+        return AjaxResult.success();
     }
 
     @PostMapping("/logout")

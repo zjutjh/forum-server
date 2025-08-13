@@ -1,6 +1,7 @@
 package org.jh.forum.server.dubbo;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -8,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.UserService;
+import org.jh.forum.common.constants.*;
+import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.UserStatusEnum;
@@ -18,6 +21,7 @@ import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.entity.User;
 import org.jh.forum.common.entity.UserDetail;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.server.config.service.AdminRegisterSwitchService;
 import org.jh.forum.server.manager.UserManager;
 import org.jh.forum.server.mapper.ReportMapper;
 import org.jh.forum.server.mapper.UserDetailMapper;
@@ -25,6 +29,9 @@ import org.jh.forum.server.mapper.UserMapper;
 
 import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Objects;
+
+import static org.jh.forum.server.config.service.AdminRegisterSwitchService.adminRegisterSwitch;
 
 
 /**
@@ -44,6 +51,9 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private ReportMapper reportMapper;
+
+    @Resource
+    private AdminRegisterSwitchService adminRegisterSwitchService;
 
     @Override
     public GetUserProfileResponse getUserProfile(Long userId) {
@@ -205,6 +215,47 @@ public class UserServiceImpl implements UserService {
                 .total(page.getTotal())
                 .list(page.getRecords().stream().map(this::buildAdminListElement).toList())
                 .build();
+    }
+
+    /**
+     * 管理员注册 支持nacos开关，key动态配置
+     */
+    @Override
+    public void AdminRegister(AdminRegisterRequest request) {
+        if (Objects.isNull(adminRegisterSwitch)) {
+            log.info("未获取到 AdminRegister 配置");
+            throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
+        }
+        String secretKey = adminRegisterSwitch.getKey();
+        Boolean adminRegisterEnabled = adminRegisterSwitch.getEnabled();
+        // 接口是否下线
+        if (!adminRegisterEnabled) {
+            log.info("接口已下线");
+            throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
+        }
+        // 校验key
+        if (StringUtils.isBlank(request.getKey()) || !request.getKey().equals(secretKey)) {
+            log.error("密钥错误");
+            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+        }
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, request.getUsername()));
+        if (user != null) {
+            user.setPassword(BCrypt.hashpw(request.getPassword()));
+            user.setRole(request.getUserType());
+            userMapper.updateById(user);
+            return;
+        }
+        user = User.builder()
+                .nickname(userManager.generateRandomNickname())
+                .realname("测试账号")
+                .studentId(request.getUsername())
+                .password(BCrypt.hashpw(request.getPassword()))
+                .collegeId("000000")
+                .gender(GenderEnum.UNKNOWN)
+                .role(request.getUserType())
+                .reportCount(0)
+                .resolvedReportCount(0).build();
+        userMapper.insert(user);
     }
 
     private GetUserListElement buildUserListElement(User userEntity) {

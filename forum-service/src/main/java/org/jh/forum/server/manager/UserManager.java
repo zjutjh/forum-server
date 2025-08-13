@@ -1,5 +1,8 @@
 package org.jh.forum.server.manager;
 
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -65,5 +68,15 @@ public class UserManager {
         }
         user.setMutedUntil(LocalDateTime.now().plusHours(hours));
         userMapper.updateById(user);
+    }
+
+    public String generateRandomNickname() {
+        for (int i = 0; i < 10; i++) {
+            String nickname = "精小弘" + RandomUtil.randomNumbers(6);
+            if (!userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getNickname, nickname))) {
+                return nickname;
+            }
+        }
+        return "精小弘" + IdUtil.objectId();
     }
 }
