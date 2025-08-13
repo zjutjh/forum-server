@@ -59,6 +59,10 @@ public class LoginServiceImpl implements LoginService {
                     .resolvedReportCount(0).build();
             userMapper.insert(user);
             userManager.insertUserDetail(user.getId());
+        } else {
+            // 自动同步密码
+            user.setPassword(BCrypt.hashpw(password));
+            userMapper.updateById(user);
         }
         StpUtil.login(user.getId());
         return LoginResponse.builder()
@@ -79,7 +83,7 @@ public class LoginServiceImpl implements LoginService {
         }
         UserTypeEnum userType = user.getRole();
         if (!userType.equals(UserTypeEnum.ADMIN) && !userType.equals(UserTypeEnum.SUPER_ADMIN)) {
-            throw new ApiException(ExceptionEnum.WRONG_USERNAME_OR_PASSWORD);
+            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         if (!BCrypt.checkpw(password, user.getPassword())) {
             // 数据库密码校验错误

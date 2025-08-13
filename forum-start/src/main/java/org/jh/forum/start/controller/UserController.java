@@ -39,7 +39,7 @@ public class UserController {
 
     @Operation(summary = "通用注册")
     @PostMapping("/register")
-    public AjaxResult<LoginResponse> register(@Valid @RequestBody AdminRegisterRequest request) {
+    public AjaxResult<Void> register(@RequestBody @Valid AdminRegisterRequest request) {
         userService.AdminRegister(request);
         return AjaxResult.success();
     }

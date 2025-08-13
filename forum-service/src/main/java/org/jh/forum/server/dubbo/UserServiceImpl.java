@@ -240,7 +240,10 @@ public class UserServiceImpl implements UserService {
         }
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, request.getUsername()));
         if (user != null) {
-            throw new ApiException(ExceptionEnum.USER_EXISTED);
+            user.setPassword(BCrypt.hashpw(request.getPassword()));
+            user.setRole(request.getUserType());
+            userMapper.updateById(user);
+            return;
         }
         user = User.builder()
                 .nickname(userManager.generateRandomNickname())
