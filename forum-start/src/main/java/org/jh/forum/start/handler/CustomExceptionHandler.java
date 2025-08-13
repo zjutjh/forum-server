@@ -3,7 +3,6 @@ package org.jh.forum.start.handler;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotRoleException;
 import cn.dev33.satoken.exception.SaTokenException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.cube.CubeException;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -29,9 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @ControllerAdvice
 @Slf4j
 @Order(80)
-@RequiredArgsConstructor
 public class CustomExceptionHandler {
-
     @ExceptionHandler(ApiException.class)
     @ResponseBody
     public AjaxResult<Object> handleAppException(ApiException e, HttpServletRequest request) {

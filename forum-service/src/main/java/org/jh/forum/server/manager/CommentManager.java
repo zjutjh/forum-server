@@ -373,7 +373,7 @@ public class CommentManager {
         if (parentId == 0) {
             Post post = postMapper.selectById(comment.getPostId());
             if (post != null) {
-                return StringUtils.left(post.getTitle() + " " + post.getContent(), 30);
+                return StringUtils.left(StringUtils.deleteWhitespace(post.getTitle() + post.getContent()), 30);
             }
         }
         // 如果是回复某个评论（优先 targetId，否则用 parentId）
@@ -381,7 +381,7 @@ public class CommentManager {
             Long commentId = targetId != 0 ? targetId : parentId;
             Comment targetComment = commentMapper.selectById(commentId);
             if (targetComment != null) {
-                return StringUtils.left(targetComment.getContent(), 30);
+                return StringUtils.left(StringUtils.deleteWhitespace(targetComment.getContent()), 30);
             }
         }
         return "内容不存在";

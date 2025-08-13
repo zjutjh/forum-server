@@ -1,8 +1,6 @@
 package org.jh.forum.start.handler;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
@@ -25,8 +23,6 @@ import java.sql.SQLIntegrityConstraintViolationException;
  */
 @Order(10)
 @ControllerAdvice
-@Slf4j
-@RequiredArgsConstructor
 public class ValidateExceptionHandler {
 
     /**

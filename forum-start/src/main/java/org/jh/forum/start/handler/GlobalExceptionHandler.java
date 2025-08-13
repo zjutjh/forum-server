@@ -1,7 +1,5 @@
 package org.jh.forum.start.handler;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
@@ -19,9 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * @date 2025/4/24
  */
 @ControllerAdvice
-@Slf4j
 @Order(1000)
-@RequiredArgsConstructor
 public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseBody
