@@ -19,7 +19,7 @@ public interface UserService {
 
     BaseListResponse<GetAdminListElement> getAdminList(GetAdminListRequest request);
 
-    void AdminRegister(AdminRegisterRequest request);
+    void adminRegister(AdminRegisterRequest request);
 
     void updateBackgroundImage(UpdateBackgroundImageRequest request);
 

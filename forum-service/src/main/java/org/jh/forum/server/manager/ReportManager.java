@@ -178,14 +178,14 @@ public class ReportManager {
             throw new ApiException(ExceptionEnum.REPORT_ALREADY_HANDLED);
         }
 
-        if (HandleReportEnum.SHORT_MUTE.equals(request.getType())) {
-            userManager.muteUser(report.getTargetUserId(), 24);
-        }
-        if (HandleReportEnum.LONG_MUTE.equals(request.getType())) {
-            userManager.muteUser(report.getTargetUserId(), 168);
-        }
-        if (HandleReportEnum.CUSTOM_MUTE.equals(request.getType())) {
-            userManager.muteUser(report.getTargetUserId(), request.getDays() * 24);
+        int hours = switch (request.getType()) {
+            case NO_PUNISHMENT -> 0;
+            case SHORT_MUTE -> 24;
+            case LONG_MUTE -> 168;
+            case CUSTOM_MUTE -> request.getDays() * 24;
+        };
+        if (hours > 0) {
+            userManager.addMuteTime(report.getTargetUserId(), hours);
         }
 
         report.setStatus(status);

@@ -32,7 +32,7 @@ public class HandleReportRequest {
     private Boolean shouldDelete;
 
     @Schema(description = "处罚类型：no_punishment-无处罚，short_mute-短期禁言(1天)，" +
-            "long_mute-长期禁言(7天)，custom_mute-自定义禁言时长，ban_account-封禁账号")
+            "long_mute-长期禁言(7天)，custom_mute-自定义禁言时长")
     @NotNull
     private HandleReportEnum type;
 

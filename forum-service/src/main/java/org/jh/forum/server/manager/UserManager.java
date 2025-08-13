@@ -70,6 +70,15 @@ public class UserManager {
         userMapper.updateById(user);
     }
 
+    public void addMuteTime(long id, int hours) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+        }
+        user.setMutedUntil(user.getMutedUntil().plusHours(hours));
+        userMapper.updateById(user);
+    }
+
     public String generateRandomNickname() {
         for (int i = 0; i < 10; i++) {
             String nickname = "精小弘" + RandomUtil.randomNumbers(6);

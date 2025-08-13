@@ -11,11 +11,6 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.UserService;
 import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.request.*;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.constants.ReportStatusEnum;
-import org.jh.forum.common.constants.UserStatusEnum;
-import org.jh.forum.common.constants.UserTypeEnum;
-import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.entity.User;
@@ -221,7 +216,7 @@ public class UserServiceImpl implements UserService {
      * 管理员注册 支持nacos开关，key动态配置
      */
     @Override
-    public void AdminRegister(AdminRegisterRequest request) {
+    public void adminRegister(AdminRegisterRequest request) {
         if (Objects.isNull(adminRegisterSwitch)) {
             log.info("未获取到 AdminRegister 配置");
             throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
