@@ -123,11 +123,11 @@ public class NoticeManager {
             return;
         }
 
-        User sender = userMapper.selectById(senderId);
-        if (type == NoticeTypeEnum.LIKE && !sender.getUpvoteNotice()) {
+        User receiver = userMapper.selectById(receiverId);
+        if (type == NoticeTypeEnum.LIKE && !receiver.getUpvoteNotice()) {
             return;
         }
-        if (type == NoticeTypeEnum.COMMENT && !sender.getCommentNotice()) {
+        if (type == NoticeTypeEnum.COMMENT && !receiver.getCommentNotice()) {
             return;
         }
 
@@ -172,7 +172,7 @@ public class NoticeManager {
                 .eq(Notice::getPositionType, positionType)
                 .eq(Notice::getPositionId, positionId);
         Notice notice = noticeMapper.selectOne(wrapper);
-        if (notice != null && notice.getCreatedAt().isAfter(LocalDateTime.now().minusSeconds(5))) {
+        if (notice != null && notice.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(5))) {
             noticeMapper.deleteById(notice.getId());
         }
     }
