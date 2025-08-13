@@ -202,7 +202,9 @@ public class ReportManager {
         }
 
         sendResultToReportUser(report);
-        announcementManager.sendSystemNotification("举报结果通知", request.getResult(), report.getTargetUserId());
+        if (status == ReportStatusEnum.SUCCESS) {
+            announcementManager.sendSystemNotification("举报结果通知", request.getResult(), report.getTargetUserId());
+        }
 
         if (request.getShouldDelete()) {
             TargetTypeEnum targetType = report.getTargetType();

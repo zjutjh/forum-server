@@ -23,7 +23,7 @@ public class HandleReportRequest {
     @NotNull
     private Long reportId;
 
-    @Schema(description = "判定结果：success-举报成立，failure-举报不成立", allowableValues = {"success", "failure"})
+    @Schema(description = "判定结果：success-举报成立，failure-举报不成立")
     @NotNull
     private String status;
 
