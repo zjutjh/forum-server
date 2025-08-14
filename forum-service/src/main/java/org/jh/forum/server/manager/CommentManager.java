@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author qianqianzyk
@@ -45,14 +46,12 @@ public class CommentManager {
     private final UserManager userManager;
     private final PostRankManager postRankManager;
     private final NoticeManager noticeManager;
+    private final PostManager postManager;
 
     @Transactional
     public void publishComment(Long postId, Long parentId, Long targetId, String content, String pictureUrl) {
         // 检查 post_id 合法性
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Post post = postManager.getPostOrThrow(postId);
 
         // 检查父评论链完整性检查
         Comment parentComment;
@@ -121,10 +120,7 @@ public class CommentManager {
     }
 
     public UpvoteCommentResponse upvoteComment(Long commentId) {
-        Comment comment = commentMapper.selectById(commentId);
-        if (comment == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Comment comment = getCommentOrThrow(commentId);
         Long userId = StpUtil.getLoginIdAsLong();
 
         Upvote upvote = upvoteMapper.selectOne(new LambdaQueryWrapper<Upvote>()
@@ -168,16 +164,10 @@ public class CommentManager {
 
     public PinCommentResponse pinComment(Long commentId) {
         // 检查 comment_id 合法性
-        Comment comment = commentMapper.selectById(commentId);
-        if (comment == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Comment comment = getCommentOrThrow(commentId);
 
         // 检查用户权限(仅帖主进行置顶操作)
-        Post post = postMapper.selectById(comment.getPostId());
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Post post = postManager.getPostOrThrow(comment.getPostId());
         if (!post.getUserId().equals(StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
@@ -207,10 +197,7 @@ public class CommentManager {
 
     public void removeComment(Long commentId) {
         // 检查comment_id合法性及用户权限
-        Comment comment = commentMapper.selectById(commentId);
-        if (comment == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Comment comment = getCommentOrThrow(commentId);
         if (!comment.getUserId().equals(StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
@@ -224,11 +211,7 @@ public class CommentManager {
     }
 
     public BaseListResponse<CommentElement> getCommentList(Long postId, Integer page, Integer pageSize, String sort, Long highlightCommentId) {
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-
+        Post post = postManager.getPostOrThrow(postId);
         Long excludeId = null;
         if (highlightCommentId != null && highlightCommentId != 0) {
             Comment highlight = commentMapper.selectById(highlightCommentId);
@@ -286,10 +269,7 @@ public class CommentManager {
     }
 
     public GetCommentReplyListResponse getReplyList(Long commentId, Integer page, Integer pageSize, String sort, Long highlightReplyId) {
-        Comment parent = commentMapper.selectById(commentId);
-        if (parent == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Comment parent = getCommentOrThrow(commentId);
 
         Long excludeId = null;
         if (highlightReplyId != null && highlightReplyId != 0) {
@@ -472,10 +452,7 @@ public class CommentManager {
 
     @IgnoreLogicDelete
     public void adminChangeCommentStatus(Long commentId, CommentOperationEnum operation) {
-        Comment comment = commentMapper.selectById(commentId);
-        if (comment == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Comment comment = getCommentOrThrow(commentId);
 
         if (comment.getParentId() != 0) {
             Comment parent = commentMapper.selectById(comment.getParentId());
@@ -561,5 +538,10 @@ public class CommentManager {
         ).stream().map(attachment -> PictureInfoDTO.builder()
                 .url(fileManager.getFileUrl(attachment.getFileId()))
                 .build()).toList();
+    }
+
+    public Comment getCommentOrThrow(Long id) {
+        return Optional.ofNullable(commentMapper.selectById(id))
+                .orElseThrow(() -> new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND));
     }
 }

@@ -3,6 +3,7 @@ package org.jh.forum.server.manager;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author MangoGovo
@@ -62,19 +64,14 @@ public class UserManager {
     }
 
     public void muteUser(long id, int hours) {
-        User user = userMapper.selectById(id);
-        if (user == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-        user.setMutedUntil(LocalDateTime.now().plusHours(hours));
-        userMapper.updateById(user);
+        userMapper.update(new LambdaUpdateWrapper<User>()
+                .eq(User::getId, id)
+                .set(User::getMutedUntil, LocalDateTime.now().plusHours(hours))
+        );
     }
 
     public void addMuteTime(long id, int hours) {
-        User user = userMapper.selectById(id);
-        if (user == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        User user = getUserOrThrow(id);
         user.setMutedUntil(user.getMutedUntil().plusHours(hours));
         userMapper.updateById(user);
     }
@@ -87,5 +84,10 @@ public class UserManager {
             }
         }
         return "精小弘" + IdUtil.objectId();
+    }
+
+    public User getUserOrThrow(Long id) {
+        return Optional.ofNullable(userMapper.selectById(id))
+                .orElseThrow(() -> new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND));
     }
 }

@@ -16,6 +16,7 @@ import org.jh.forum.server.mapper.FAQMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * FAQ业务管理器
@@ -63,11 +64,7 @@ public class FAQManager {
      * 根据ID获取FAQ详情
      */
     public FAQDetailResponse getFaqDetail(Long questionId) {
-        FAQ faq = faqMapper.selectById(questionId);
-        if (faq == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-
+        FAQ faq = getFaqOrThrow(questionId);
         FAQDetailResponse response = FAQDetailResponse.builder()
                 .category(faq.getCategory())
                 .answer(faq.getAnswer())
@@ -96,11 +93,7 @@ public class FAQManager {
      * 更新FAQ
      */
     public void updateFaq(Long questionId, FAQCategoryEnum category, String question, String answer, Boolean isPicked) {
-        FAQ faq = faqMapper.selectById(questionId);
-        if (faq == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-
+        FAQ faq = getFaqOrThrow(questionId);
         faq.setCategory(category);
         faq.setQuestion(question);
         faq.setAnswer(answer);
@@ -112,10 +105,12 @@ public class FAQManager {
      * 删除FAQ
      */
     public void deleteFaq(Long questionId) {
-        FAQ existingFaq = faqMapper.selectById(questionId);
-        if (existingFaq == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        getFaqOrThrow(questionId);
         faqMapper.deleteById(questionId);
+    }
+
+    public FAQ getFaqOrThrow(Long id) {
+        return Optional.ofNullable(faqMapper.selectById(id))
+                .orElseThrow(() -> new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND));
     }
 }

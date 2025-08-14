@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 公告业务管理层
@@ -87,10 +88,7 @@ public class AnnouncementManager {
      * 编辑公告
      */
     public void editAnnouncement(EditAnnouncementRequest request) {
-        Announcement announcement = announcementMapper.selectById(request.getId());
-        if (announcement == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Announcement announcement = getAnnouncementOrThrow(request.getId());
         if (announcement.getTargetUid() != ALL_USER_ID) {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
@@ -105,7 +103,7 @@ public class AnnouncementManager {
             announcement.setType(request.getType());
         } else {
             // 如果尝试修改状态、发布时间、类型等关键字段，则报错（兜底用的）
-            if ((request.getPublishedAt() != null && !request.getPublishedAt().equals(announcement.getPublishedAt()))
+            if ((request.getPublishedAt() != null && !request.getPublishedAt().isEqual(announcement.getPublishedAt()))
                     || (request.getStatus() != null && !request.getStatus().equals(announcement.getStatus()))
                     || (request.getType() != null && !request.getType().equals(announcement.getType()))) {
                 throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
@@ -119,10 +117,7 @@ public class AnnouncementManager {
      * 删除公告
      */
     public void deleteAnnouncement(Long id) {
-        Announcement announcement = announcementMapper.selectById(id);
-        if (announcement == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        getAnnouncementOrThrow(id);
         announcementMapper.deleteById(id);
     }
 
@@ -136,10 +131,7 @@ public class AnnouncementManager {
         if (count >= DEFAULT_TOPPED && Boolean.TRUE.equals(isSticky)) {
             throw new ApiException(ExceptionEnum.ANNOUNCEMENT_STICKY_LIMIT_REACHED);
         }
-        Announcement announcement = announcementMapper.selectById(id);
-        if (announcement == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Announcement announcement = getAnnouncementOrThrow(id);
         if (announcement.getTargetUid() != ALL_USER_ID) {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
@@ -161,10 +153,7 @@ public class AnnouncementManager {
         if (user.getRole() == UserTypeEnum.SUPER_ADMIN) {
             return true;
         }
-        Announcement announcement = announcementMapper.selectById(announcementId);
-        if (announcement == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Announcement announcement = getAnnouncementOrThrow(announcementId);
         return user.getId().equals(announcement.getCreateUid());
     }
 
@@ -199,11 +188,8 @@ public class AnnouncementManager {
     }
 
     public GetAdminAnnouncementDetailResponse getAdminAnnouncementDetail(Long id) {
-        Announcement announcement = announcementMapper.selectById(id);
+        Announcement announcement = getAnnouncementOrThrow(id);
         long currentUid = StpUtil.getLoginIdAsLong();
-        if (announcement == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
         return GetAdminAnnouncementDetailResponse.builder()
                 .title(announcement.getTitle())
                 .content(announcement.getContent())
@@ -330,5 +316,10 @@ public class AnnouncementManager {
             return AnnouncementStatusEnum.DRAFT;
         }
         return LocalDateTime.now().isBefore(publishedAt) ? status : AnnouncementStatusEnum.PUBLISHED;
+    }
+
+    public Announcement getAnnouncementOrThrow(Long id) {
+        return Optional.ofNullable(announcementMapper.selectById(id))
+                .orElseThrow(() -> new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND));
     }
 }

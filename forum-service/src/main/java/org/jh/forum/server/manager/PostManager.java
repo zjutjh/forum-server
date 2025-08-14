@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -164,10 +165,7 @@ public class PostManager {
     }
 
     public GetPostInfoResponse getPostInfo(Long postId, Long userId) {
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Post post = getPostOrThrow(postId);
         updateViewCount(postId, userId, post.getCategory());
         return GetPostInfoResponse.builder()
                 .publisherInfo(userManager.getUserInfo(post.getUserId()))
@@ -246,9 +244,10 @@ public class PostManager {
         postMapper.selectPage(postPage, queryWrapper);
         List<GetAdminPostListElement> list = new ArrayList<>();
         for (Post post : postPage.getRecords()) {
+            User user = userMapper.selectById(post.getUserId());
             list.add(GetAdminPostListElement.builder()
                     .id(post.getId())
-                    .publisher(userMapper.selectById(post.getUserId()).getNickname())
+                    .publisher(user == null ? "" : user.getNickname())
                     .category(post.getCategory())
                     .title(post.getTitle())
                     .likeCount(getLikeCount(post.getId()))
@@ -270,10 +269,7 @@ public class PostManager {
 
     @IgnoreLogicDelete
     public GetAdminPostInfoResponse getAdminPostInfo(Long id) {
-        Post post = postMapper.selectById(id);
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Post post = getPostOrThrow(id);
         return GetAdminPostInfoResponse.builder()
                 .publisherInfo(userManager.getUserInfo(post.getUserId()))
                 .category(post.getCategory())
@@ -342,10 +338,7 @@ public class PostManager {
 
     @IgnoreLogicDelete
     public void restorePost(Long id) {
-        Post post = postMapper.selectById(id);
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        getPostOrThrow(id);
         postMapper.restorePost(id);
     }
 
@@ -356,19 +349,13 @@ public class PostManager {
         if (count >= 3 && Boolean.TRUE.equals(pinned)) {
             throw new ApiException(ExceptionEnum.POST_PINNED_LIMIT_REACHED);
         }
-        Post post = postMapper.selectById(id);
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Post post = getPostOrThrow(id);
         post.setIsPinned(pinned);
         postMapper.updateById(post);
     }
 
     public void topPost(Long id, Boolean topped) {
-        Post post = postMapper.selectById(id);
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Post post = getPostOrThrow(id);
         if (!post.getUserId().equals(StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
@@ -384,10 +371,7 @@ public class PostManager {
     }
 
     public Boolean upvotePost(Long id) {
-        Post post = postMapper.selectById(id);
-        if (post == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Post post = getPostOrThrow(id);
         Long userId = StpUtil.getLoginIdAsLong();
 
         Upvote upvote = upvoteMapper.selectOne(new LambdaQueryWrapper<Upvote>()
@@ -440,5 +424,10 @@ public class PostManager {
                 .totalPictures(pictures.size())
                 .isLiked(checkIsLiked(post.getId()))
                 .build();
+    }
+
+    public Post getPostOrThrow(Long id) {
+        return Optional.ofNullable(postMapper.selectById(id))
+                .orElseThrow(() -> new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND));
     }
 }

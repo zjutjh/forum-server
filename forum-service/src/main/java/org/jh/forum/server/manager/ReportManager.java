@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author zzb
@@ -39,6 +40,7 @@ public class ReportManager {
     private final UserManager userManager;
     private final ReportInfoMapper reportInfoMapper;
     private final AnnouncementManager announcementManager;
+    private final CommentManager commentManager;
 
     @Transactional
     public void reportUser(ReportTypeEnum type, String reason, Long targetUserId, List<String> pictureUrls) {
@@ -90,16 +92,10 @@ public class ReportManager {
 
         Long targetUserId;
         if (target == TargetTypeEnum.POST) {
-            Post post = postMapper.selectById(targetId);
-            if (post == null) {
-                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-            }
+            Post post = postManager.getPostOrThrow(targetId);
             targetUserId = post.getUserId();
         } else if (target == TargetTypeEnum.COMMENT) {
-            Comment comment = commentMapper.selectById(targetId);
-            if (comment == null) {
-                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-            }
+            Comment comment = commentManager.getCommentOrThrow(targetId);
             targetUserId = comment.getUserId();
         } else {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
@@ -164,10 +160,7 @@ public class ReportManager {
 
     @Transactional
     public HandleReportResponse handleReport(HandleReportRequest request) {
-        Report report = reportMapper.selectById(request.getReportId());
-        if (report == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Report report = getReportOrThrow(request.getReportId());
 
         ReportStatusEnum status = EnumUtil.getBy(ReportStatusEnum::getValue, request.getStatus());
         if (status == null) {
@@ -265,10 +258,7 @@ public class ReportManager {
 
     @IgnoreLogicDelete
     public GetReportDetailResponse getReportDetail(Long id) {
-        Report report = reportMapper.selectById(id);
-        if (report == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        Report report = getReportOrThrow(id);
 
         Integer commentPosition = null;
         LocalDateTime targetTypeCreatedAt = null;
@@ -276,10 +266,7 @@ public class ReportManager {
         Long parentId = null;
         Integer replyPosition = null;
         if (report.getTargetType() == TargetTypeEnum.COMMENT) {
-            comment = commentMapper.selectById(report.getTargetId());
-            if (comment == null) {
-                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-            }
+            comment = commentManager.getCommentOrThrow(report.getTargetId());
             targetTypeCreatedAt = comment.getCreatedAt();
             List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>()
                     .eq(Comment::getPostId, comment.getPostId())
@@ -298,10 +285,7 @@ public class ReportManager {
             }
         }
         if (report.getTargetType() == TargetTypeEnum.POST) {
-            Post post = postMapper.selectById(report.getTargetId());
-            if (post == null) {
-                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-            }
+            Post post = postManager.getPostOrThrow(report.getTargetId());
             targetTypeCreatedAt = post.getCreatedAt();
         }
 
@@ -335,10 +319,7 @@ public class ReportManager {
     }
 
     public BaseListResponse<GetReportInfoElement> getReportInfoList(Long reportId, Integer page, Integer pageSize) {
-        Report report = reportMapper.selectById(reportId);
-        if (report == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
+        getReportOrThrow(reportId);
 
         IPage<ReportInfo> reportInfoPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<ReportInfo> queryWrapper = new LambdaQueryWrapper<ReportInfo>()
@@ -481,5 +462,10 @@ public class ReportManager {
             );
         }
         return notificationContent;
+    }
+
+    public Report getReportOrThrow(Long id) {
+        return Optional.ofNullable(reportMapper.selectById(id))
+                .orElseThrow(() -> new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND));
     }
 }
