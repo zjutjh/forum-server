@@ -72,7 +72,8 @@ public class UserManager {
 
     public void addMuteTime(long id, int hours) {
         User user = getUserOrThrow(id);
-        user.setMutedUntil(user.getMutedUntil().plusHours(hours));
+        LocalDateTime mutedUntil = user.getMutedUntil() == null ? LocalDateTime.now() : user.getMutedUntil();
+        user.setMutedUntil(mutedUntil.plusHours(hours));
         userMapper.updateById(user);
     }
 
