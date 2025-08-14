@@ -282,7 +282,7 @@ create table user
         primary key,
     nickname                  varchar(50)                               not null comment '用户昵称',
     realname                  varchar(20)                               not null comment '真实姓名',
-    student_id                varchar(12)                               not null comment '学号',
+    student_id                varchar(16)                               not null comment '学号',
     password                  varchar(255)                              not null comment '密码哈希',
     college_id                varchar(10)                               not null comment '学院ID',
     gender                    varchar(20)                               not null comment '性别(男,女,保密)',
