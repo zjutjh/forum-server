@@ -2,6 +2,7 @@ package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,9 +43,6 @@ public class NoticeManager {
      */
     public BaseListResponse<GetNoticeListElement> getNoticeList(Integer page, Integer pageSize, Integer type) {
         Long receiverId = StpUtil.getLoginIdAsLong();
-        User user = userMapper.selectById(receiverId);
-        user.setLastNoticeReadAt(LocalDateTime.now());
-        userMapper.updateById(user);
 
         Page<Notice> noticePage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
@@ -85,6 +83,12 @@ public class NoticeManager {
                             .isLiked(isLiked)
                             .build();
                 }).toList();
+
+        userMapper.update(
+                new LambdaUpdateWrapper<User>()
+                        .eq(User::getId, receiverId)
+                        .set(User::getLastNoticeReadAt, LocalDateTime.now())
+        );
         return BaseListResponse.<GetNoticeListElement>builder()
                 .list(list)
                 .total(noticePage.getTotal())

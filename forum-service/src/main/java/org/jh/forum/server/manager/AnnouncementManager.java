@@ -2,6 +2,7 @@ package org.jh.forum.server.manager;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -222,28 +223,17 @@ public class AnnouncementManager {
      */
     public BaseListResponse<GetAnnouncementListElement> userListAnnouncements(Integer page, Integer pageSize, AnnouncementTypeEnum type) {
         long currentUserId = StpUtil.getLoginIdAsLong();
-        User user = userMapper.selectById(currentUserId);
-        user.setLastAnnouncementReadAt(LocalDateTime.now());
-        userMapper.updateById(user);
 
         LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<Announcement>()
                 .ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
-                .le(Announcement::getPublishedAt, LocalDateTime.now());
-        if (type != null) {
-            // 指定类型查询
-            if (type == AnnouncementTypeEnum.SYSTEMATIC) {
-                queryWrapper.eq(Announcement::getType, AnnouncementTypeEnum.SYSTEMATIC)
-                        .and(wrapper -> wrapper.eq(Announcement::getTargetUid, ALL_USER_ID)
-                                .or().eq(Announcement::getTargetUid, currentUserId));
-            } else {
-                queryWrapper.eq(Announcement::getType, type)
-                        .eq(Announcement::getTargetUid, ALL_USER_ID);
-            }
-        } else {
-            queryWrapper.and(wrapper -> wrapper.eq(Announcement::getTargetUid, ALL_USER_ID)
-                    .or().eq(Announcement::getTargetUid, currentUserId));
-        }
+                .le(Announcement::getPublishedAt, LocalDateTime.now())
+                .eq(type != null, Announcement::getType, type);
 
+        queryWrapper.and(wrapper -> wrapper
+                .eq(Announcement::getTargetUid, ALL_USER_ID)
+                .or()
+                .eq(Announcement::getTargetUid, currentUserId)
+        );
         queryWrapper.orderByDesc(Announcement::getSticky)
                 .orderByDesc(Announcement::getPublishedAt);
         IPage<Announcement> pageResult = new Page<>(page, pageSize);
@@ -261,6 +251,10 @@ public class AnnouncementManager {
                         .build())
                 .toList();
 
+        userMapper.update(new LambdaUpdateWrapper<User>()
+                .eq(User::getId, currentUserId)
+                .set(User::getLastAnnouncementReadAt, LocalDateTime.now())
+        );
         return BaseListResponse.<GetAnnouncementListElement>builder()
                 .list(list)
                 .page(page)
