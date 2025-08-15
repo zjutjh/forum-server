@@ -127,7 +127,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public BaseListResponse<GetUserListElement> getUserList(GetUserListRequest request) {
         IPage<User> page = new Page<>(request.getPage(), request.getPageSize());
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>()
+                .eq(User::getRole, UserTypeEnum.STUDENT);
         if (request.getStatus() != null) {
             if (request.getStatus() == UserStatusEnum.NORMAL) {
                 queryWrapper.and(wrapper -> wrapper
