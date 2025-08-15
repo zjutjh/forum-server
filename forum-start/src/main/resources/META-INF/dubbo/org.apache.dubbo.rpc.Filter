@@ -1,1 +1,2 @@
 dubboRequestFilter=org.jh.forum.common.filters.DubboRequestFilter
+dubboRequestFilter=org.jh.forum.common.filters.HeaderTransmitFilter
