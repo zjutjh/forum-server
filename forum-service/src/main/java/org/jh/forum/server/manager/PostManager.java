@@ -101,10 +101,7 @@ public class PostManager {
                 .eq(Attachment::getTargetId, id)
                 .eq(Attachment::getTargetType, TargetTypeEnum.POST)
                 .eq(Attachment::getType, AttachmentTypeEnum.PICTURE)
-        ).stream().map(attachment -> PictureInfoDTO.builder()
-                .url(fileManager.getFileUrl(attachment.getFileId()))
-                .build()
-        ).toList();
+        ).stream().map(fileManager::buildPictureInfoDTO).toList();
     }
 
     public BaseListResponse<GetPersonalPostListElement> getPersonalPostList(GetPersonalPostRequest request) {

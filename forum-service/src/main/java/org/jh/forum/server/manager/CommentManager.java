@@ -535,9 +535,7 @@ public class CommentManager {
                 .eq(Attachment::getType, AttachmentTypeEnum.PICTURE)
                 .eq(Attachment::getTargetId, targetId)
                 .eq(Attachment::getTargetType, TargetTypeEnum.COMMENT)
-        ).stream().map(attachment -> PictureInfoDTO.builder()
-                .url(fileManager.getFileUrl(attachment.getFileId()))
-                .build()).toList();
+        ).stream().map(fileManager::buildPictureInfoDTO).toList();
     }
 
     public Comment getCommentOrThrow(Long id) {

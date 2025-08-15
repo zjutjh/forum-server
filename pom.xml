@@ -131,7 +131,7 @@
         <dependency>
             <groupId>com.github.SugarMGP</groupId>
             <artifactId>cube-spring-boot3-starter</artifactId>
-            <version>1.5</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>com.github.MangoGovo</groupId>

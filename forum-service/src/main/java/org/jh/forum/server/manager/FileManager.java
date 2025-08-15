@@ -8,6 +8,7 @@ import org.jh.cube.CubeException;
 import org.jh.cube.CubeService;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
+import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.entity.Attachment;
 import org.jh.forum.common.entity.File;
 import org.jh.forum.common.exceptions.ApiException;
@@ -80,11 +81,14 @@ public class FileManager {
         attachmentMapper.updateById(attachment);
     }
 
-    public String getFileUrl(Long fileId) {
-        File file = fileMapper.selectById(fileId);
+    public PictureInfoDTO buildPictureInfoDTO(Attachment attachment) {
+        File file = fileMapper.selectById(attachment.getFileId());
         if (file == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
+            return null;
         }
-        return cubeService.getFileUrl(file.getObjectKey());
+        return PictureInfoDTO.builder()
+                .url(cubeService.getFileUrl(file.getObjectKey(), false))
+                .thumbnailUrl(cubeService.getFileUrl(file.getObjectKey(), true))
+                .build();
     }
 }

@@ -353,14 +353,9 @@ public class ReportManager {
                 .eq(Attachment::getTargetId, reportId)
                 .eq(Attachment::getTargetType, TargetTypeEnum.REPORT)
         );
-        List<PictureInfoDTO> attachmentInfoList = new ArrayList<>();
-        for (Attachment attachment : attachments) {
-            attachmentInfoList.add(PictureInfoDTO.builder()
-                    .url(fileManager.getFileUrl(attachment.getFileId()))
-                    .build()
-            );
-        }
-        return attachmentInfoList;
+        return attachments.stream()
+                .map(fileManager::buildPictureInfoDTO)
+                .toList();
     }
 
     private UserHistoryStatsResponse getUserHistoryStats(Long userId) {

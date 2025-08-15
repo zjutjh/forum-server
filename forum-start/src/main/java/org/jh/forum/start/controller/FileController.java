@@ -65,7 +65,7 @@ public class FileController {
                 fileService.createFile(objectKey, hash);
             }
             Long id = fileService.createAttachment(objectKey, type, truncateFilename(file.getOriginalFilename()));
-            return new UploadResponse(cubeService.getFileUrl(objectKey) + "&attachment_id=" + id);
+            return new UploadResponse(cubeService.getFileUrl(objectKey, false) + "&attachment_id=" + id);
         } catch (IOException e) {
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR, e);
         }
