@@ -238,7 +238,7 @@ public class CommentManager {
         if ("hot".equals(sort)) {
             wrapper.orderByDesc("upvote_count + reply_count * 2");
         }
-        wrapper.orderByAsc("created_at");
+        wrapper.orderByDesc("created_at");
         commentMapper.selectPage(commentPage, wrapper);
 
         List<CommentElement> commentElements = commentPage.getRecords().stream()
@@ -257,7 +257,7 @@ public class CommentManager {
                 .eq("parent_id", comment.getId())
                 .orderByDesc("upvote_count + reply_count * 2")
                 .orderByAsc("created_at")
-                .last("limit 2"));
+                .last("limit 1"));
         return hottestReply.stream()
                 .map(reply -> buildReplyElement(reply, postAuthorId))
                 .toList();

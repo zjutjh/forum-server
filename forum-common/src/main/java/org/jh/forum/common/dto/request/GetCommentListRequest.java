@@ -22,6 +22,5 @@ public class GetCommentListRequest extends BaseListRequest {
     private String sortType;
 
     @Schema(description = "高亮评论ID，无值即传0")
-    @NotNull
     private Long highlightCommentId;
 }
