@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.constants.CommentTargetTypeEnum;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,15 +19,11 @@ import jakarta.validation.constraints.Size;
 @NoArgsConstructor
 @Data
 public class PublishCommentRequest {
-    @Schema(description = "帖子ID")
+    @Schema(description = "评论目标类型")
     @NotNull
-    private Long postId;
+    private CommentTargetTypeEnum targetType;
 
-    @Schema(description = "父评论ID，即最顶层评论ID，无值即传0")
-    @NotNull
-    private Long parentId;
-
-    @Schema(description = "回复评论ID，无值即传0")
+    @Schema(description = "目标ID")
     @NotNull
     private Long targetId;
 

@@ -13,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class GetReplyListRequest extends BaseListRequest {
-    @Schema(description = "父评论ID")
+    @Schema(description = "评论或回复ID（如果不是父评论则会自动跳转到父评论）")
     @NotNull
     private Long id;
 
@@ -21,7 +21,7 @@ public class GetReplyListRequest extends BaseListRequest {
     @NotBlank
     private String sortType;
 
-    @Schema(description = "高亮评论ID，无值即传0")
+    @Schema(description = "高亮回复ID，无值即传0")
     @NotNull
     private Long highlightReplyId;
 }

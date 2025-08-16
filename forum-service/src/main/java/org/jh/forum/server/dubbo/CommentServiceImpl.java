@@ -21,7 +21,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void publishComment(PublishCommentRequest request) {
-        commentManager.publishComment(request.getPostId(), request.getParentId(), request.getTargetId(), request.getContent(), request.getPicture());
+        commentManager.publishComment(request.getTargetType(), request.getTargetId(), request.getContent(), request.getPicture());
     }
 
     @Override

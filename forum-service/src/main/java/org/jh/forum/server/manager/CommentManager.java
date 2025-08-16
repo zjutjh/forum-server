@@ -49,35 +49,30 @@ public class CommentManager {
     private final PostManager postManager;
 
     @Transactional
-    public void publishComment(Long postId, Long parentId, Long targetId, String content, String pictureUrl) {
-        // 检查 post_id 合法性
-        Post post = postManager.getPostOrThrow(postId);
+    public void publishComment(CommentTargetTypeEnum commentTargetType, Long commentTargetId, String content, String pictureUrl) {
+        long postId;
+        long parentId;
+        long targetId;
 
-        // 检查父评论链完整性检查
-        Comment parentComment;
-        Comment targetComment;
-        if (parentId != 0) {
-            parentComment = commentMapper.selectById(parentId);
-            if (parentComment == null || !parentComment.getPostId().equals(postId)) {
-                throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-            }
-
-            if (targetId != 0) {
-                targetComment = commentMapper.selectById(targetId);
-                if (targetComment == null || !targetComment.getPostId().equals(postId)
-                        || !targetComment.getParentId().equals(parentId)) {
-                    throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
-                }
-            } else {
-                targetComment = null;
-            }
+        if (commentTargetType == CommentTargetTypeEnum.POST) {
+            postId = commentTargetId;
+            parentId = 0;
+            targetId = 0;
         } else {
-            parentComment = null;
-            targetComment = null;
-            if (targetId != 0) {
-                throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
+            Comment targetComment = getCommentOrThrow(commentTargetId);
+            postId = targetComment.getPostId();
+            if (targetComment.getParentId() != 0) {
+                parentId = targetComment.getParentId();
+                targetId = targetComment.getId();
+            } else {
+                parentId = targetComment.getId();
+                targetId = 0;
             }
         }
+
+        Post post = postMapper.selectById(postId);
+        Comment parentComment = parentId != 0 ? commentMapper.selectById(parentId) : null;
+        Comment targetComment = targetId != 0 ? commentMapper.selectById(targetId) : null;
 
         // 创建评论
         Comment comment = Comment.builder()
@@ -100,8 +95,8 @@ public class CommentManager {
 
         AsyncUtil.runAsyncWithLogging(() -> {
             postRankManager.recordAction(postId, post.getCategory(), postRankManager.COMMENT);
-            if (parentId != 0) {
-                if (targetId != 0) {
+            if (parentComment != null) {
+                if (targetComment != null) {
                     noticeManager.createNotice(targetComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, targetId, comment.getId());
                 } else {
                     noticeManager.createNotice(parentComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, parentId, comment.getId());
@@ -270,6 +265,9 @@ public class CommentManager {
 
     public GetCommentReplyListResponse getReplyList(Long commentId, Integer page, Integer pageSize, String sort, Long highlightReplyId) {
         Comment parent = getCommentOrThrow(commentId);
+        if (parent.getParentId() != 0) {
+            parent = getCommentOrThrow(parent.getParentId());
+        }
 
         Long excludeId = null;
         if (highlightReplyId != null && highlightReplyId != 0) {
@@ -283,7 +281,7 @@ public class CommentManager {
 
         Page<Comment> replyPage = new Page<>(page, pageSize);
         QueryWrapper<Comment> wrapper = new QueryWrapper<Comment>()
-                .eq("parent_id", commentId);
+                .eq("parent_id", parent.getId());
 
         if (excludeId != null) {
             if (page == 1) {
