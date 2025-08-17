@@ -1,7 +1,7 @@
 package org.jh.forum.common.exceptions;
 
-import com.aliyun.green20220302.models.TextModerationPlusResponseBody;
 import lombok.Getter;
+import org.jh.forum.common.dto.response.ModerationResultResponse;
 
 import java.util.List;
 
@@ -10,12 +10,12 @@ import java.util.List;
  */
 @Getter
 public class ModerationException extends RuntimeException {
-    private final List<TextModerationPlusResponseBody.TextModerationPlusResponseBodyDataResult> results;
+    private final List<ModerationResultResponse.Label> labels;
     private final String requestId;
 
-    public ModerationException(String requestId, List<TextModerationPlusResponseBody.TextModerationPlusResponseBodyDataResult> results) {
+    public ModerationException(String requestId, List<ModerationResultResponse.Label> labels) {
         super();
         this.requestId = requestId;
-        this.results = results;
+        this.labels = labels;
     }
 }

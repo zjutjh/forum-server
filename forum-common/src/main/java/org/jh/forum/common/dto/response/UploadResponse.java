@@ -13,5 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class UploadResponse {
+    private Boolean pass;
     private String url;
 }

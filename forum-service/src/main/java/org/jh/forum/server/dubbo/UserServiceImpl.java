@@ -83,7 +83,10 @@ public class UserServiceImpl implements UserService {
         User userEntity = userMapper.selectById(userId);
         UserDetail detailEntity = userDetailMapper.selectById(userId);
 
-        if (userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getNickname, request.getNickname()))) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>()
+                .ne(User::getId, userId)
+                .eq(User::getNickname, request.getNickname());
+        if (userMapper.exists(queryWrapper)) {
             throw new ApiException(ExceptionEnum.USER_NICKNAME_EXISTS);
         }
 

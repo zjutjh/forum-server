@@ -13,6 +13,8 @@ import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.dto.response.UploadResponse;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.common.exceptions.ModerationException;
+import org.jh.forum.server.client.AliyunGreenClient;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.BlakeUtils;
 import org.springframework.http.MediaType;
@@ -38,6 +40,9 @@ public class FileController {
     @Resource
     private CubeService cubeService;
 
+    @Resource
+    private AliyunGreenClient aliyunGreenClient;
+
     @DubboReference
     private FileService fileService;
 
@@ -52,30 +57,42 @@ public class FileController {
             String hash = BlakeUtils.computeHash(file);
             String objectKey = fileService.checkBlake3(hash);
 
-            // 如果文件不存在
             if (objectKey == null) {
-                LocalDate currentDate = LocalDate.now();
-                String location = String.format("%d%02d", currentDate.getYear(), currentDate.getMonthValue());
-                objectKey = cubeService.uploadFile(
-                        file,
-                        location,
-                        type == AttachmentTypeEnum.PICTURE,
-                        true
-                );
-                fileService.createFile(objectKey, hash);
+                objectKey = uploadAndAudit(file, type, hash);
             }
+
             Long id = fileService.createAttachment(objectKey, type, truncateFilename(file.getOriginalFilename()));
-            return new UploadResponse(cubeService.getFileUrl(objectKey, false) + "&attachment_id=" + id);
-        } catch (IOException e) {
+            String url = cubeService.getFileUrl(objectKey, false) + "&attachment_id=" + id;
+            return new UploadResponse(true, url);
+        } catch (ModerationException e) {
+            throw e;
+        } catch (Exception e) {
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_ERROR, e);
         }
     }
 
-    private String truncateFilename(String filename) {
-        if (filename == null) {
-            return "";
+    private String uploadAndAudit(MultipartFile file, AttachmentTypeEnum type, String hash) throws IOException {
+        LocalDate currentDate = LocalDate.now();
+        String location = String.format("%d%02d", currentDate.getYear(), currentDate.getMonthValue());
+
+        String objectKey = cubeService.uploadFile(
+                file,
+                location,
+                type == AttachmentTypeEnum.PICTURE,
+                true
+        );
+
+        // 仅对图片进行内容审核
+        if (type == AttachmentTypeEnum.PICTURE) {
+            aliyunGreenClient.checkImage(cubeService.getFileUrl(objectKey, false));
         }
-        String baseName = FilenameUtils.getBaseName(filename);
+
+        fileService.createFile(objectKey, hash);
+        return objectKey;
+    }
+
+    private String truncateFilename(String filename) {
+        String baseName = FilenameUtils.getBaseName(StringUtils.defaultString(filename));
         return StringUtils.left(baseName, 20);
     }
 }
