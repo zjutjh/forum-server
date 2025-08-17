@@ -37,7 +37,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public BaseListResponse<GetReportListElement> getReportList(GetReportListRequest request) {
-        return reportManager.getReportList(request.getStatus(), request.getOrder(),
+        return reportManager.getReportList(request.getStatus(), request.getOrder(), request.getReportId(),
                 request.getPage(), request.getPageSize());
     }
 

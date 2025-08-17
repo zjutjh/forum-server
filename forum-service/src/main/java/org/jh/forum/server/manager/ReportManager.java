@@ -217,9 +217,10 @@ public class ReportManager {
                 .build();
     }
 
-    public BaseListResponse<GetReportListElement> getReportList(String status, String order, Integer page, Integer pageSize) {
+    public BaseListResponse<GetReportListElement> getReportList(String status, String order, Long reportId, Integer page, Integer pageSize) {
         IPage<Report> reportPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Report> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(reportId != null && reportId != 0, Report::getId, reportId);
         if ("pending".equals(status)) {
             queryWrapper.eq(Report::getStatus, ReportStatusEnum.PENDING);
         }

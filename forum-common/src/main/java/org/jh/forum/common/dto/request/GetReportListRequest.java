@@ -19,4 +19,7 @@ public class GetReportListRequest extends BaseListRequest {
     @Schema(description = "排序: desc-降序, asc-升序")
     @NotBlank
     private String order;
+
+    @Schema(description = "目标ID")
+    private Long reportId;
 }

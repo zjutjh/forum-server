@@ -80,6 +80,10 @@ public class UserServiceImpl implements UserService {
         User userEntity = userMapper.selectById(userId);
         UserDetail detailEntity = userDetailMapper.selectById(userId);
 
+        if(userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getNickname, request.getNickname()))){
+            throw new ApiException(ExceptionEnum.USER_NICKNAME_EXISTS);
+        }
+
         userEntity.setAvatar(request.getAvatar());
         userEntity.setNickname(request.getNickname());
         userEntity.setGender(request.getGender());
