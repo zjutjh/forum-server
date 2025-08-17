@@ -55,7 +55,7 @@ public class AliyunGreenClient {
 
         RiskLevelEnum level = EnumUtil.getBy(RiskLevelEnum::getValue, data.getRiskLevel());
         if (level == RiskLevelEnum.HIGH) {
-            throw new ModerationException(data.getResult());
+            throw new ModerationException(body.getRequestId(), data.getResult());
         }
     }
 }

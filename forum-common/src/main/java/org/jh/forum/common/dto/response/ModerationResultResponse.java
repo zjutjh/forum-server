@@ -1,6 +1,5 @@
 package org.jh.forum.common.dto.response;
 
-import com.aliyun.green20220302.models.TextModerationPlusResponseBody;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -22,24 +21,21 @@ public class ModerationResultResponse {
     @Schema(description = "风险标签列表")
     private List<Label> labels;
 
+    @Schema(description = "审核请求ID（可用来追溯记录）")
+    private String requestId;
+
     public static ModerationResultResponse success() {
-        return new ModerationResultResponse(true, null);
+        return new ModerationResultResponse(true, null, null);
     }
 
-    public static ModerationResultResponse fail(List<TextModerationPlusResponseBody.TextModerationPlusResponseBodyDataResult> results) {
-        List<Label> labels = results.stream().map(result ->
-                Label.builder()
-                        .description(result.getDescription())
-                        .keywords(result.getRiskWords())
-                        .build()
-        ).toList();
-        return new ModerationResultResponse(false, labels);
+    public static ModerationResultResponse fail(String requestId, List<Label> labels) {
+        return new ModerationResultResponse(false, labels, requestId);
     }
 
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Builder
-    static class Label {
+    public static class Label {
         @Schema(description = "标签名称")
         private String description;
 

@@ -11,9 +11,11 @@ import java.util.List;
 @Getter
 public class ModerationException extends RuntimeException {
     private final List<TextModerationPlusResponseBody.TextModerationPlusResponseBodyDataResult> results;
+    private final String requestId;
 
-    public ModerationException(List<TextModerationPlusResponseBody.TextModerationPlusResponseBodyDataResult> results) {
+    public ModerationException(String requestId, List<TextModerationPlusResponseBody.TextModerationPlusResponseBodyDataResult> results) {
         super();
+        this.requestId = requestId;
         this.results = results;
     }
 }

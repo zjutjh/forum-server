@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 处理 ForumServiceException 及其子类，最先执行
@@ -85,6 +86,12 @@ public class CustomExceptionHandler {
     @ExceptionHandler(ModerationException.class)
     @ResponseBody
     public AjaxResult<ModerationResultResponse> handleModerationException(ModerationException e) {
-        return AjaxResult.success(ModerationResultResponse.fail(e.getResults()));
+        List<ModerationResultResponse.Label> labels = e.getResults().stream().map(result ->
+                ModerationResultResponse.Label.builder()
+                        .description(result.getDescription())
+                        .keywords(result.getRiskWords())
+                        .build()
+        ).toList();
+        return AjaxResult.success(ModerationResultResponse.fail(e.getRequestId(), labels));
     }
 }
