@@ -138,6 +138,11 @@
             <artifactId>jh-user-center-java-sdk</artifactId>
             <version>1.1.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>green20220302</artifactId>
+            <version>2.21.1</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

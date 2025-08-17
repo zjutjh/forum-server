@@ -16,7 +16,7 @@ import org.jh.forum.common.entity.Report;
 import org.jh.forum.common.entity.User;
 import org.jh.forum.common.entity.UserDetail;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.server.config.service.AdminRegisterSwitchService;
+import org.jh.forum.server.client.AliyunGreenClient;
 import org.jh.forum.server.manager.UserManager;
 import org.jh.forum.server.mapper.ReportMapper;
 import org.jh.forum.server.mapper.UserDetailMapper;
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
     private ReportMapper reportMapper;
 
     @Resource
-    private AdminRegisterSwitchService adminRegisterSwitchService;
+    private AliyunGreenClient aliyunGreenClient;
 
     @Override
     public GetUserProfileResponse getUserProfile(Long userId) {
@@ -76,11 +76,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserProfile(UpdateUserDetailRequest request) {
+        String text = StringUtils.joinWith(" ", request.getNickname(), request.getSignature(), request.getProfile());
+        aliyunGreenClient.checkText(text, TextModerationServiceEnum.NICKNAME);
+
         Long userId = StpUtil.getLoginIdAsLong();
         User userEntity = userMapper.selectById(userId);
         UserDetail detailEntity = userDetailMapper.selectById(userId);
 
-        if(userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getNickname, request.getNickname()))){
+        if (userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getNickname, request.getNickname()))) {
             throw new ApiException(ExceptionEnum.USER_NICKNAME_EXISTS);
         }
 

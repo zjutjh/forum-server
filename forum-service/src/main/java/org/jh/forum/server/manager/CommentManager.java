@@ -17,6 +17,7 @@ import org.jh.forum.common.entity.Comment;
 import org.jh.forum.common.entity.Post;
 import org.jh.forum.common.entity.Upvote;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.server.client.AliyunGreenClient;
 import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.CommentMapper;
 import org.jh.forum.server.mapper.PostMapper;
@@ -47,9 +48,12 @@ public class CommentManager {
     private final PostRankManager postRankManager;
     private final NoticeManager noticeManager;
     private final PostManager postManager;
+    private final AliyunGreenClient aliyunGreenClient;
 
     @Transactional
     public void publishComment(CommentTargetTypeEnum commentTargetType, Long commentTargetId, String content, String pictureUrl) {
+        aliyunGreenClient.checkText(content, TextModerationServiceEnum.COMMENT);
+
         long postId;
         long parentId;
         long targetId;

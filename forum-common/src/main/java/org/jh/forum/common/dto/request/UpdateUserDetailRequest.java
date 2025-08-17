@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.GenderEnum;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 /**
@@ -24,12 +25,14 @@ public class UpdateUserDetailRequest {
     private String nickname;
 
     @NotNull
+    @Size(max = 20)
     private String signature;
 
     @NotNull
     private GenderEnum gender;
 
     @NotNull
+    @Size(max = 50)
     private String profile;
 
     @NotNull

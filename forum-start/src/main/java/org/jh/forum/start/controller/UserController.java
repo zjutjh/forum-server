@@ -12,6 +12,7 @@ import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.GetNoticeSettingsResponse;
 import org.jh.forum.common.dto.response.GetUserProfileResponse;
 import org.jh.forum.common.dto.response.LoginResponse;
+import org.jh.forum.common.dto.response.ModerationResultResponse;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,9 +66,9 @@ public class UserController {
     @PutMapping("/profile")
     @Operation(summary = "更新个人信息")
     @SaCheckLogin
-    public AjaxResult<Void> updateMyProfile(@Valid @RequestBody UpdateUserDetailRequest request) {
+    public AjaxResult<ModerationResultResponse> updateMyProfile(@Valid @RequestBody UpdateUserDetailRequest request) {
         userService.updateUserProfile(request);
-        return AjaxResult.success();
+        return AjaxResult.success(ModerationResultResponse.success());
     }
 
     @PutMapping("/background")

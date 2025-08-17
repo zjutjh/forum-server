@@ -31,9 +31,9 @@ public class CommentController {
     @Operation(summary = "发布评论/回复")
     @PostMapping("/publish")
     @CheckMuted
-    public AjaxResult<Void> publishComment(@Valid @RequestBody PublishCommentRequest request) {
+    public AjaxResult<ModerationResultResponse> publishComment(@Valid @RequestBody PublishCommentRequest request) {
         commentService.publishComment(request);
-        return AjaxResult.success();
+        return AjaxResult.success(ModerationResultResponse.success());
     }
 
     @Operation(summary = "删除评论/回复", description = "仅发布人可删\n级联删除")

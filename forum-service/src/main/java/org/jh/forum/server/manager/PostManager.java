@@ -16,6 +16,7 @@ import org.jh.forum.common.dto.request.PublishPostRequest;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.server.client.AliyunGreenClient;
 import org.jh.forum.server.mapper.*;
 import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -50,9 +51,13 @@ public class PostManager {
     private final CommentMapper commentMapper;
     private final UpvoteMapper upvoteMapper;
     private final NoticeManager noticeManager;
+    private final AliyunGreenClient aliyunGreenClient;
 
     @Transactional
     public void publishPost(PublishPostRequest request) {
+        String text = StringUtils.joinWith(" ", request.getTitle(), request.getContent(), request.getTopics());
+        aliyunGreenClient.checkText(text, TextModerationServiceEnum.UGC_LLM);
+
         Post post = Post.builder()
                 .userId(StpUtil.getLoginIdAsLong())
                 .title(request.getTitle())

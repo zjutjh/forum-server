@@ -156,3 +156,13 @@ cube:
 
 user-center:
   grpc: grpc://127.0.0.1:8082
+
+aliyun:
+  green:
+    enabled: false
+    access-key-id:
+    access-key-secret:
+    region-id: cn-shanghai
+    endpoint: green-cip.cn-shanghai.aliyuncs.com
+    connect-timeout: 3000
+    read-timeout: 6000

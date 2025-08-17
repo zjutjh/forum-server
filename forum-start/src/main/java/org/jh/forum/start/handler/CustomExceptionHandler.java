@@ -6,7 +6,9 @@ import cn.dev33.satoken.exception.SaTokenException;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.cube.CubeException;
 import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.common.dto.response.ModerationResultResponse;
 import org.jh.forum.common.exceptions.ApiException;
+import org.jh.forum.common.exceptions.ModerationException;
 import org.jh.forum.start.models.AjaxResult;
 import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
@@ -78,5 +80,11 @@ public class CustomExceptionHandler {
         }
         HandlerUtils.logException(e, request);
         return AjaxResult.fail(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(ModerationException.class)
+    @ResponseBody
+    public AjaxResult<ModerationResultResponse> handleModerationException(ModerationException e) {
+        return AjaxResult.success(ModerationResultResponse.fail(e.getResults()));
     }
 }

@@ -37,9 +37,9 @@ public class PostController {
     @Operation(summary = "创建帖子")
     @PostMapping("/create")
     @CheckMuted
-    public AjaxResult<Void> createPost(@Valid @RequestBody PublishPostRequest request) {
+    public AjaxResult<ModerationResultResponse> createPost(@Valid @RequestBody PublishPostRequest request) {
         postService.publishPost(request);
-        return AjaxResult.success();
+        return AjaxResult.success(ModerationResultResponse.success());
     }
 
     @Operation(summary = "删除帖子")
