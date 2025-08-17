@@ -9,6 +9,7 @@ import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class ReportContentRequest {
-    @Schema(description = "举报对象类型 post-帖子 comment-评论")
+    @Schema(description = "举报对象类型")
     @NotNull
     private TargetTypeEnum target;
 
@@ -30,6 +31,7 @@ public class ReportContentRequest {
 
     @Schema(description = "举报原因")
     @NotNull
+    @Size(max = 500)
     private String reason;
 
     @Schema(description = "被举报的帖子/评论ID")
@@ -38,5 +40,6 @@ public class ReportContentRequest {
 
     @Schema(description = "图片URL列表")
     @NotNull
+    @Size(max = 9)
     private List<String> pictures;
 }

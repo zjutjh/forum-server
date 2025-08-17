@@ -33,20 +33,20 @@ public class AccountController {
     @DubboReference
     private UserService userService;
 
-    @Operation(summary = "普通用户列表")
+    @Operation(summary = "管理员获取普通用户列表")
     @GetMapping("/users")
     public AjaxResult<BaseListResponse<GetUserListElement>> getUserList(@Valid GetUserListRequest request) {
         return AjaxResult.success(userService.getUserList(request));
     }
 
-    @Operation(summary = "设置用户禁言")
+    @Operation(summary = "管理员设置用户禁言")
     @PostMapping("/mute")
     public AjaxResult<Void> muteUser(@Valid @RequestBody MuteUserRequest request) {
         userService.muteUser(request);
         return AjaxResult.success();
     }
 
-    @Operation(summary = "获取用户详情")
+    @Operation(summary = "管理员获取用户详情")
     @GetMapping("/detail")
     public AjaxResult<GetUserDetailResponse> getUserDetail(@RequestParam("id") Long id) {
         return AjaxResult.success(userService.getUserDetail(id));

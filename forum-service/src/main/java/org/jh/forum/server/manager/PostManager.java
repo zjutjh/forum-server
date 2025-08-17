@@ -117,11 +117,6 @@ public class PostManager {
         } else {
             queryWrapper.eq(Post::getUserId, request.getId());
         }
-        if (StringUtils.isNotBlank(request.getKeyword())) {
-            queryWrapper.like(Post::getTitle, request.getKeyword())
-                    .or()
-                    .like(Post::getContent, request.getKeyword());
-        }
         queryWrapper.orderByDesc(Post::getIsTopped).orderByDesc(Post::getCreatedAt);
         postMapper.selectPage(postPage, queryWrapper);
         List<GetPersonalPostListElement> list = new ArrayList<>();

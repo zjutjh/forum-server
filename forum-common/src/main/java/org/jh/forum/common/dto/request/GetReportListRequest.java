@@ -20,6 +20,6 @@ public class GetReportListRequest extends BaseListRequest {
     @NotBlank
     private String order;
 
-    @Schema(description = "目标ID")
-    private Long reportId;
+    @Schema(description = "搜索关键词（ID）")
+    private String keyword;
 }

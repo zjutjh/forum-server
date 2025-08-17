@@ -8,6 +8,9 @@ import org.jh.forum.common.constants.UserTypeEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * @author MangoGovo
+ */
 @Data
 public class AdminRegisterRequest {
     @Schema(description = "用户名")

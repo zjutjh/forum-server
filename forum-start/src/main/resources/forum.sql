@@ -36,19 +36,6 @@ create table attachment
     attribute   text                                      null comment '属性列（json string）'
 );
 
-create table college
-(
-    id         bigint                                    not null comment '学院ID'
-        primary key,
-    name       varchar(40)                               not null comment '名称',
-    created_at timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
-    updated_at timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
-    create_uid bigint                                    not null comment '创建用户',
-    update_uid bigint                                    not null comment '更新用户',
-    deleted    boolean                                   not null comment '是否被删除',
-    attribute  text                                      null comment '属性列（json string）'
-);
-
 create table comment
 (
     id             bigint                                    not null comment '评论ID'

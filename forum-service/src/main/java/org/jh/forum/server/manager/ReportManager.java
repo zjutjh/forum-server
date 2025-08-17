@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jh.forum.common.annotation.IgnoreLogicDelete;
 import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.PictureInfoDTO;
@@ -217,10 +218,10 @@ public class ReportManager {
                 .build();
     }
 
-    public BaseListResponse<GetReportListElement> getReportList(String status, String order, Long reportId, Integer page, Integer pageSize) {
+    public BaseListResponse<GetReportListElement> getReportList(String status, String order, String keyword, Integer page, Integer pageSize) {
         IPage<Report> reportPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Report> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(reportId != null && reportId != 0, Report::getId, reportId);
+        queryWrapper.like(StringUtils.isNotBlank(keyword), Report::getId, keyword);
         if ("pending".equals(status)) {
             queryWrapper.eq(Report::getStatus, ReportStatusEnum.PENDING);
         }

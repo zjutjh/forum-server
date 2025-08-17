@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.ReportTypeEnum;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -24,6 +25,7 @@ public class ReportUserRequest {
 
     @Schema(description = "举报原因")
     @NotNull
+    @Size(max = 500)
     private String reason;
 
     @Schema(description = "被举报的用户ID")
@@ -32,5 +34,6 @@ public class ReportUserRequest {
 
     @Schema(description = "图片URL列表")
     @NotNull
+    @Size(max = 9)
     private List<String> pictures;
 }
