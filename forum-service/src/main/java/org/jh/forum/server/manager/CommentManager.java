@@ -465,8 +465,20 @@ public class CommentManager {
 
         if (CommentOperationEnum.DELETE.equals(operation)) {
             commentMapper.deleteById(commentId);
+            if (comment.getParentId() != 0) {
+                commentMapper.decrementReplyCount(comment.getParentId());
+                if (comment.getTargetId() != 0) {
+                    commentMapper.decrementReplyCount(comment.getTargetId());
+                }
+            }
         } else {
             commentMapper.restoreComment(commentId);
+            if (comment.getParentId() != 0) {
+                commentMapper.incrementReplyCount(comment.getParentId());
+                if (comment.getTargetId() != 0) {
+                    commentMapper.incrementReplyCount(comment.getTargetId());
+                }
+            }
         }
     }
 

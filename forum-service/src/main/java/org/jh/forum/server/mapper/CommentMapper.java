@@ -54,4 +54,14 @@ public interface CommentMapper extends BaseMapper<Comment> {
     @Override
     @Update("UPDATE comment SET deleted = true, is_pinned = false WHERE id = #{id}")
     int deleteById(Serializable id);
+
+    @Select("""
+            SELECT COUNT(*)
+            FROM comment c
+            LEFT JOIN comment p ON c.parent_id = p.id
+            WHERE c.post_id = #{postId}
+              AND c.deleted = false
+              AND (c.parent_id = 0 OR p.deleted = false)
+            """)
+    Integer selectCommentCount(@Param("postId") Long postId);
 }

@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.GenderEnum;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 /**
@@ -21,12 +18,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Data
 public class UpdateUserDetailRequest {
-    @NotNull
+    @NotBlank
     @Schema(description = "用户头像URL")
     private String avatar;
 
-    @NotNull
-    @Size(max = 10)
+    @NotBlank
+    @Size(max = 20)
     @Schema(description = "用户昵称")
     private String nickname;
 

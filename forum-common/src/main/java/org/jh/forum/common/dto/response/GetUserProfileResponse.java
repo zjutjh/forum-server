@@ -17,6 +17,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Data
 public class GetUserProfileResponse {
+    @Schema(description = "用户Id")
+    private Long userId;
+
     @Schema(description = "用户昵称")
     private String nickname;
 

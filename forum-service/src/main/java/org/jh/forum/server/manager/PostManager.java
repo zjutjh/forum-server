@@ -309,9 +309,7 @@ public class PostManager {
     }
 
     private Integer getCommentCount(Long postId) {
-        long count = commentMapper.selectCount(new LambdaQueryWrapper<Comment>()
-                .eq(Comment::getPostId, postId));
-        return Math.toIntExact(count);
+        return commentMapper.selectCommentCount(postId);
     }
 
     private void updateViewCount(Long postId, Long userId, CategoryEnum category) {

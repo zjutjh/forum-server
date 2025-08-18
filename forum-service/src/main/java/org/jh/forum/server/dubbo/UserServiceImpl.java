@@ -58,7 +58,9 @@ public class UserServiceImpl implements UserService {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
+        Boolean isSelf = userId.equals(StpUtil.getLoginIdAsLong());
         GetUserProfileResponse resp = new GetUserProfileResponse();
+        resp.setUserId(userId);
         resp.setNickname(userEntity.getNickname());
         resp.setAvatar(userEntity.getAvatar());
         resp.setSignature(detailEntity.getSignature());
@@ -67,10 +69,10 @@ public class UserServiceImpl implements UserService {
         resp.setGender(userEntity.getGender());
         resp.setIsSelf(userId.equals(StpUtil.getLoginIdAsLong()));
         resp.setBackground(detailEntity.getBackgroundImage());
-        resp.setRealname(detailEntity.getRealnameVisible() ? userEntity.getRealname() : null);
-        resp.setCollegeId(detailEntity.getCollegeVisible() ? userEntity.getCollegeId() : null);
-        resp.setBirthday(detailEntity.getBirthdayVisible() ? detailEntity.getBirthday() : null);
-        resp.setStudentId(detailEntity.getStudentIdVisible() ? userEntity.getStudentId() : null);
+        resp.setRealname(detailEntity.getRealnameVisible() || isSelf ? userEntity.getRealname() : null);
+        resp.setCollegeId(detailEntity.getCollegeVisible() || isSelf ? userEntity.getCollegeId() : null);
+        resp.setBirthday(detailEntity.getBirthdayVisible() || isSelf ? detailEntity.getBirthday() : null);
+        resp.setStudentId(detailEntity.getStudentIdVisible() || isSelf ? userEntity.getStudentId() : null);
         return resp;
     }
 
