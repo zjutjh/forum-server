@@ -39,6 +39,9 @@ public class PersonalCommentListElement {
     @Schema(description = "发表时间")
     private LocalDateTime createdAt;
 
+    @Schema(description = "是否点赞")
+    private Boolean isLiked;
+
     @Schema(description = "点赞数")
     private Integer upvoteCount;
 

@@ -335,6 +335,7 @@ public class CommentManager {
                         .content(comment.getContent())
                         .pictures(getCommentPictures(comment.getId()))
                         .createdAt(comment.getCreatedAt())
+                        .isLiked(checkIsLiked(comment.getId()))
                         .upvoteCount(comment.getUpvoteCount())
                         .replyCount(comment.getReplyCount())
                         .build()
