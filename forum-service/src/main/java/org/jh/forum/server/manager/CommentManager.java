@@ -118,41 +118,25 @@ public class CommentManager {
         }
     }
 
+    @Transactional
     public UpvoteCommentResponse upvoteComment(Long commentId) {
         Comment comment = getCommentOrThrow(commentId);
         Long userId = StpUtil.getLoginIdAsLong();
 
+        upvoteMapper.updateCommentUpvote(userId, commentId);
+
         Upvote upvote = upvoteMapper.selectOne(new LambdaQueryWrapper<Upvote>()
                 .eq(Upvote::getCommentId, commentId)
                 .eq(Upvote::getUserId, userId));
-
-        // 如果表中无该记录，说明本次操作是在给评论点赞；否则点赞状态取反更新
-        if (upvote == null) {
-            upvote = Upvote.builder()
-                    .userId(userId)
-                    .commentId(commentId)
-                    .status(true)
-                    .build();
-            upvoteMapper.insert(upvote);
-            commentMapper.incrementUpvoteCount(commentId);
-        } else {
-            boolean newStatus = !upvote.getStatus();
-            upvote.setStatus(newStatus);
-            upvoteMapper.updateById(upvote);
-            if (newStatus) {
-                commentMapper.incrementUpvoteCount(commentId);
-            } else {
-                commentMapper.decrementUpvoteCount(commentId);
-            }
-        }
-
         Boolean status = upvote.getStatus();
 
         if (Boolean.TRUE.equals(status)) {
+            commentMapper.incrementUpvoteCount(commentId);
             AsyncUtil.runAsyncWithLogging(() ->
                     noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null)
             );
         } else {
+            commentMapper.decrementUpvoteCount(commentId);
             AsyncUtil.runAsyncWithLogging(() ->
                     noticeManager.cancelLike(comment.getUserId(), NoticePositionTypeEnum.COMMENT, commentId)
             );
@@ -454,6 +438,7 @@ public class CommentManager {
     }
 
     @IgnoreLogicDelete
+    @Transactional
     public void adminChangeCommentStatus(Long commentId, CommentOperationEnum operation) {
         Comment comment = getCommentOrThrow(commentId);
 

@@ -50,17 +50,15 @@ public class ReportManager {
             throw new ApiException(ExceptionEnum.CANNOT_REPORT_YOURSELF);
         }
 
-        Report existingReport = reportMapper.selectOne(new LambdaQueryWrapper<Report>()
-                .eq(Report::getTargetType, TargetTypeEnum.USER)
-                .eq(Report::getTargetId, targetUserId)
-                .eq(Report::getStatus, ReportStatusEnum.PENDING));
-
-        if (existingReport != null) {
-            if (reportInfoMapper.exists(new LambdaQueryWrapper<ReportInfo>()
-                    .eq(ReportInfo::getReportId, existingReport.getId())
-                    .eq(ReportInfo::getUserId, userId))) {
-                throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
-            }
+        boolean exists = reportInfoMapper.exists(new LambdaQueryWrapper<ReportInfo>()
+                .inSql(ReportInfo::getReportId,
+                        "SELECT id FROM report " +
+                                "WHERE target_type = " + TargetTypeEnum.USER.getValue() +
+                                " AND target_id = " + targetUserId +
+                                " AND status = " + ReportStatusEnum.PENDING.getValue())
+                .eq(ReportInfo::getUserId, userId));
+        if (exists) {
+            throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
         }
 
         Report report = Report.builder()
@@ -109,7 +107,7 @@ public class ReportManager {
         Report existingReport = reportMapper.selectOne(new LambdaQueryWrapper<Report>()
                 .eq(Report::getTargetType, target)
                 .eq(Report::getTargetId, targetId)
-                .eq(Report::getStatus, ReportStatusEnum.PENDING));
+                .eq(Report::getStatus, ReportStatusEnum.PENDING).last("LIMIT 1"));
         if (existingReport != null) {
             if (reportInfoMapper.exists(new LambdaQueryWrapper<ReportInfo>()
                     .eq(ReportInfo::getReportId, existingReport.getId())

@@ -244,7 +244,9 @@ create table topic
     create_uid bigint                                    not null comment '创建用户',
     update_uid bigint                                    not null comment '更新用户',
     deleted    boolean                                   not null comment '是否被删除',
-    attribute  text                                      null comment '属性列（json string）'
+    attribute  text                                      null comment '属性列（json string）',
+
+    unique key uk_topic_name (name)
 );
 
 create table upvote
@@ -260,7 +262,10 @@ create table upvote
     create_uid bigint                                    not null comment '创建用户',
     update_uid bigint                                    not null comment '更新用户',
     deleted    boolean                                   not null comment '是否被删除',
-    attribute  text                                      null comment '属性列（json string）'
+    attribute  text                                      null comment '属性列（json string）',
+
+    unique key uk_user_post (user_id, post_id),
+    unique key uk_user_comment (user_id, comment_id)
 );
 
 create table user

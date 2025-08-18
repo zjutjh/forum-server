@@ -44,7 +44,6 @@ public class ValidateExceptionHandler {
      * @param e 错误信息集合
      * @return 错误信息
      */
-
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     @ResponseBody
     public AjaxResult<Object> validationBodyException(SQLIntegrityConstraintViolationException e, HttpServletRequest request) {

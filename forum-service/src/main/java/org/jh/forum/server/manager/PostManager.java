@@ -369,23 +369,11 @@ public class PostManager {
         Post post = getPostOrThrow(id);
         Long userId = StpUtil.getLoginIdAsLong();
 
+        upvoteMapper.updatePostUpvote(userId, id);
+
         Upvote upvote = upvoteMapper.selectOne(new LambdaQueryWrapper<Upvote>()
                 .eq(Upvote::getPostId, id)
                 .eq(Upvote::getUserId, userId));
-
-        if (upvote == null) {
-            upvote = Upvote.builder()
-                    .userId(userId)
-                    .postId(id)
-                    .status(true)
-                    .build();
-            upvoteMapper.insert(upvote);
-        } else {
-            boolean newStatus = !upvote.getStatus();
-            upvote.setStatus(newStatus);
-            upvoteMapper.updateById(upvote);
-        }
-
         Boolean status = upvote.getStatus();
 
         if (Boolean.TRUE.equals(status)) {
@@ -398,7 +386,6 @@ public class PostManager {
                     noticeManager.cancelLike(post.getUserId(), NoticePositionTypeEnum.POST, id)
             );
         }
-
         return status;
     }
 

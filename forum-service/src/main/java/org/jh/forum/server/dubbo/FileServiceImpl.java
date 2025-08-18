@@ -30,7 +30,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String checkBlake3(String blake3) {
-        File file = fileMapper.selectOne(new LambdaQueryWrapper<File>().eq(File::getBlake3, blake3));
+        File file = fileMapper.selectOne(new LambdaQueryWrapper<File>().eq(File::getBlake3, blake3).last("LIMIT 1"));
         return file == null ? null : file.getObjectKey();
     }
 

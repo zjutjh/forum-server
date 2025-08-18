@@ -148,7 +148,7 @@ public class NoticeManager {
             wrapper.isNull(Notice::getCommentId);
         }
 
-        Notice notice = noticeMapper.selectOne(wrapper);
+        Notice notice = noticeMapper.selectOne(wrapper.last("LIMIT 1"));
         if (notice != null) {
             noticeMapper.updateById(notice);
         } else {
@@ -175,7 +175,7 @@ public class NoticeManager {
                 .eq(Notice::getType, NoticeTypeEnum.LIKE)
                 .eq(Notice::getPositionType, positionType)
                 .eq(Notice::getPositionId, positionId);
-        Notice notice = noticeMapper.selectOne(wrapper);
+        Notice notice = noticeMapper.selectOne(wrapper.last("LIMIT 1"));
         if (notice != null && notice.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(5))) {
             noticeMapper.deleteById(notice.getId());
         }
