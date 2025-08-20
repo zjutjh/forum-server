@@ -132,6 +132,7 @@ public class PostManager {
                     .commentCount(getCommentCount(post.getId()))
                     .viewCount(post.getViewCount())
                     .createdAt(post.getCreatedAt())
+                    .isLiked(checkIsLiked(post.getId()))
                     .isTopped(post.getIsTopped())
                     .pictures(pictures.subList(0, Math.min(pictures.size(), 3)))
                     .totalPictures(pictures.size())

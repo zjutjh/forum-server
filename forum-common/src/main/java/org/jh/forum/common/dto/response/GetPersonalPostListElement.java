@@ -46,6 +46,9 @@ public class GetPersonalPostListElement {
     @Schema(description = "发帖时间")
     private LocalDateTime createdAt;
 
+    @Schema(description = "是否点赞")
+    private Boolean isLiked;
+
     @Schema(description = "是否置顶（个人主页）")
     private Boolean isTopped;
 
