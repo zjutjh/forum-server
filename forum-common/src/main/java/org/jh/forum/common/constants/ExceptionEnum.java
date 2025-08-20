@@ -36,6 +36,7 @@ public enum ExceptionEnum {
     USER_EXISTED(200020, "用户已经存在"),
     OAUTH_NOT_ACTIVATED(200021, "统一账号未激活"),
     USER_NICKNAME_EXISTS(200022, "用户昵称已存在"),
+    EXTERNAL_LINK_NOT_ALLOWED(200023, "内容中不允许外部链接"),
 
     NOT_FOUND_ERROR(200404, HttpStatus.NOT_FOUND.getReasonPhrase()),
     SERVER_ERROR(200500, "系统错误, 请稍后重试");

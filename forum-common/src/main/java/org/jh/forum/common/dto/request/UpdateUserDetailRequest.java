@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.annotation.NoExternalLink;
 import org.jh.forum.common.constants.GenderEnum;
 
 import jakarta.validation.constraints.*;
@@ -25,11 +26,13 @@ public class UpdateUserDetailRequest {
     @NotBlank
     @Size(max = 20)
     @Schema(description = "用户昵称")
+    @NoExternalLink
     private String nickname;
 
     @NotNull
     @Size(max = 20)
     @Schema(description = "用户个性签名")
+    @NoExternalLink
     private String signature;
 
     @NotNull
@@ -39,6 +42,7 @@ public class UpdateUserDetailRequest {
     @NotNull
     @Size(max = 50)
     @Schema(description = "用户简介")
+    @NoExternalLink
     private String profile;
 
     @NotNull

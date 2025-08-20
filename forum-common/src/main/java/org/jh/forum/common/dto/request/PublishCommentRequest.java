@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jh.forum.common.annotation.NoExternalLink;
 import org.jh.forum.common.constants.CommentTargetTypeEnum;
 
 import jakarta.validation.constraints.NotBlank;
@@ -30,6 +31,7 @@ public class PublishCommentRequest {
     @Schema(description = "评论内容，禁止发空评论")
     @NotBlank
     @Size(max = 400)
+    @NoExternalLink
     private String content;
 
     @Schema(description = "评论图片Url，无即传空字符串")

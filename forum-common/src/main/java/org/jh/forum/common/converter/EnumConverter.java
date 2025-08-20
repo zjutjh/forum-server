@@ -1,6 +1,7 @@
 package org.jh.forum.common.converter;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class EnumConverter implements GenericConverter {
     }
 
     @Override
-    public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+    public Object convert(Object source, @NotNull TypeDescriptor sourceType, @NotNull TypeDescriptor targetType) {
         if (!(source instanceof String value)) {
             return null;
         }

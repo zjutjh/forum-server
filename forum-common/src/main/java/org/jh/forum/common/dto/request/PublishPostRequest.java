@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import org.jh.forum.common.annotation.NoExternalLink;
 import org.jh.forum.common.constants.CategoryEnum;
 
 import jakarta.validation.constraints.NotBlank;
@@ -24,11 +25,13 @@ public class PublishPostRequest {
     @Schema(description = "帖子标题")
     @NotBlank
     @Size(max = 30)
+    @NoExternalLink
     private String title;
 
     @Schema(description = "帖子内容")
     @NotBlank
     @Size(max = 1000)
+    @NoExternalLink
     private String content;
 
     @Schema(description = "帖子板块")
@@ -37,7 +40,7 @@ public class PublishPostRequest {
 
     @Schema(description = "帖子话题列表")
     @NotNull
-    private List<@NotBlank @Length(max = 30) String> topics;
+    private List<@NotBlank @Length(max = 30) @NoExternalLink String> topics;
 
     @Schema(description = "要绑定的图片url列表")
     @NotNull
