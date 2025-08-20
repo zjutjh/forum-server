@@ -9,10 +9,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.api.dubbo.service.UserService;
 import org.jh.forum.common.dto.request.*;
-import org.jh.forum.common.dto.response.GetNoticeSettingsResponse;
-import org.jh.forum.common.dto.response.GetUserProfileResponse;
-import org.jh.forum.common.dto.response.LoginResponse;
-import org.jh.forum.common.dto.response.ModerationResultResponse;
+import org.jh.forum.common.dto.response.*;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -92,5 +89,12 @@ public class UserController {
     public AjaxResult<Void> updateNoticeSettings(@Valid @RequestBody UpdateNoticeSettingsRequest request) {
         userService.updateNoticeSettings(request);
         return AjaxResult.success();
+    }
+
+    @GetMapping("/mute")
+    @Operation(summary = "检查禁言状态")
+    @SaCheckLogin
+    public AjaxResult<CheckMuteResponse> checkMute() {
+        return AjaxResult.success(userService.checkMute());
     }
 }

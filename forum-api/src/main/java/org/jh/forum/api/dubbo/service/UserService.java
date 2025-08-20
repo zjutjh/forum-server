@@ -26,4 +26,6 @@ public interface UserService {
     GetNoticeSettingsResponse getNoticeSettings();
 
     void updateNoticeSettings(UpdateNoticeSettingsRequest request);
+
+    CheckMuteResponse checkMute();
 }

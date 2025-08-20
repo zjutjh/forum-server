@@ -151,6 +151,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public CheckMuteResponse checkMute() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        User user = userMapper.selectById(userId);
+        LocalDateTime mutedUntil = null;
+        if (user != null && user.getMutedUntil() != null && user.getMutedUntil().isAfter(LocalDateTime.now())) {
+            mutedUntil = user.getMutedUntil();
+        }
+        return new CheckMuteResponse(mutedUntil);
+    }
+
+    @Override
     public BaseListResponse<GetUserListElement> getUserList(GetUserListRequest request) {
         IPage<User> page = new Page<>(request.getPage(), request.getPageSize());
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>()
