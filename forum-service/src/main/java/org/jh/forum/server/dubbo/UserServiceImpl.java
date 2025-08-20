@@ -17,6 +17,7 @@ import org.jh.forum.common.entity.User;
 import org.jh.forum.common.entity.UserDetail;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.client.AliyunGreenClient;
+import org.jh.forum.server.manager.FileManager;
 import org.jh.forum.server.manager.UserManager;
 import org.jh.forum.server.mapper.ReportMapper;
 import org.jh.forum.server.mapper.UserDetailMapper;
@@ -50,6 +51,9 @@ public class UserServiceImpl implements UserService {
     @Resource
     private AliyunGreenClient aliyunGreenClient;
 
+    @Resource
+    private FileManager fileManager;
+
     @Override
     public GetUserProfileResponse getUserProfile(Long userId) {
         User userEntity = userMapper.selectById(userId);
@@ -62,13 +66,17 @@ public class UserServiceImpl implements UserService {
         GetUserProfileResponse resp = new GetUserProfileResponse();
         resp.setUserId(userId);
         resp.setNickname(userEntity.getNickname());
-        resp.setAvatar(userEntity.getAvatar());
+        resp.setAvatar(userManager.getUserAvatar(userEntity));
         resp.setSignature(detailEntity.getSignature());
         resp.setProfile(detailEntity.getProfile());
         resp.setEmail(detailEntity.getEmail());
         resp.setGender(userEntity.getGender());
         resp.setIsSelf(userId.equals(StpUtil.getLoginIdAsLong()));
         resp.setBackground(detailEntity.getBackgroundImage());
+        resp.setBirthdayVisible(detailEntity.getBirthdayVisible());
+        resp.setRealnameVisible(detailEntity.getRealnameVisible());
+        resp.setCollegeIdVisible(detailEntity.getCollegeVisible());
+        resp.setStudentIdVisible(detailEntity.getStudentIdVisible());
         resp.setRealname(detailEntity.getRealnameVisible() || isSelf ? userEntity.getRealname() : null);
         resp.setCollegeId(detailEntity.getCollegeVisible() || isSelf ? userEntity.getCollegeId() : null);
         resp.setBirthday(detailEntity.getBirthdayVisible() || isSelf ? detailEntity.getBirthday() : null);
@@ -78,7 +86,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserProfile(UpdateUserDetailRequest request) {
-        String text = StringUtils.joinWith(" ", request.getNickname(), request.getSignature(), request.getProfile());
+        String text = StringUtils.joinWith(" ", request.getNickname(), request.getSignature(), request.getProfile(), request.getEmail());
         aliyunGreenClient.checkText(text, TextModerationServiceEnum.NICKNAME);
 
         Long userId = StpUtil.getLoginIdAsLong();
@@ -92,7 +100,13 @@ public class UserServiceImpl implements UserService {
             throw new ApiException(ExceptionEnum.USER_NICKNAME_EXISTS);
         }
 
-        userEntity.setAvatar(request.getAvatar());
+        Long attachmentId = fileManager.getAttachmentIdFromUrl(request.getAvatar());
+        if (attachmentId != null) {
+            if (!attachmentId.equals(userEntity.getAvatarId())) {
+                fileManager.deleteAttachment(userEntity.getAvatarId());
+            }
+            userEntity.setAvatarId(attachmentId);
+        }
         userEntity.setNickname(request.getNickname());
         userEntity.setGender(request.getGender());
         userEntity.setCollegeId(request.getCollegeId());
@@ -196,7 +210,7 @@ public class UserServiceImpl implements UserService {
 
         GetUserDetailResponse resp = new GetUserDetailResponse();
         resp.setNickname(userEntity.getNickname());
-        resp.setAvatar(userEntity.getAvatar());
+        resp.setAvatar(userManager.getUserAvatar(userEntity));
         resp.setBackground(detailEntity.getBackgroundImage());
         resp.setSignature(detailEntity.getSignature());
         resp.setEmail(detailEntity.getEmail());
@@ -271,7 +285,7 @@ public class UserServiceImpl implements UserService {
         GetUserListElement element = new GetUserListElement();
         UserDetail detailEntity = userDetailMapper.selectById(userEntity.getId());
         element.setId(userEntity.getId());
-        element.setAvatar(userEntity.getAvatar());
+        element.setAvatar(userManager.getUserAvatar(userEntity));
         element.setNickname(userEntity.getNickname());
         element.setStudentId(userEntity.getStudentId());
         element.setEmail(detailEntity.getEmail());

@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Data
 public class UpdateUserDetailRequest {
-    @NotBlank
+    @NotNull
     @Schema(description = "用户头像URL")
     private String avatar;
 

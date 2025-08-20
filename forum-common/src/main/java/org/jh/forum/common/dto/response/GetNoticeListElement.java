@@ -35,13 +35,13 @@ public class GetNoticeListElement {
     @Schema(description = "关联位置ID（帖子ID/评论ID）")
     private Long positionId;
 
-    @Schema(description = "关联位置内容（截取30字）")
+    @Schema(description = "关联位置内容（截取60字）")
     private String positionContent;
 
     @Schema(description = "产生的新评论ID（若有）")
     private Long newCommentId;
 
-    @Schema(description = "新评论内容（截取30字）")
+    @Schema(description = "新评论内容（截取60字）")
     private String newCommentContent;
 
     @Schema(description = "发送时间")

@@ -44,6 +44,18 @@ public class GetUserProfileResponse {
     @Schema(description = "用户背景图URL")
     private String background;
 
+    @Schema(description = "真实姓名是否可见")
+    private Boolean realnameVisible;
+
+    @Schema(description = "学号是否可见")
+    private Boolean studentIdVisible;
+
+    @Schema(description = "学院是否可见")
+    private Boolean collegeIdVisible;
+
+    @Schema(description = "生日是否可见")
+    private Boolean birthdayVisible;
+
     // 动态字段（根据权限显示）
     @Schema(description = "真实姓名（根据可见性展示，可为null）")
     private String realname;
@@ -56,5 +68,4 @@ public class GetUserProfileResponse {
 
     @Schema(description = "生日（根据可见性展示，可为null）")
     private LocalDate birthday;
-
 }

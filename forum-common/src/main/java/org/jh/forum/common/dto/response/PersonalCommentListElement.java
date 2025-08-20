@@ -27,10 +27,10 @@ public class PersonalCommentListElement {
     @Schema(description = "评论ID")
     private Long commentId;
 
-    @Schema(description = "回复的对象内容（如果有被回复评论则为被回复评论内容，反之则为被回复帖子内容，截取前30个字）")
+    @Schema(description = "回复的对象内容（如果有被回复评论则为被回复评论内容，反之则为被回复帖子内容，截取前60个字）")
     private String replyContent;
 
-    @Schema(description = "评论内容")
+    @Schema(description = "评论内容（截200字）")
     private String content;
 
     @Schema(description = "附件链接")

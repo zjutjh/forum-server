@@ -53,7 +53,7 @@ public class FileManager {
         }
     }
 
-    private Long getAttachmentIdFromUrl(String url) {
+    public Long getAttachmentIdFromUrl(String url) {
         try {
             String query = new URL(url).getQuery();
             for (String param : query.split("&")) {
@@ -61,14 +61,16 @@ public class FileManager {
                     return Long.parseLong(param.substring("attachment_id=".length()));
                 }
             }
-        } catch (Exception e) {
-            throw new ApiException(ExceptionEnum.INVALID_URL, e);
+        } catch (Exception ignore) {
         }
-        throw new ApiException(ExceptionEnum.INVALID_URL);
+        return null;
     }
 
     public void bindAttachment(String url, TargetTypeEnum targetType, Long targetId) {
         Long attachmentId = getAttachmentIdFromUrl(url);
+        if (attachmentId == null) {
+            throw new ApiException(ExceptionEnum.INVALID_URL);
+        }
         Attachment attachment = attachmentMapper.selectById(attachmentId);
         if (attachment == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);

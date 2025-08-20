@@ -29,7 +29,7 @@ public class PublishCommentRequest {
 
     @Schema(description = "评论内容，禁止发空评论")
     @NotBlank
-    @Size(max = 500)
+    @Size(max = 400)
     private String content;
 
     @Schema(description = "评论图片Url，无即传空字符串")

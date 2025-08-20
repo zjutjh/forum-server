@@ -316,7 +316,7 @@ public class CommentManager {
                         .parentId(comment.getParentId())
                         .commentId(comment.getId())
                         .replyContent(getReplyContent(comment))
-                        .content(comment.getContent())
+                        .content(StringUtils.left(comment.getContent(), 200))
                         .pictures(getCommentPictures(comment.getId()))
                         .createdAt(comment.getCreatedAt())
                         .isLiked(checkIsLiked(comment.getId()))
@@ -340,7 +340,7 @@ public class CommentManager {
         if (parentId == 0) {
             Post post = postMapper.selectById(comment.getPostId());
             if (post != null) {
-                return StringUtils.left(StringUtils.deleteWhitespace(post.getTitle() + post.getContent()), 30);
+                return StringUtils.left(StringUtils.deleteWhitespace(post.getTitle() + "：" + post.getContent()), 60);
             }
         }
         // 如果是回复某个评论（优先 targetId，否则用 parentId）
@@ -348,7 +348,7 @@ public class CommentManager {
             Long commentId = targetId != 0 ? targetId : parentId;
             Comment targetComment = commentMapper.selectById(commentId);
             if (targetComment != null) {
-                return StringUtils.left(StringUtils.deleteWhitespace(targetComment.getContent()), 30);
+                return StringUtils.left(StringUtils.deleteWhitespace(targetComment.getContent()), 60);
             }
         }
         return "内容不存在";

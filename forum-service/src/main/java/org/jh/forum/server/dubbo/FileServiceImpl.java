@@ -52,7 +52,7 @@ public class FileServiceImpl implements FileService {
         Attachment attachment = Attachment.builder()
                 .userId(StpUtil.getLoginIdAsLong())
                 .fileId(file.getId())
-                .targetType(TargetTypeEnum.POST)
+                .targetType(TargetTypeEnum.USER)
                 .targetId(-1L)
                 .type(type)
                 .filename(filename)

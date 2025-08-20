@@ -279,7 +279,7 @@ create table user
     college_id                varchar(10)                               not null comment '学院ID',
     gender                    varchar(20)                               not null comment '性别(男,女,保密)',
     phone                     varchar(20)  default ''                   not null comment '手机号',
-    avatar                    varchar(255) default ''                   not null comment '头像地址',
+    avatar_id                 bigint       default 0                    not null comment '头像ID',
     upvote_notice             boolean      default true                 not null comment '点赞消息开关',
     comment_notice            boolean      default true                 not null comment '评论消息开关',
     role                      varchar(20)                               not null comment '用户角色',

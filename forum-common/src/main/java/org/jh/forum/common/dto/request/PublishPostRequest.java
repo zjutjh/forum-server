@@ -23,12 +23,12 @@ import java.util.List;
 public class PublishPostRequest {
     @Schema(description = "帖子标题")
     @NotBlank
-    @Size(max = 80)
+    @Size(max = 30)
     private String title;
 
     @Schema(description = "帖子内容")
     @NotBlank
-    @Size(max = 3000)
+    @Size(max = 1000)
     private String content;
 
     @Schema(description = "帖子板块")

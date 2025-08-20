@@ -59,9 +59,9 @@ public class User extends BaseEntity {
     private String phone;
 
     /**
-     * 头像地址
+     * 头像ID
      */
-    private String avatar;
+    private Long avatarId;
 
     /**
      * 点赞消息开关

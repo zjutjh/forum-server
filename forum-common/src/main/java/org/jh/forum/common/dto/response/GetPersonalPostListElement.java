@@ -31,7 +31,7 @@ public class GetPersonalPostListElement {
     @Schema(description = "帖子标题")
     private String title;
 
-    @Schema(description = "帖子内容（截取50字）")
+    @Schema(description = "帖子内容（截200字）")
     private String content;
 
     @Schema(description = "帖子点赞数")

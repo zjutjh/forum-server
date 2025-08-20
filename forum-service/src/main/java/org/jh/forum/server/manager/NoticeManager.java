@@ -104,7 +104,7 @@ public class NoticeManager {
             if (post == null) {
                 content = "帖子不存在";
             } else {
-                content = post.getTitle() + post.getContent();
+                content = post.getTitle() + "：" + post.getContent();
             }
         } else {
             Comment comment = commentMapper.selectById(positionId);
@@ -114,7 +114,7 @@ public class NoticeManager {
                 content = comment.getContent();
             }
         }
-        return StringUtils.left(StringUtils.deleteWhitespace(content), 30);
+        return StringUtils.left(StringUtils.deleteWhitespace(content), 60);
     }
 
     /**
