@@ -56,7 +56,7 @@ public class PostManager {
     @Transactional
     public void publishPost(PublishPostRequest request) {
         String text = StringUtils.joinWith(" ", request.getTitle(), request.getContent(), request.getTopics());
-        aliyunGreenClient.checkText(text, TextModerationServiceEnum.COMMENT);
+        aliyunGreenClient.checkText(text, TextModerationServiceEnum.UGC_LLM);
 
         Post post = Post.builder()
                 .userId(StpUtil.getLoginIdAsLong())
