@@ -51,11 +51,12 @@ public class ReportManager {
         }
 
         boolean exists = reportInfoMapper.exists(new LambdaQueryWrapper<ReportInfo>()
-                .inSql(ReportInfo::getReportId,
-                        "SELECT id FROM report " +
-                                "WHERE target_type = " + TargetTypeEnum.USER.getValue() +
-                                " AND target_id = " + targetUserId +
-                                " AND status = " + ReportStatusEnum.PENDING.getValue())
+                .in(ReportInfo::getReportId, new LambdaQueryWrapper<Report>()
+                        .select(Report::getId)
+                        .eq(Report::getTargetType, TargetTypeEnum.USER)
+                        .eq(Report::getTargetId, targetUserId)
+                        .eq(Report::getStatus, ReportStatusEnum.PENDING)
+                )
                 .eq(ReportInfo::getUserId, userId));
         if (exists) {
             throw new ApiException(ExceptionEnum.REPORT_ALREADY_EXISTS);
