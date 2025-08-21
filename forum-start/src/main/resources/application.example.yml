@@ -57,7 +57,7 @@ spring:
       # 多久才进行一次检测需要关闭的空闲连接，单位是毫秒
       time-between-eviction-runs-millis: 60000
       # 配置扩展插件：stat-监控统计，log4j-日志，wall-防火墙（防止SQL注入），去掉后，监控界面的sql无法统计
-      filters: stat,wall
+      filters: stat,wall,slf4j
       # 检测连接是否有效的 SQL语句，为空时以下三个配置均无效
       validation-query: SELECT 1
       # 申请连接时执行validationQuery检测连接是否有效，默认true，开启后会降低性能
@@ -97,6 +97,7 @@ spring:
 arthas:
   ip: 127.0.0.1
   telnetPort: 3658
+  httpPort: 8563
 
 dubbo:
   application:
@@ -139,7 +140,7 @@ sa-token:
   # token 最低活跃频率（单位：秒），如果 token 超过此时间没有访问系统就会被冻结，默认-1 代表不限制，永不冻结
   active-timeout: -1
   # 是否允许同一账号多地同时登录 （为 true 时允许一起登录, 为 false 时新登录挤掉旧登录）
-  is-concurrent: true
+  is-concurrent: false
   # 在多人登录同一账号时，是否共用一个 token （为 true 时所有登录共用一个 token, 为 false 时每次登录新建一个 token）
   is-share: false
   # token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）

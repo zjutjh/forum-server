@@ -177,6 +177,7 @@ public class PostManager {
                 .createdAt(post.getCreatedAt())
                 .pictures(getPostPictures(postId))
                 .isLiked(checkIsLiked(postId))
+                .isSelf(post.getUserId().equals(userId))
                 .build();
     }
 
