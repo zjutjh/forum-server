@@ -63,6 +63,7 @@ public class NoticeManager {
         List<GetNoticeListElement> list = notices.stream()
                 .map(notice -> {
                     Boolean isLiked = null;
+                    Long postId;
                     if (notice.getType() == NoticeTypeEnum.COMMENT) {
                         LambdaQueryWrapper<Upvote> upvoteWrapper = new LambdaQueryWrapper<Upvote>()
                                 .eq(Upvote::getUserId, receiverId)
@@ -70,10 +71,17 @@ public class NoticeManager {
                         Upvote upvote = upvoteMapper.selectOne(upvoteWrapper);
                         isLiked = upvote != null && upvote.getStatus();
                     }
+                    if (notice.getPositionType() == NoticePositionTypeEnum.POST) {
+                        postId = notice.getPositionId();
+                    } else {
+                        Comment comment = commentMapper.selectById(notice.getPositionId());
+                        postId = comment == null ? null : comment.getPostId();
+                    }
                     return GetNoticeListElement.builder()
                             .id(notice.getId())
                             .senderInfo(userManager.getUserInfo(notice.getSenderId()))
                             .type(notice.getType())
+                            .postId(postId)
                             .positionType(notice.getPositionType())
                             .positionId(notice.getPositionId())
                             .positionContent(getContent(notice.getPositionType(), notice.getPositionId()))

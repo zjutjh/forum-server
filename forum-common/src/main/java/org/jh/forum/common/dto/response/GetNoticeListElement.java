@@ -29,6 +29,9 @@ public class GetNoticeListElement {
     @Schema(description = "消息类型（赞/收藏/评论/at）")
     private NoticeTypeEnum type;
 
+    @Schema(description = "帖子ID")
+    private Long postId;
+
     @Schema(description = "位置类型（帖子/评论）")
     private NoticePositionTypeEnum positionType;
 
