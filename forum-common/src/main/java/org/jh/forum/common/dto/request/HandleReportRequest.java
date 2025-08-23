@@ -43,6 +43,6 @@ public class HandleReportRequest {
 
     @Schema(description = "反馈信息")
     @NotBlank
-    @Size(max = 300)
+    @Size(min = 50, max = 400)
     private String result;
 }
