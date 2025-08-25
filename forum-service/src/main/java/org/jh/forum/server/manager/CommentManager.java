@@ -212,14 +212,8 @@ public class CommentManager {
         QueryWrapper<Comment> wrapper = new QueryWrapper<Comment>()
                 .eq("post_id", postId)
                 .eq("parent_id", 0);
-
         if (excludeId != null) {
-            if (page == 1) {
-                wrapper.orderByAsc("CASE WHEN id = " + excludeId + " THEN 0 ELSE 1 END");
-            } else {
-                // 其他页排除高亮评论，防止重复
-                wrapper.ne("id", excludeId);
-            }
+            wrapper.orderByAsc("CASE WHEN id = " + excludeId + " THEN 0 ELSE 1 END");
         }
 
         wrapper.orderByDesc("is_pinned");
@@ -272,12 +266,7 @@ public class CommentManager {
                 .eq("parent_id", parent.getId());
 
         if (excludeId != null) {
-            if (page == 1) {
-                wrapper.orderByAsc("CASE WHEN id = " + excludeId + " THEN 0 ELSE 1 END");
-            } else {
-                // 其他页排除高亮回复，防止重复
-                wrapper.ne("id", excludeId);
-            }
+            wrapper.orderByAsc("CASE WHEN id = " + excludeId + " THEN 0 ELSE 1 END");
         }
         if ("hot".equals(sort)) {
             wrapper.orderByDesc("upvote_count + reply_count * 2");
