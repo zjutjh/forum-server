@@ -10,7 +10,7 @@ import org.jh.forum.common.entity.PostTopicRelation;
  * @Entity org.jh.forum.common.entity.PostTopicRelation
  */
 public interface PostTopicRelationMapper extends BaseMapper<PostTopicRelation> {
-
+    int insertIgnore(PostTopicRelation entity);
 }
 
 

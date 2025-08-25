@@ -194,7 +194,9 @@ create table post_topic_relation
     create_uid bigint                                    not null comment '创建用户',
     update_uid bigint                                    not null comment '更新用户',
     deleted    boolean                                   not null comment '是否被删除',
-    attribute  text                                      null comment '属性列（json string）'
+    attribute  text                                      null comment '属性列（json string）',
+
+    unique key uk_post_topic_relation (post_id, topic_id)
 );
 
 create table report

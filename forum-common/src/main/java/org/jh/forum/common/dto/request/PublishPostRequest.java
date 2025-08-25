@@ -40,6 +40,7 @@ public class PublishPostRequest {
 
     @Schema(description = "帖子话题列表")
     @NotNull
+    @Size(max = 10)
     private List<@NotBlank @Length(max = 30) @NoExternalLink String> topics;
 
     @Schema(description = "要绑定的图片url列表")

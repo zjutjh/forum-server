@@ -79,5 +79,4 @@ public interface AnnouncementService {
      * @param targetUserId 目标用户ID，-1L表示全体用户
      */
     void sendSystemNotification(String title, String content, Long targetUserId);
-
 }

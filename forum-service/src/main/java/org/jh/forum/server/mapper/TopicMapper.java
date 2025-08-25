@@ -10,7 +10,7 @@ import org.jh.forum.common.entity.Topic;
  * @Entity org.jh.forum.common.entity.Topic
  */
 public interface TopicMapper extends BaseMapper<Topic> {
-
+    int insertIgnore(Topic entity);
 }
 
 

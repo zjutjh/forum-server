@@ -17,14 +17,16 @@ public class TopicManager {
     private final TopicMapper topicMapper;
 
     public Long getTopicId(String name) {
-        LambdaQueryWrapper<Topic> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Topic::getName, name);
-        Topic topic = topicMapper.selectOne(queryWrapper);
-        if (topic == null) {
-            topic = Topic.builder().name(name).build();
-            topicMapper.insert(topic);
+        Topic topic = new Topic(name);
+        int rows = topicMapper.insertIgnore(topic);
+        if (rows > 0) {
+            return topic.getId();
+        } else {
+            return topicMapper.selectOne(
+                    new LambdaQueryWrapper<Topic>()
+                            .eq(Topic::getName, name)
+            ).getId();
         }
-        return topic.getId();
     }
 
     public String getTopicName(Long id) {

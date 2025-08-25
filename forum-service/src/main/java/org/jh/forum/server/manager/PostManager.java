@@ -70,10 +70,12 @@ public class PostManager {
                 .resolvedReportCount(0)
                 .build();
         postMapper.insert(post);
-        for (String topic : request.getTopics()) {
-            postTopicRelationMapper.insert(PostTopicRelation.builder()
+        List<Long> topicIds = request.getTopics().stream().distinct()
+                .map(topicManager::getTopicId).toList();
+        for (Long topic : topicIds) {
+            postTopicRelationMapper.insertIgnore(PostTopicRelation.builder()
                     .postId(post.getId())
-                    .topicId(topicManager.getTopicId(topic))
+                    .topicId(topic)
                     .build()
             );
         }
