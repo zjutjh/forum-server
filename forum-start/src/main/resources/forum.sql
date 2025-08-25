@@ -134,20 +134,22 @@ create table follow
 
 create table notice
 (
-    id            bigint                                    not null comment '互动通知ID'
+    id             bigint                                    not null comment '互动通知ID'
         primary key,
-    receiver_id   bigint                                    not null comment '收件人ID',
-    sender_id     bigint                                    not null comment '发送人ID',
-    type          varchar(20)                               not null comment '消息类型（赞/收藏/评论/at）',
-    position_type varchar(20)                               not null comment '位置类型（帖子/评论）',
-    position_id   bigint                                    not null comment '位置ID',
-    comment_id    bigint                                    null comment '新评论ID（type为comment时有效）',
-    created_at    timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
-    updated_at    timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
-    create_uid    bigint                                    not null comment '创建用户',
-    update_uid    bigint                                    not null comment '更新用户',
-    deleted       boolean                                   not null comment '是否被删除',
-    attribute     text                                      null comment '属性列（json string）'
+    receiver_id    bigint                                    not null comment '收件人ID',
+    sender_id      bigint                                    not null comment '发送人ID',
+    type           varchar(20)                               not null comment '消息类型（赞/收藏/评论/at）',
+    position_type  varchar(20)                               not null comment '位置类型（帖子/评论/回复）',
+    post_id        bigint                                    not null comment '帖子ID',
+    comment_id     bigint                                    not null comment '评论ID',
+    reply_id       bigint                                    not null comment '回复ID',
+    new_comment_id bigint                                    not null comment '新评论ID（type为comment时有效）',
+    created_at     timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
+    updated_at     timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
+    create_uid     bigint                                    not null comment '创建用户',
+    update_uid     bigint                                    not null comment '更新用户',
+    deleted        boolean                                   not null comment '是否被删除',
+    attribute      text                                      null comment '属性列（json string）'
 );
 
 create table operation_log
@@ -302,16 +304,16 @@ create table user
 
 create table user_detail
 (
-    user_id            bigint                    not null comment '用户ID'
+    user_id            bigint                            not null comment '用户ID'
         primary key,
-    signature          varchar(20)  default ''   not null comment '个性签名',
-    profile            varchar(50)  default ''   not null comment '个人简介',
-    email              varchar(50)  default ''   not null comment '个人邮箱',
-    birthday           date                      null comment '生日',
-    background_image   varchar(255) default ''   not null comment '背景图地址',
-    birthday_visible   boolean      default true not null comment '生日可见性',
-    college_visible    boolean      default true not null comment '学院可见性',
-    realname_visible   boolean      default true not null comment '实名可见性',
-    student_id_visible boolean      default true not null comment '学号可见性'
+    signature          varchar(20)  default ''           not null comment '个性签名',
+    profile            varchar(50)  default ''           not null comment '个人简介',
+    email              varchar(50)  default ''           not null comment '个人邮箱',
+    birthday           date         default '2000-01-01' not null comment '生日',
+    background_image   varchar(255) default ''           not null comment '背景图地址',
+    birthday_visible   boolean      default true         not null comment '生日可见性',
+    college_visible    boolean      default true         not null comment '学院可见性',
+    realname_visible   boolean      default true         not null comment '实名可见性',
+    student_id_visible boolean      default true         not null comment '学号可见性'
 );
 

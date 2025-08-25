@@ -22,7 +22,6 @@ import org.jh.forum.server.mapper.AttachmentMapper;
 import org.jh.forum.server.mapper.CommentMapper;
 import org.jh.forum.server.mapper.PostMapper;
 import org.jh.forum.server.mapper.UpvoteMapper;
-import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,18 +96,16 @@ public class CommentManager {
             fileManager.bindAttachment(pictureUrl, TargetTypeEnum.COMMENT, comment.getId());
         }
 
-        AsyncUtil.runAsyncWithLogging(() -> {
-            postRankManager.recordAction(postId, post.getCategory(), postRankManager.COMMENT);
-            if (parentComment != null) {
-                if (targetComment != null) {
-                    noticeManager.createNotice(targetComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, targetId, comment.getId());
-                } else {
-                    noticeManager.createNotice(parentComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, parentId, comment.getId());
-                }
+        postRankManager.recordAction(postId, post.getCategory(), postRankManager.COMMENT);
+        if (parentComment != null) {
+            if (targetComment != null) {
+                noticeManager.createNotice(targetComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.REPLY, postId, parentComment.getId(), targetComment.getId(), comment.getId());
             } else {
-                noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.POST, postId, comment.getId());
+                noticeManager.createNotice(parentComment.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.COMMENT, postId, parentComment.getId(), 0, comment.getId());
             }
-        });
+        } else {
+            noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.COMMENT, NoticePositionTypeEnum.POST, postId, 0, 0, comment.getId());
+        }
 
         if (parentId != 0) {
             commentMapper.incrementReplyCount(parentId);
@@ -132,14 +129,18 @@ public class CommentManager {
 
         if (Boolean.TRUE.equals(status)) {
             commentMapper.incrementUpvoteCount(commentId);
-            AsyncUtil.runAsyncWithLogging(() ->
-                    noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, commentId, null)
-            );
+            if (comment.getParentId() != 0) {
+                noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.REPLY, comment.getPostId(), comment.getParentId(), commentId, 0);
+            } else {
+                noticeManager.createNotice(comment.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.COMMENT, comment.getPostId(), commentId, 0, 0);
+            }
         } else {
             commentMapper.decrementUpvoteCount(commentId);
-            AsyncUtil.runAsyncWithLogging(() ->
-                    noticeManager.cancelLike(comment.getUserId(), NoticePositionTypeEnum.COMMENT, commentId)
-            );
+            if (comment.getParentId() != 0) {
+                noticeManager.cancelLike(comment.getUserId(), NoticePositionTypeEnum.REPLY, comment.getPostId(), comment.getParentId(), commentId);
+            } else {
+                noticeManager.cancelLike(comment.getUserId(), NoticePositionTypeEnum.COMMENT, comment.getPostId(), commentId, 0);
+            }
         }
 
         return new UpvoteCommentResponse(status);
@@ -302,9 +303,9 @@ public class CommentManager {
                 .map(comment -> PersonalCommentListElement
                         .builder()
                         .postId(comment.getPostId())
-                        .parentId(comment.getParentId())
-                        .commentId(comment.getId())
-                        .replyContent(getReplyContent(comment))
+                        .commentId(comment.getParentId() == 0 ? comment.getId() : comment.getParentId())
+                        .replyId(comment.getParentId() == 0 ? 0 : comment.getId())
+                        .targetContent(getTargetContent(comment))
                         .content(StringUtils.left(comment.getContent(), 200))
                         .pictures(getCommentPictures(comment.getId()))
                         .createdAt(comment.getCreatedAt())
@@ -321,7 +322,7 @@ public class CommentManager {
                 .build();
     }
 
-    private String getReplyContent(Comment comment) {
+    private String getTargetContent(Comment comment) {
         Long parentId = comment.getParentId();
         Long targetId = comment.getTargetId();
 

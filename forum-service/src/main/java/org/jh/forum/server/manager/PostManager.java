@@ -18,7 +18,6 @@ import org.jh.forum.common.entity.*;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.client.AliyunGreenClient;
 import org.jh.forum.server.mapper.*;
-import org.jh.forum.server.utils.AsyncUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,7 +83,7 @@ public class PostManager {
         }
     }
 
-    public BaseListResponse<GetPostListElement> getPostList(CategoryEnum category, Integer page, Integer pageSize) {
+    public BaseListResponse<GetPostListElement> getPostList(PostCategoryEnum category, Integer page, Integer pageSize) {
         IPage<Post> postPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         if (category != null) {
@@ -149,7 +148,7 @@ public class PostManager {
                 .build();
     }
 
-    public BaseListResponse<GetPostListElement> getHotPostList(CategoryEnum category, Integer page, Integer pageSize) {
+    public BaseListResponse<GetPostListElement> getHotPostList(PostCategoryEnum category, Integer page, Integer pageSize) {
         PostRankManager.PageResult<Long> result = postRankManager.getHotPostIds(category, page, pageSize);
         List<GetPostListElement> list = result.getRecords().stream()
                 .map(postMapper::selectById)
@@ -316,7 +315,7 @@ public class PostManager {
         return commentMapper.selectCommentCount(postId);
     }
 
-    private void updateViewCount(Long postId, Long userId, CategoryEnum category) {
+    private void updateViewCount(Long postId, Long userId, PostCategoryEnum category) {
         // 2分钟内仅允许一次浏览量增加
         String checkKey = "post:view:" + userId + ":" + postId;
         Boolean isSet = redisTemplate.opsForValue().setIfAbsent(checkKey, "1", 2, TimeUnit.MINUTES);
@@ -381,14 +380,10 @@ public class PostManager {
         Boolean status = upvote.getStatus();
 
         if (Boolean.TRUE.equals(status)) {
-            AsyncUtil.runAsyncWithLogging(() -> {
-                postRankManager.recordAction(id, post.getCategory(), postRankManager.LIKE);
-                noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.POST, id, null);
-            });
+            postRankManager.recordAction(id, post.getCategory(), postRankManager.LIKE);
+            noticeManager.createNotice(post.getUserId(), NoticeTypeEnum.LIKE, NoticePositionTypeEnum.POST, id, 0, 0, 0);
         } else {
-            AsyncUtil.runAsyncWithLogging(() ->
-                    noticeManager.cancelLike(post.getUserId(), NoticePositionTypeEnum.POST, id)
-            );
+            noticeManager.cancelLike(post.getUserId(), NoticePositionTypeEnum.POST, id, 0, 0);
         }
         return status;
     }

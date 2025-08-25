@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostCategoryEnum;
 
 /**
  * @author SugarMGP
@@ -25,7 +25,7 @@ public class Post extends BaseEntity {
 
     private String content;
 
-    private CategoryEnum category;
+    private PostCategoryEnum category;
 
     private Boolean isPinned;
 

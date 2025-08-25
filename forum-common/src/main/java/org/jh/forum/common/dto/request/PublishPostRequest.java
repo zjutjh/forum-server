@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import org.jh.forum.common.annotation.NoExternalLink;
-import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostCategoryEnum;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -36,7 +36,7 @@ public class PublishPostRequest {
 
     @Schema(description = "帖子板块")
     @NotNull
-    private CategoryEnum category;
+    private PostCategoryEnum category;
 
     @Schema(description = "帖子话题列表")
     @NotNull

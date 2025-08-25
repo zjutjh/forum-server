@@ -29,19 +29,22 @@ public class GetNoticeListElement {
     @Schema(description = "消息类型（赞/收藏/评论/at）")
     private NoticeTypeEnum type;
 
+    @Schema(description = "位置类型（帖子/评论/回复）")
+    private NoticePositionTypeEnum positionType;
+
     @Schema(description = "帖子ID")
     private Long postId;
 
-    @Schema(description = "位置类型（帖子/评论）")
-    private NoticePositionTypeEnum positionType;
+    @Schema(description = "评论ID（空则为0）")
+    private Long commentId;
 
-    @Schema(description = "关联位置ID（帖子ID/评论ID）")
-    private Long positionId;
+    @Schema(description = "回复ID（空则为0）")
+    private Long replyId;
 
     @Schema(description = "关联位置内容（截取60字）")
     private String positionContent;
 
-    @Schema(description = "产生的新评论ID（若有）")
+    @Schema(description = "产生的新评论ID（空则为0）")
     private Long newCommentId;
 
     @Schema(description = "新评论内容（截取60字）")

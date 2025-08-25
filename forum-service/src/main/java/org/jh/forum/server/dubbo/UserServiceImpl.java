@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUserProfile(UpdateUserDetailRequest request) {
+    public void updateUserProfile(UpdateUserProfileRequest request) {
         String text = StringUtils.joinWith(" ", request.getNickname(), request.getSignature(), request.getProfile(), request.getEmail());
         aliyunGreenClient.checkText(text, TextModerationServiceEnum.NICKNAME);
 
@@ -212,14 +212,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public GetUserDetailResponse getUserDetail(Long id) {
+    public AdminGetUserDetailResponse getUserDetail(Long id) {
         User userEntity = userMapper.selectById(id);
         UserDetail detailEntity = userDetailMapper.selectById(id);
         if (userEntity == null || detailEntity == null) {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
-        GetUserDetailResponse resp = new GetUserDetailResponse();
+        AdminGetUserDetailResponse resp = new AdminGetUserDetailResponse();
         resp.setNickname(userEntity.getNickname());
         resp.setAvatar(userManager.getUserAvatar(userEntity));
         resp.setBackground(detailEntity.getBackgroundImage());
@@ -233,6 +233,7 @@ public class UserServiceImpl implements UserService {
         resp.setStatus(getUserStatus(userEntity));
         resp.setProfile(detailEntity.getProfile());
         resp.setStudentId(userEntity.getStudentId());
+        resp.setMutedUntil(userEntity.getMutedUntil());
         return resp;
     }
 
@@ -263,12 +264,11 @@ public class UserServiceImpl implements UserService {
         Boolean adminRegisterEnabled = adminRegisterSwitch.getEnabled();
         // 接口是否下线
         if (!adminRegisterEnabled) {
-            log.info("接口已下线");
+            log.info("AdminRegister 接口已下线");
             throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
         }
         // 校验key
         if (StringUtils.isBlank(request.getKey()) || !request.getKey().equals(secretKey)) {
-            log.error("密钥错误");
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, request.getUsername()));

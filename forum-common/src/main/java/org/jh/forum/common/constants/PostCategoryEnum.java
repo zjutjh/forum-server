@@ -10,7 +10,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum CategoryEnum {
+public enum PostCategoryEnum {
     CAMPUS("campus", "校园日常"),
     EMOTION("emotion", "感情分享"),
     STUDY("study", "学业疑难"),

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostCategoryEnum;
 import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
@@ -27,7 +27,7 @@ public class GetPostListElement {
     private UserInfoDTO publisherInfo;
 
     @Schema(description = "帖子板块")
-    private CategoryEnum category;
+    private PostCategoryEnum category;
 
     @Schema(description = "帖子话题列表")
     private List<String> topics;

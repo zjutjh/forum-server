@@ -20,6 +20,7 @@ import org.jh.forum.server.mapper.UserDetailMapper;
 import org.jh.forum.server.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -41,10 +42,10 @@ public class UserManager {
     public void insertUserDetail(Long userId) {
         userDetailMapper.insert(UserDetail.builder()
                 .userId(userId)
-                .email("")
+                .email("123@example.com")
                 .profile("")
                 .signature("")
-                .birthday(null)
+                .birthday(LocalDate.of(2000, 1, 1))
                 .birthdayVisible(true)
                 .collegeVisible(true)
                 .realnameVisible(true)

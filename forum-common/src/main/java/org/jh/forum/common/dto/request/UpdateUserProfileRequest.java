@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UpdateUserDetailRequest {
+public class UpdateUserProfileRequest {
     @NotNull
     @Schema(description = "用户头像URL")
     private String avatar;
@@ -56,6 +56,7 @@ public class UpdateUserDetailRequest {
 
     @Schema(description = "生日")
     @Past
+    @NotNull
     private LocalDate birthday;
 
     @NotNull

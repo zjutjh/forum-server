@@ -63,7 +63,7 @@ public class UserController {
     @PutMapping("/profile")
     @Operation(summary = "更新个人信息")
     @SaCheckLogin
-    public AjaxResult<ModerationResultResponse> updateMyProfile(@Valid @RequestBody UpdateUserDetailRequest request) {
+    public AjaxResult<ModerationResultResponse> updateMyProfile(@Valid @RequestBody UpdateUserProfileRequest request) {
         userService.updateUserProfile(request);
         return AjaxResult.success(ModerationResultResponse.success());
     }

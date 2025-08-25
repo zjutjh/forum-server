@@ -3,7 +3,7 @@ package org.jh.forum.server.manager;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostCategoryEnum;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -41,7 +41,7 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-    public void recordAction(Long postId, CategoryEnum category, String type) {
+    public void recordAction(Long postId, PostCategoryEnum category, String type) {
         long currentTime = System.currentTimeMillis() / 1000;
         long hour = currentTime / 3600;
         String key = "post:" + postId + ":" + hour;
@@ -130,7 +130,7 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
         }
 
         // 替换每个分类榜
-        for (CategoryEnum category : CategoryEnum.values()) {
+        for (PostCategoryEnum category : PostCategoryEnum.values()) {
             String tempKey = HOT_RANK_TEMP_KEY + ":" + category.getValue();
             String realKey = HOT_RANK_KEY + ":" + category.getValue();
             if (redisTemplate.hasKey(tempKey)) {
@@ -155,7 +155,7 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
     }
 
 
-    public PageResult<Long> getHotPostIds(CategoryEnum category, int page, int pageSize) {
+    public PageResult<Long> getHotPostIds(PostCategoryEnum category, int page, int pageSize) {
         int start = (page - 1) * pageSize;
         int end = start + pageSize - 1;
 
@@ -195,7 +195,7 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
         redisTemplate.opsForZSet().remove(HOT_RANK_KEY, postId.toString());
         redisTemplate.opsForZSet().remove(HOT_RANK_TEMP_KEY, postId.toString());
 
-        for (CategoryEnum category : CategoryEnum.values()) {
+        for (PostCategoryEnum category : PostCategoryEnum.values()) {
             redisTemplate.opsForZSet().remove(HOT_RANK_KEY + ":" + category.getValue(), postId.toString());
             redisTemplate.opsForZSet().remove(HOT_RANK_TEMP_KEY + ":" + category.getValue(), postId.toString());
         }

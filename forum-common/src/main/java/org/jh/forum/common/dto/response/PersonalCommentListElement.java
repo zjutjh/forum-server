@@ -21,14 +21,14 @@ public class PersonalCommentListElement {
     @Schema(description = "帖子ID")
     private Long postId;
 
-    @Schema(description = "父级评论ID（若没有则为0）")
-    private Long parentId;
-
     @Schema(description = "评论ID")
     private Long commentId;
 
-    @Schema(description = "回复的对象内容（如果有被回复评论则为被回复评论内容，反之则为被回复帖子内容，截取前60个字）")
-    private String replyContent;
+    @Schema(description = "回复ID（若不为回复则该字段为0）")
+    private Long replyId;
+
+    @Schema(description = "对象内容（如果有被回复评论则为被回复评论内容，反之则为被回复帖子内容，截取前60个字）")
+    private String targetContent;
 
     @Schema(description = "评论内容（截200字）")
     private String content;

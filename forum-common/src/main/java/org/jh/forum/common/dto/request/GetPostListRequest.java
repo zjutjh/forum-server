@@ -3,7 +3,7 @@ package org.jh.forum.common.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostCategoryEnum;
 
 import jakarta.validation.constraints.NotBlank;
 
@@ -14,7 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class GetPostListRequest extends BaseListRequest {
     @Schema(description = "帖子板块")
-    private CategoryEnum category;
+    private PostCategoryEnum category;
 
     @Schema(description = "排序类型", allowableValues = {"hot", "new"})
     @NotBlank

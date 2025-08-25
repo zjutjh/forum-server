@@ -11,9 +11,9 @@ import org.jh.forum.api.dubbo.service.UserService;
 import org.jh.forum.common.dto.request.GetAdminListRequest;
 import org.jh.forum.common.dto.request.GetUserListRequest;
 import org.jh.forum.common.dto.request.MuteUserRequest;
+import org.jh.forum.common.dto.response.AdminGetUserDetailResponse;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetAdminListElement;
-import org.jh.forum.common.dto.response.GetUserDetailResponse;
 import org.jh.forum.common.dto.response.GetUserListElement;
 import org.jh.forum.start.models.AjaxResult;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +48,7 @@ public class AccountController {
 
     @Operation(summary = "管理员获取用户详情")
     @GetMapping("/detail")
-    public AjaxResult<GetUserDetailResponse> getUserDetail(@RequestParam("id") Long id) {
+    public AjaxResult<AdminGetUserDetailResponse> getUserDetail(@RequestParam("id") Long id) {
         return AjaxResult.success(userService.getUserDetail(id));
     }
 

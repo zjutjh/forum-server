@@ -24,6 +24,8 @@ public class Notice extends BaseEntity {
     private Long senderId;
     private NoticeTypeEnum type;
     private NoticePositionTypeEnum positionType;
-    private Long positionId;
+    private Long postId;
     private Long commentId;
+    private Long replyId;
+    private Long newCommentId;
 }

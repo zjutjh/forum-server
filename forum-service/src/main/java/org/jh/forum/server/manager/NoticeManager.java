@@ -63,7 +63,6 @@ public class NoticeManager {
         List<GetNoticeListElement> list = notices.stream()
                 .map(notice -> {
                     Boolean isLiked = null;
-                    Long postId;
                     if (notice.getType() == NoticeTypeEnum.COMMENT) {
                         LambdaQueryWrapper<Upvote> upvoteWrapper = new LambdaQueryWrapper<Upvote>()
                                 .eq(Upvote::getUserId, receiverId)
@@ -71,22 +70,22 @@ public class NoticeManager {
                         Upvote upvote = upvoteMapper.selectOne(upvoteWrapper);
                         isLiked = upvote != null && upvote.getStatus();
                     }
-                    if (notice.getPositionType() == NoticePositionTypeEnum.POST) {
-                        postId = notice.getPositionId();
-                    } else {
-                        Comment comment = commentMapper.selectById(notice.getPositionId());
-                        postId = comment == null ? null : comment.getPostId();
-                    }
+                    String positionContent = switch (notice.getPositionType()) {
+                        case POST -> getContent(NoticePositionTypeEnum.POST, notice.getPostId());
+                        case COMMENT -> getContent(NoticePositionTypeEnum.COMMENT, notice.getCommentId());
+                        case REPLY -> getContent(NoticePositionTypeEnum.COMMENT, notice.getReplyId());
+                    };
                     return GetNoticeListElement.builder()
                             .id(notice.getId())
                             .senderInfo(userManager.getUserInfo(notice.getSenderId()))
                             .type(notice.getType())
-                            .postId(postId)
                             .positionType(notice.getPositionType())
-                            .positionId(notice.getPositionId())
-                            .positionContent(getContent(notice.getPositionType(), notice.getPositionId()))
-                            .newCommentId(notice.getCommentId())
-                            .newCommentContent(notice.getCommentId() == null ? null : getContent(NoticePositionTypeEnum.COMMENT, notice.getCommentId()))
+                            .postId(notice.getPostId())
+                            .commentId(notice.getCommentId())
+                            .replyId(notice.getReplyId())
+                            .positionContent(positionContent)
+                            .newCommentId(notice.getNewCommentId())
+                            .newCommentContent(notice.getNewCommentId() == null ? null : getContent(NoticePositionTypeEnum.COMMENT, notice.getNewCommentId()))
                             .updatedAt(notice.getUpdatedAt())
                             .isLiked(isLiked)
                             .build();
@@ -105,7 +104,7 @@ public class NoticeManager {
                 .build();
     }
 
-    private String getContent(NoticePositionTypeEnum positionType, Long positionId) {
+    private String getContent(NoticePositionTypeEnum positionType, long positionId) {
         String content;
         if (positionType == NoticePositionTypeEnum.POST) {
             Post post = postMapper.selectById(positionId);
@@ -129,9 +128,17 @@ public class NoticeManager {
      * 创建新的通知
      * 根据请求参数构建通知实体并插入数据库
      */
-    public void createNotice(Long receiverId, NoticeTypeEnum type, NoticePositionTypeEnum positionType, Long positionId, Long newCommentId) {
-        Long senderId = StpUtil.getLoginIdAsLong();
-        if (senderId.equals(receiverId)) {
+    public void createNotice(
+            long receiverId,
+            NoticeTypeEnum type,
+            NoticePositionTypeEnum positionType,
+            long postId,
+            long commentId,
+            long replyId,
+            long newCommentId
+    ) {
+        long senderId = StpUtil.getLoginIdAsLong();
+        if (senderId == receiverId) {
             return;
         }
 
@@ -149,12 +156,10 @@ public class NoticeManager {
                 .eq(Notice::getSenderId, senderId)
                 .eq(Notice::getType, type)
                 .eq(Notice::getPositionType, positionType)
-                .eq(Notice::getPositionId, positionId);
-        if (newCommentId != null) {
-            wrapper.eq(Notice::getCommentId, newCommentId);
-        } else {
-            wrapper.isNull(Notice::getCommentId);
-        }
+                .eq(Notice::getPostId, postId)
+                .eq(Notice::getCommentId, commentId)
+                .eq(Notice::getReplyId, replyId)
+                .eq(Notice::getNewCommentId, newCommentId);
 
         Notice notice = noticeMapper.selectOne(wrapper.last("LIMIT 1"));
         if (notice != null) {
@@ -165,8 +170,10 @@ public class NoticeManager {
                     .senderId(senderId)
                     .type(type)
                     .positionType(positionType)
-                    .positionId(positionId)
-                    .commentId(newCommentId)
+                    .postId(postId)
+                    .commentId(commentId)
+                    .replyId(replyId)
+                    .newCommentId(newCommentId)
                     .build();
             noticeMapper.insert(notice);
         }
@@ -175,14 +182,22 @@ public class NoticeManager {
     /**
      * 撤回点赞通知
      */
-    public void cancelLike(Long receiverId, NoticePositionTypeEnum positionType, Long positionId) {
+    public void cancelLike(
+            long receiverId,
+            NoticePositionTypeEnum positionType,
+            long postId,
+            long commentId,
+            long replyId
+    ) {
         Long senderId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<Notice> wrapper = new LambdaQueryWrapper<Notice>()
                 .eq(Notice::getReceiverId, receiverId)
                 .eq(Notice::getSenderId, senderId)
                 .eq(Notice::getType, NoticeTypeEnum.LIKE)
                 .eq(Notice::getPositionType, positionType)
-                .eq(Notice::getPositionId, positionId);
+                .eq(Notice::getPostId, postId)
+                .eq(Notice::getCommentId, commentId)
+                .eq(Notice::getReplyId, replyId);
         Notice notice = noticeMapper.selectOne(wrapper.last("LIMIT 1"));
         if (notice != null && notice.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(5))) {
             noticeMapper.deleteById(notice.getId());

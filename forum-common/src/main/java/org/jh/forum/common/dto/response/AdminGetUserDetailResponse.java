@@ -18,13 +18,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetUserDetailResponse {
+public class AdminGetUserDetailResponse {
     @Schema(description = "用户昵称")
     private String nickname;
 
     @Schema(description = "用户头像URL")
     private String avatar;
-
 
     @Schema(description = "用户背景图URL")
     private String background;
@@ -58,4 +57,7 @@ public class GetUserDetailResponse {
 
     @Schema(description = "状态")
     private UserStatusEnum status;
+
+    @Schema(description = "禁言到期时间")
+    private LocalDateTime mutedUntil;
 }

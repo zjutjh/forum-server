@@ -12,7 +12,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum NoticePositionTypeEnum {
     POST("post", "帖子"),
-    COMMENT("comment", "评论");
+    COMMENT("comment", "评论"),
+    REPLY("reply", "回复");
 
     @EnumValue
     @JsonValue

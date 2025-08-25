@@ -3,7 +3,7 @@ package org.jh.forum.common.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.jh.forum.common.constants.CategoryEnum;
+import org.jh.forum.common.constants.PostCategoryEnum;
 import org.jh.forum.common.constants.PostStatusEnum;
 
 import java.time.LocalDate;
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Data
 public class GetAdminPostListRequest extends BaseListRequest {
     @Schema(description = "帖子板块")
-    private CategoryEnum category;
+    private PostCategoryEnum category;
 
     @Schema(description = "帖子状态")
     private PostStatusEnum status;

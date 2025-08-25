@@ -9,13 +9,13 @@ import org.jh.forum.common.dto.response.*;
 public interface UserService {
     GetUserProfileResponse getUserProfile(Long userId);
 
-    void updateUserProfile(UpdateUserDetailRequest dto);
+    void updateUserProfile(UpdateUserProfileRequest dto);
 
     BaseListResponse<GetUserListElement> getUserList(GetUserListRequest request);
 
     void muteUser(MuteUserRequest request);
 
-    GetUserDetailResponse getUserDetail(Long id);
+    AdminGetUserDetailResponse getUserDetail(Long id);
 
     BaseListResponse<GetAdminListElement> getAdminList(GetAdminListRequest request);
 
