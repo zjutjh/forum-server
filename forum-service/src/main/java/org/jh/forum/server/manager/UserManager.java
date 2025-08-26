@@ -42,10 +42,10 @@ public class UserManager {
     public void insertUserDetail(Long userId) {
         userDetailMapper.insert(UserDetail.builder()
                 .userId(userId)
-                .email("123@example.com")
+                .email("")
                 .profile("")
                 .signature("")
-                .birthday(LocalDate.of(2000, 1, 1))
+                .birthday(LocalDate.of(1900, 1, 1))
                 .birthdayVisible(true)
                 .collegeVisible(true)
                 .realnameVisible(true)

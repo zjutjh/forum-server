@@ -56,7 +56,6 @@ public class UpdateUserProfileRequest {
 
     @Schema(description = "生日")
     @Past
-    @NotNull
     private LocalDate birthday;
 
     @NotNull

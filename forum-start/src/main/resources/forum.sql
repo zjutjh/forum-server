@@ -309,7 +309,7 @@ create table user_detail
     signature          varchar(20)  default ''           not null comment '个性签名',
     profile            varchar(50)  default ''           not null comment '个人简介',
     email              varchar(50)  default ''           not null comment '个人邮箱',
-    birthday           date         default '2000-01-01' not null comment '生日',
+    birthday           date         default '1900-01-01' not null comment '生日',
     background_image   varchar(255) default ''           not null comment '背景图地址',
     birthday_visible   boolean      default true         not null comment '生日可见性',
     college_visible    boolean      default true         not null comment '学院可见性',

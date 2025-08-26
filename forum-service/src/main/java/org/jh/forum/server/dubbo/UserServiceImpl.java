@@ -24,6 +24,7 @@ import org.jh.forum.server.mapper.UserDetailMapper;
 import org.jh.forum.server.mapper.UserMapper;
 
 import jakarta.annotation.Resource;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -64,6 +65,12 @@ public class UserServiceImpl implements UserService {
 
         Boolean isSelf = userId.equals(StpUtil.getLoginIdAsLong());
         GetUserProfileResponse resp = new GetUserProfileResponse();
+
+        LocalDate birthday = null;
+        if ((detailEntity.getBirthdayVisible() || isSelf)
+                && detailEntity.getBirthday().isAfter(LocalDate.of(1900, 1, 1))) {
+            birthday = detailEntity.getBirthday();
+        }
         resp.setUserId(userId);
         resp.setNickname(userEntity.getNickname());
         resp.setAvatar(userManager.getUserAvatar(userEntity));
@@ -79,7 +86,7 @@ public class UserServiceImpl implements UserService {
         resp.setStudentIdVisible(detailEntity.getStudentIdVisible());
         resp.setRealname(detailEntity.getRealnameVisible() || isSelf ? userEntity.getRealname() : null);
         resp.setCollegeId(detailEntity.getCollegeVisible() || isSelf ? userEntity.getCollegeId() : null);
-        resp.setBirthday(detailEntity.getBirthdayVisible() || isSelf ? detailEntity.getBirthday() : null);
+        resp.setBirthday(birthday);
         resp.setStudentId(detailEntity.getStudentIdVisible() || isSelf ? userEntity.getStudentId() : null);
         return resp;
     }
@@ -107,12 +114,15 @@ public class UserServiceImpl implements UserService {
             }
             userEntity.setAvatarId(attachmentId);
         }
+
+        if (request.getBirthday() != null && request.getBirthday().isAfter(LocalDate.of(1900, 1, 1))) {
+            detailEntity.setBirthday(request.getBirthday());
+        }
         userEntity.setNickname(request.getNickname());
         userEntity.setGender(request.getGender());
         userEntity.setCollegeId(request.getCollegeId());
         detailEntity.setSignature(request.getSignature());
         detailEntity.setEmail(request.getEmail());
-        detailEntity.setBirthday(request.getBirthday());
         detailEntity.setProfile(request.getProfile());
         detailEntity.setBirthdayVisible(request.getBirthdayVisible());
         detailEntity.setCollegeVisible(request.getCollegeVisible());
@@ -219,6 +229,11 @@ public class UserServiceImpl implements UserService {
             throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
         }
 
+        LocalDate birthday = detailEntity.getBirthday();
+        if (!birthday.isAfter(LocalDate.of(1900, 1, 1))) {
+            birthday = null;
+        }
+
         AdminGetUserDetailResponse resp = new AdminGetUserDetailResponse();
         resp.setNickname(userEntity.getNickname());
         resp.setAvatar(userManager.getUserAvatar(userEntity));
@@ -228,7 +243,7 @@ public class UserServiceImpl implements UserService {
         resp.setGender(userEntity.getGender());
         resp.setRealname(userEntity.getRealname());
         resp.setCollegeId(userEntity.getCollegeId());
-        resp.setBirthday(detailEntity.getBirthday());
+        resp.setBirthday(birthday);
         resp.setCreatedAt(userEntity.getCreatedAt());
         resp.setStatus(getUserStatus(userEntity));
         resp.setProfile(detailEntity.getProfile());

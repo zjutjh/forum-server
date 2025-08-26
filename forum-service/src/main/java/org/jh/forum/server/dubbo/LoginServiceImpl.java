@@ -54,7 +54,7 @@ public class LoginServiceImpl implements LoginService {
         if (!Objects.isNull(user) && hasSuperPermission()) {
             StpUtil.login(user.getId());
             OauthUserInfoElement userInfo = OauthUserInfoElement.builder()
-                    .studentType("本科生") // 数据库不维护该字段，默认设置为本科生
+                    .studentType("本科生")
                     .gender(user.getGender())
                     .name(user.getRealname())
                     .studentId(user.getStudentId())
