@@ -73,7 +73,7 @@ public class NoticeManager {
                     String positionContent = switch (notice.getPositionType()) {
                         case POST -> getContent(NoticePositionTypeEnum.POST, notice.getPostId());
                         case COMMENT -> getContent(NoticePositionTypeEnum.COMMENT, notice.getCommentId());
-                        case REPLY -> getContent(NoticePositionTypeEnum.COMMENT, notice.getReplyId());
+                        case REPLY -> getContent(NoticePositionTypeEnum.REPLY, notice.getReplyId());
                     };
                     return GetNoticeListElement.builder()
                             .id(notice.getId())
@@ -85,7 +85,7 @@ public class NoticeManager {
                             .replyId(notice.getReplyId())
                             .positionContent(positionContent)
                             .newCommentId(notice.getNewCommentId())
-                            .newCommentContent(notice.getNewCommentId() == null ? null : getContent(NoticePositionTypeEnum.COMMENT, notice.getNewCommentId()))
+                            .newCommentContent(notice.getNewCommentId() == 0 ? null : getContent(NoticePositionTypeEnum.COMMENT, notice.getNewCommentId()))
                             .updatedAt(notice.getUpdatedAt())
                             .isLiked(isLiked)
                             .build();
@@ -105,20 +105,22 @@ public class NoticeManager {
     }
 
     private String getContent(NoticePositionTypeEnum positionType, long positionId) {
-        String content;
+        String content = null;
         if (positionType == NoticePositionTypeEnum.POST) {
             Post post = postMapper.selectById(positionId);
-            if (post == null) {
-                content = "帖子不存在";
-            } else {
+            if (post != null) {
                 content = post.getTitle() + "：" + post.getContent();
             }
         } else {
             Comment comment = commentMapper.selectById(positionId);
-            if (comment == null) {
-                content = "评论不存在";
-            } else {
-                content = comment.getContent();
+            if (comment != null) {
+                Post post = postMapper.selectById(comment.getPostId());
+                if (post != null) {
+                    // 判断是否没有父评论或者父评论没被删除
+                    if (comment.getParentId() == 0 || commentMapper.selectById(comment.getParentId()) != null) {
+                        content = comment.getContent();
+                    }
+                }
             }
         }
         return StringUtils.left(StringUtils.deleteWhitespace(content), 60);

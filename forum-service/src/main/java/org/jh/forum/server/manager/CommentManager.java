@@ -248,9 +248,7 @@ public class CommentManager {
 
     public GetCommentReplyListResponse getReplyList(Long commentId, Integer page, Integer pageSize, String sort, Long highlightReplyId) {
         Comment parent = getCommentOrThrow(commentId);
-        if (parent.getParentId() != 0) {
-            parent = getCommentOrThrow(parent.getParentId());
-        }
+        Post post = postManager.getPostOrThrow(parent.getPostId());
 
         Long excludeId = null;
         if (highlightReplyId != null && highlightReplyId != 0) {
@@ -275,18 +273,16 @@ public class CommentManager {
         wrapper.orderByAsc("created_at");
 
         commentMapper.selectPage(replyPage, wrapper);
-        Post post = postMapper.selectById(parent.getPostId());
-        Long postAuthorId = post != null ? post.getUserId() : null;
 
         List<ReplyElement> replyElements = replyPage.getRecords().stream()
-                .map(reply -> buildReplyElement(reply, postAuthorId))
+                .map(reply -> buildReplyElement(reply, post.getUserId()))
                 .toList();
         return GetCommentReplyListResponse.builder()
                 .page(page)
                 .pageSize(pageSize)
                 .total(replyPage.getTotal())
                 .list(replyElements)
-                .commentInfo(buildCommentInfo(parent, postAuthorId))
+                .commentInfo(buildCommentInfo(parent, post.getUserId()))
                 .build();
     }
 
@@ -341,7 +337,7 @@ public class CommentManager {
                 return StringUtils.left(StringUtils.deleteWhitespace(targetComment.getContent()), 60);
             }
         }
-        return "内容不存在";
+        return null;
     }
 
     @IgnoreLogicDelete
