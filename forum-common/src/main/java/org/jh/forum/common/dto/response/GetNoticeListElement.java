@@ -55,4 +55,7 @@ public class GetNoticeListElement {
 
     @Schema(description = "是否已赞（仅在comment类型中生效，其他情况下为null）")
     private Boolean isLiked;
+
+    @Schema(description = "是否已读（为false时高亮处理）")
+    private Boolean isRead;
 }

@@ -7,14 +7,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.NoticePositionTypeEnum;
 import org.jh.forum.common.constants.NoticeTypeEnum;
 import org.jh.forum.common.dto.response.BaseListResponse;
 import org.jh.forum.common.dto.response.GetNoticeListElement;
 import org.jh.forum.common.dto.response.UnreadCheckResponse;
 import org.jh.forum.common.entity.*;
-import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.*;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +26,6 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class NoticeManager {
-
     private final NoticeMapper noticeMapper;
     private final UserManager userManager;
     private final CommentMapper commentMapper;
@@ -43,19 +40,17 @@ public class NoticeManager {
      */
     public BaseListResponse<GetNoticeListElement> getNoticeList(Integer page, Integer pageSize, Integer type) {
         Long receiverId = StpUtil.getLoginIdAsLong();
+        User user = userMapper.selectById(receiverId);
 
         Page<Notice> noticePage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Notice::getReceiverId, receiverId);
         switch (type) {
-            case 0 -> {
-            }
             case 1 -> queryWrapper.eq(Notice::getType, NoticeTypeEnum.LIKE);
             case 2 -> queryWrapper.eq(Notice::getType, NoticeTypeEnum.COLLECT);
             case 3 -> queryWrapper.nested(w -> w.eq(Notice::getType, NoticeTypeEnum.COMMENT)
                     .or()
                     .eq(Notice::getType, NoticeTypeEnum.AT));
-            default -> throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
         queryWrapper.orderByDesc(Notice::getUpdatedAt);
         noticeMapper.selectPage(noticePage, queryWrapper);
@@ -75,6 +70,9 @@ public class NoticeManager {
                         case COMMENT -> getContent(NoticePositionTypeEnum.COMMENT, notice.getCommentId());
                         case REPLY -> getContent(NoticePositionTypeEnum.REPLY, notice.getReplyId());
                     };
+                    boolean isRead = notice.getUpdatedAt().isBefore(user.getLastNoticeReadAt());
+                    isRead = isRead || (notice.getType() == NoticeTypeEnum.COMMENT && !user.getCommentNotice())
+                            || (notice.getType() == NoticeTypeEnum.LIKE && !user.getUpvoteNotice());
                     return GetNoticeListElement.builder()
                             .id(notice.getId())
                             .senderInfo(userManager.getUserInfo(notice.getSenderId()))
@@ -88,6 +86,7 @@ public class NoticeManager {
                             .newCommentContent(notice.getNewCommentId() == 0 ? null : getContent(NoticePositionTypeEnum.COMMENT, notice.getNewCommentId()))
                             .updatedAt(notice.getUpdatedAt())
                             .isLiked(isLiked)
+                            .isRead(isRead)
                             .build();
                 }).toList();
 
@@ -141,14 +140,6 @@ public class NoticeManager {
     ) {
         long senderId = StpUtil.getLoginIdAsLong();
         if (senderId == receiverId) {
-            return;
-        }
-
-        User receiver = userMapper.selectById(receiverId);
-        if (type == NoticeTypeEnum.LIKE && !receiver.getUpvoteNotice()) {
-            return;
-        }
-        if (type == NoticeTypeEnum.COMMENT && !receiver.getCommentNotice()) {
             return;
         }
 
@@ -214,13 +205,15 @@ public class NoticeManager {
         Long userId = StpUtil.getLoginIdAsLong();
         User user = userMapper.selectById(userId);
 
-        LambdaQueryWrapper<Notice> noticeQueryWrapper = new LambdaQueryWrapper<>();
-        noticeQueryWrapper.eq(Notice::getReceiverId, userId)
-                .ge(Notice::getUpdatedAt, user.getLastNoticeReadAt());
+        LambdaQueryWrapper<Notice> noticeQueryWrapper = new LambdaQueryWrapper<Notice>()
+                .eq(Notice::getReceiverId, userId)
+                .ge(Notice::getUpdatedAt, user.getLastNoticeReadAt())
+                .ne(!user.getCommentNotice(), Notice::getType, NoticeTypeEnum.COMMENT)
+                .ne(!user.getUpvoteNotice(), Notice::getType, NoticeTypeEnum.LIKE);
         int noticeCount = Math.toIntExact(noticeMapper.selectCount(noticeQueryWrapper));
 
-        LambdaQueryWrapper<Announcement> announcementQueryWrapper = new LambdaQueryWrapper<>();
-        announcementQueryWrapper.nested(w -> w.eq(Announcement::getTargetUid, userId)
+        LambdaQueryWrapper<Announcement> announcementQueryWrapper = new LambdaQueryWrapper<Announcement>()
+                .nested(w -> w.eq(Announcement::getTargetUid, userId)
                         .or()
                         .eq(Announcement::getTargetUid, -1))
                 .ge(Announcement::getPublishedAt, user.getLastAnnouncementReadAt())
