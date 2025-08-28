@@ -14,8 +14,6 @@ public enum ForumConfigNameConstantEnum {
     FORUM_SWITCH("forum-switch", "DEFAULT_GROUP"),
     ADMIN_REGISTER_SWITCH("admin-register-switch", "DEFAULT_GROUP"),
     SUPER_LOGIN_SWITCH("super-login-switch", "DEFAULT_GROUP"),
-    NACOS_CONFIG_A("nacos-config-a", "DEFAULT_GROUP"),
-    NACOS_CONFIG_B("nacos-config-b", "DEFAULT_GROUP"),
     ;
 
     private final String name;

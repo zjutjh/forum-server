@@ -209,6 +209,7 @@ public class AnnouncementManager {
      */
     public BaseListResponse<GetAnnouncementListElement> userListAnnouncements(Integer page, Integer pageSize, AnnouncementTypeEnum type) {
         long currentUserId = StpUtil.getLoginIdAsLong();
+        User user = userMapper.selectById(currentUserId);
 
         LambdaQueryWrapper<Announcement> queryWrapper = new LambdaQueryWrapper<Announcement>()
                 .ne(Announcement::getStatus, AnnouncementStatusEnum.DRAFT)
@@ -234,6 +235,7 @@ public class AnnouncementManager {
                         .signatory(announcement.getSignatory())
                         .publishedAt(announcement.getPublishedAt())
                         .sticky(announcement.getSticky())
+                        .isRead(user.getLastAnnouncementReadAt().isBefore(announcement.getPublishedAt()))
                         .build())
                 .toList();
 

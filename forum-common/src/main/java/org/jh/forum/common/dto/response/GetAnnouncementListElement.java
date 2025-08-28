@@ -39,5 +39,8 @@ public class GetAnnouncementListElement {
     private LocalDateTime publishedAt;
 
     @Schema(description = "是否置顶")
-    private boolean sticky;
+    private Boolean sticky;
+
+    @Schema(description = "是否已读")
+    private Boolean isRead;
 }
