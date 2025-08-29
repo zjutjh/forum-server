@@ -47,6 +47,7 @@ public class CommentManager {
     private final PostRankManager postRankManager;
     private final NoticeManager noticeManager;
     private final PostManager postManager;
+    private final CommentManager commentManager;
     private final AliyunGreenClient aliyunGreenClient;
 
     @Transactional
@@ -73,9 +74,9 @@ public class CommentManager {
             }
         }
 
-        Post post = postMapper.selectById(postId);
-        Comment parentComment = parentId != 0 ? commentMapper.selectById(parentId) : null;
-        Comment targetComment = targetId != 0 ? commentMapper.selectById(targetId) : null;
+        Post post = postManager.getPostOrThrow(postId);
+        Comment parentComment = parentId != 0 ? commentManager.getCommentOrThrow(parentId) : null;
+        Comment targetComment = targetId != 0 ? commentManager.getCommentOrThrow(targetId) : null;
 
         // 创建评论
         Comment comment = Comment.builder()
