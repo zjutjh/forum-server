@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 公告状态枚举
+ *
  * @author SituChengxiang
  */
 @AllArgsConstructor

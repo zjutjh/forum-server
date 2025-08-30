@@ -11,6 +11,8 @@ import org.jh.forum.common.constants.PostStatusEnum;
 import java.time.LocalDateTime;
 
 /**
+ * 管理员获取帖子列表元素
+ *
  * @author SugarMGP
  */
 @Builder

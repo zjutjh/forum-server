@@ -9,6 +9,8 @@ import lombok.Data;
 import java.util.List;
 
 /**
+ * 机器审核结果响应
+ *
  * @author SugarMGP
  */
 @Data

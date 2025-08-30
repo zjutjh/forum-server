@@ -1,10 +1,7 @@
 package org.jh.forum.common.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
@@ -13,11 +10,10 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
+ * 举报内容请求
+ *
  * @author zzb
  */
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class ReportContentRequest {
     @Schema(description = "举报对象类型")

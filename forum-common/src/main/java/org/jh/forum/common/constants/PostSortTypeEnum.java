@@ -6,17 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 举报处罚枚举
+ * 帖子排序类型枚举
  *
- * @author zzb
+ * @author SugarMGP
  */
 @Getter
 @AllArgsConstructor
-public enum HandleReportEnum {
-    NO_PUNISHMENT("no_punishment", "无处罚"),
-    SHORT_MUTE("short_mute", "短期禁言(1天)"),
-    LONG_MUTE("long_mute", "长期禁言(7天)"),
-    CUSTOM_MUTE("custom_mute", "自定义禁言时长");
+public enum PostSortTypeEnum {
+    HOT("hot", "最热"),
+    NEW("new", "最新");
 
     @EnumValue
     @JsonValue

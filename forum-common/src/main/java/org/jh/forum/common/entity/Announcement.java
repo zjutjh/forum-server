@@ -14,9 +14,10 @@ import java.time.LocalDateTime;
 
 
 /**
- * 公告实体类（MyBatis-Plus Entity）
+ * 公告实体类
  *
  * @author SituChengxiang
+ * @TableName announcement
  */
 @SuperBuilder
 @Data
@@ -24,7 +25,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 @TableName("announcement")
-
 public class Announcement extends BaseEntity {
 
     /**

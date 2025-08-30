@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.UserTypeEnum;
 
 /**
+ * 登录响应
+ *
  * @author MangoGovo
  */
 @Builder

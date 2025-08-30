@@ -7,7 +7,10 @@ import org.jh.forum.server.interceptor.LogicDeleteInterceptor;
 import org.springframework.stereotype.Component;
 
 /**
+ * 忽略逻辑删除切片
+ *
  * @author SugarMGP
+ * @see org.jh.forum.common.annotation.IgnoreLogicDelete
  */
 @Aspect
 @Component

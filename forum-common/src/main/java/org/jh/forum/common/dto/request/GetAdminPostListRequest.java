@@ -9,6 +9,8 @@ import org.jh.forum.common.constants.PostStatusEnum;
 import java.time.LocalDate;
 
 /**
+ * 管理员获取帖子列表请求
+ *
  * @author SugarMGP
  */
 @EqualsAndHashCode(callSuper = true)

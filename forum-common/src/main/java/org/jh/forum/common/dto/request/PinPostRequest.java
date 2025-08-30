@@ -11,7 +11,6 @@ import jakarta.validation.constraints.NotNull;
  * @author SugarMGP
  */
 @Data
-@Schema(description = "置顶/取消置顶帖子请求")
 public class PinPostRequest {
     @NotNull
     @Schema(description = "帖子ID")

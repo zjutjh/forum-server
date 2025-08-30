@@ -33,12 +33,22 @@ public class FAQServiceImpl implements FAQService {
 
     @Override
     public void createFaq(FAQQuestionCreateRequest request) {
-        faqManager.createFaq(request.getCategory(), request.getQuestion(), request.getAnswer());
+        faqManager.createFaq(
+                request.getCategory(),
+                request.getQuestion(),
+                request.getAnswer())
+        ;
     }
 
     @Override
     public void updateFaq(FAQQuestionUpdateRequest request) {
-        faqManager.updateFaq(request.getQuestionId(), request.getCategory(), request.getQuestion(), request.getAnswer(), request.getIsPicked());
+        faqManager.updateFaq(
+                request.getQuestionId(),
+                request.getCategory(),
+                request.getQuestion(),
+                request.getAnswer(),
+                request.getIsPicked()
+        );
     }
 
     @Override

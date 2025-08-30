@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 获取举报信息元素
+ *
  * @author zzb
  */
 @Builder

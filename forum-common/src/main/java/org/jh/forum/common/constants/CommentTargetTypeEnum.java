@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 评论对象类型枚举
+ *
  * @author SugarMGP
  */
 @Getter

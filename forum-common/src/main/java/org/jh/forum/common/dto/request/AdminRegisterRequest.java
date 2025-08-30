@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 /**
+ * 管理员注册请求
+ *
  * @author MangoGovo
  */
 @Data

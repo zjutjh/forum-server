@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 获取帖子详情响应
+ *
  * @author SugarMGP
  */
 @Builder
@@ -52,7 +54,4 @@ public class GetPostInfoResponse {
 
     @Schema(description = "是否已点赞")
     private Boolean isLiked;
-
-    @Schema(description = "是否是自己")
-    private Boolean isSelf;
 }

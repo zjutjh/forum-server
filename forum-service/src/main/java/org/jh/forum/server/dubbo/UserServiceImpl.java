@@ -1,34 +1,13 @@
 package org.jh.forum.server.dubbo;
 
-import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.crypto.digest.BCrypt;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.UserService;
-import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
-import org.jh.forum.common.entity.Report;
-import org.jh.forum.common.entity.User;
-import org.jh.forum.common.entity.UserDetail;
-import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.server.client.AliyunGreenClient;
-import org.jh.forum.server.manager.FileManager;
 import org.jh.forum.server.manager.UserManager;
-import org.jh.forum.server.mapper.ReportMapper;
-import org.jh.forum.server.mapper.UserDetailMapper;
-import org.jh.forum.server.mapper.UserMapper;
 
 import jakarta.annotation.Resource;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Objects;
-
-import static org.jh.forum.server.config.service.AdminRegisterSwitchService.adminRegisterSwitch;
 
 
 /**
@@ -38,182 +17,41 @@ import static org.jh.forum.server.config.service.AdminRegisterSwitchService.admi
 @Slf4j
 public class UserServiceImpl implements UserService {
     @Resource
-    private UserMapper userMapper;
-
-    @Resource
-    private UserDetailMapper userDetailMapper;
-
-    @Resource
     private UserManager userManager;
-
-    @Resource
-    private ReportMapper reportMapper;
-
-    @Resource
-    private AliyunGreenClient aliyunGreenClient;
-
-    @Resource
-    private FileManager fileManager;
 
     @Override
     public GetUserProfileResponse getUserProfile(Long userId) {
-        User userEntity = userMapper.selectById(userId);
-        UserDetail detailEntity = userDetailMapper.selectById(userId);
-        if (userEntity == null || detailEntity == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-
-        Boolean isSelf = userId.equals(StpUtil.getLoginIdAsLong());
-        GetUserProfileResponse resp = new GetUserProfileResponse();
-
-        LocalDate birthday = null;
-        if ((detailEntity.getBirthdayVisible() || isSelf)
-                && detailEntity.getBirthday().isAfter(LocalDate.of(1900, 1, 1))) {
-            birthday = detailEntity.getBirthday();
-        }
-        resp.setUserId(userId);
-        resp.setNickname(userEntity.getNickname());
-        resp.setAvatar(userManager.getUserAvatar(userEntity));
-        resp.setSignature(detailEntity.getSignature());
-        resp.setProfile(detailEntity.getProfile());
-        resp.setEmail(detailEntity.getEmail());
-        resp.setGender(userEntity.getGender());
-        resp.setIsSelf(userId.equals(StpUtil.getLoginIdAsLong()));
-        resp.setBackground(detailEntity.getBackgroundImage());
-        resp.setBirthdayVisible(detailEntity.getBirthdayVisible());
-        resp.setRealnameVisible(detailEntity.getRealnameVisible());
-        resp.setCollegeIdVisible(detailEntity.getCollegeVisible());
-        resp.setStudentIdVisible(detailEntity.getStudentIdVisible());
-        resp.setRealname(detailEntity.getRealnameVisible() || isSelf ? userEntity.getRealname() : null);
-        resp.setCollegeId(detailEntity.getCollegeVisible() || isSelf ? userEntity.getCollegeId() : null);
-        resp.setBirthday(birthday);
-        resp.setStudentId(detailEntity.getStudentIdVisible() || isSelf ? userEntity.getStudentId() : null);
-        return resp;
+        return userManager.getUserProfile(userId);
     }
 
     @Override
     public void updateUserProfile(UpdateUserProfileRequest request) {
-        String text = StringUtils.joinWith(" ", request.getNickname(), request.getSignature(), request.getProfile(), request.getEmail());
-        aliyunGreenClient.checkText(text, TextModerationServiceEnum.NICKNAME);
-
-        Long userId = StpUtil.getLoginIdAsLong();
-        User userEntity = userMapper.selectById(userId);
-        UserDetail detailEntity = userDetailMapper.selectById(userId);
-
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>()
-                .ne(User::getId, userId)
-                .eq(User::getNickname, request.getNickname());
-        if (userMapper.exists(queryWrapper)) {
-            throw new ApiException(ExceptionEnum.USER_NICKNAME_EXISTS);
-        }
-
-        Long attachmentId = fileManager.getAttachmentIdFromUrl(request.getAvatar());
-        if (attachmentId != null) {
-            if (!attachmentId.equals(userEntity.getAvatarId())) {
-                fileManager.deleteAttachment(userEntity.getAvatarId());
-            }
-            userEntity.setAvatarId(attachmentId);
-        }
-
-        if (request.getBirthday() != null && request.getBirthday().isAfter(LocalDate.of(1900, 1, 1))) {
-            detailEntity.setBirthday(request.getBirthday());
-        }
-        userEntity.setNickname(request.getNickname());
-        userEntity.setGender(request.getGender());
-        userEntity.setCollegeId(request.getCollegeId());
-        detailEntity.setSignature(request.getSignature());
-        detailEntity.setEmail(request.getEmail());
-        detailEntity.setProfile(request.getProfile());
-        detailEntity.setBirthdayVisible(request.getBirthdayVisible());
-        detailEntity.setCollegeVisible(request.getCollegeVisible());
-        detailEntity.setRealnameVisible(request.getRealnameVisible());
-        detailEntity.setStudentIdVisible(request.getStudentIdVisible());
-
-        userMapper.updateById(userEntity);
-        userDetailMapper.updateById(detailEntity);
+        userManager.updateUserProfile(request);
     }
 
     @Override
     public void updateBackgroundImage(UpdateBackgroundImageRequest request) {
-        Long userId = StpUtil.getLoginIdAsLong();
-        UserDetail detailEntity = userDetailMapper.selectById(userId);
-
-        detailEntity.setBackgroundImage(request.getBackgroundImage());
-
-        userDetailMapper.updateById(detailEntity);
+        userManager.updateBackgroundImage(request);
     }
 
     @Override
     public GetNoticeSettingsResponse getNoticeSettings() {
-        User user = userMapper.selectById(StpUtil.getLoginIdAsLong());
-        return GetNoticeSettingsResponse.builder()
-                .upvoteNotice(user.getUpvoteNotice())
-                .commentNotice(user.getCommentNotice())
-                .build();
+        return userManager.getNoticeSettings();
     }
 
     @Override
     public void updateNoticeSettings(UpdateNoticeSettingsRequest request) {
-        User user = userMapper.selectById(StpUtil.getLoginIdAsLong());
-        user.setUpvoteNotice(request.getUpvoteNotice());
-        user.setCommentNotice(request.getCommentNotice());
-        userMapper.updateById(user);
+        userManager.updateNoticeSettings(request);
     }
 
     @Override
     public CheckMuteResponse checkMute() {
-        Long userId = StpUtil.getLoginIdAsLong();
-        User user = userMapper.selectById(userId);
-        LocalDateTime mutedUntil = null;
-        if (user != null && user.getMutedUntil() != null && user.getMutedUntil().isAfter(LocalDateTime.now())) {
-            mutedUntil = user.getMutedUntil();
-        }
-        return new CheckMuteResponse(mutedUntil);
+        return new CheckMuteResponse(userManager.checkMute());
     }
 
     @Override
     public BaseListResponse<GetUserListElement> getUserList(GetUserListRequest request) {
-        IPage<User> page = new Page<>(request.getPage(), request.getPageSize());
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>()
-                .eq(User::getRole, UserTypeEnum.STUDENT);
-        if (request.getStatus() != null) {
-            if (request.getStatus() == UserStatusEnum.NORMAL) {
-                queryWrapper.and(wrapper -> wrapper
-                        .isNull(User::getMutedUntil)
-                        .or()
-                        .le(User::getMutedUntil, LocalDateTime.now()));
-                queryWrapper.apply("report_count = resolved_report_count");
-            }
-            if (request.getStatus() == UserStatusEnum.PENDING) {
-                queryWrapper.and(wrapper -> wrapper
-                        .isNull(User::getMutedUntil)
-                        .or()
-                        .le(User::getMutedUntil, LocalDateTime.now()));
-                queryWrapper.apply("report_count > resolved_report_count");
-            }
-            if (request.getStatus() == UserStatusEnum.MUTED) {
-                queryWrapper.isNotNull(User::getMutedUntil).gt(User::getMutedUntil, LocalDateTime.now());
-            }
-        }
-        if ("no".equals(request.getReported())) {
-            queryWrapper.eq(User::getReportCount, 0);
-        }
-        if ("yes".equals(request.getReported())) {
-            queryWrapper.gt(User::getReportCount, 0);
-        }
-        if (StringUtils.isNotBlank(request.getKeyword())) {
-            queryWrapper.and(wrapper -> wrapper
-                    .like(User::getNickname, request.getKeyword())
-                    .or()
-                    .like(User::getStudentId, request.getKeyword()));
-        }
-        userMapper.selectPage(page, queryWrapper);
-        return BaseListResponse.<GetUserListElement>builder()
-                .page(request.getPage())
-                .pageSize(request.getPageSize())
-                .total(page.getTotal())
-                .list(page.getRecords().stream().map(this::buildUserListElement).toList())
-                .build();
+        return userManager.getUserList(request);
     }
 
     @Override
@@ -223,126 +61,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AdminGetUserDetailResponse getUserDetail(Long id) {
-        User userEntity = userMapper.selectById(id);
-        UserDetail detailEntity = userDetailMapper.selectById(id);
-        if (userEntity == null || detailEntity == null) {
-            throw new ApiException(ExceptionEnum.RESOURCE_NOT_FOUND);
-        }
-
-        LocalDate birthday = detailEntity.getBirthday();
-        if (!birthday.isAfter(LocalDate.of(1900, 1, 1))) {
-            birthday = null;
-        }
-
-        AdminGetUserDetailResponse resp = new AdminGetUserDetailResponse();
-        resp.setNickname(userEntity.getNickname());
-        resp.setAvatar(userManager.getUserAvatar(userEntity));
-        resp.setBackground(detailEntity.getBackgroundImage());
-        resp.setSignature(detailEntity.getSignature());
-        resp.setEmail(detailEntity.getEmail());
-        resp.setGender(userEntity.getGender());
-        resp.setRealname(userEntity.getRealname());
-        resp.setCollegeId(userEntity.getCollegeId());
-        resp.setBirthday(birthday);
-        resp.setCreatedAt(userEntity.getCreatedAt());
-        resp.setStatus(getUserStatus(userEntity));
-        resp.setProfile(detailEntity.getProfile());
-        resp.setStudentId(userEntity.getStudentId());
-        resp.setMutedUntil(userEntity.getMutedUntil());
-        return resp;
+        return userManager.getUserDetail(id);
     }
 
     @Override
     public BaseListResponse<GetAdminListElement> getAdminList(GetAdminListRequest request) {
-        IPage<User> page = new Page<>(request.getPage(), request.getPageSize());
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>().ne(User::getRole, UserTypeEnum.STUDENT);
-        queryWrapper.like(StringUtils.isNotBlank(request.getKeyword()), User::getNickname, request.getKeyword());
-        userMapper.selectPage(page, queryWrapper);
-        return BaseListResponse.<GetAdminListElement>builder()
-                .page(request.getPage())
-                .pageSize(request.getPageSize())
-                .total(page.getTotal())
-                .list(page.getRecords().stream().map(this::buildAdminListElement).toList())
-                .build();
-    }
-
-    /**
-     * 管理员注册 支持nacos开关，key动态配置
-     */
-    @Override
-    public void adminRegister(AdminRegisterRequest request) {
-        if (Objects.isNull(adminRegisterSwitch)) {
-            log.info("未获取到 AdminRegister 配置");
-            throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
-        }
-        String secretKey = adminRegisterSwitch.getKey();
-        Boolean adminRegisterEnabled = adminRegisterSwitch.getEnabled();
-        // 接口是否下线
-        if (!adminRegisterEnabled) {
-            log.info("AdminRegister 接口已下线");
-            throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
-        }
-        // 校验key
-        if (StringUtils.isBlank(request.getKey()) || !request.getKey().equals(secretKey)) {
-            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
-        }
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, request.getUsername()));
-        if (user != null) {
-            user.setPassword(BCrypt.hashpw(request.getPassword()));
-            user.setRole(request.getUserType());
-            userMapper.updateById(user);
-            return;
-        }
-        user = User.builder()
-                .nickname(userManager.generateRandomNickname())
-                .realname("测试账号")
-                .studentId(request.getUsername())
-                .password(BCrypt.hashpw(request.getPassword()))
-                .collegeId("000000")
-                .gender(GenderEnum.UNKNOWN)
-                .role(request.getUserType())
-                .reportCount(0)
-                .resolvedReportCount(0).build();
-        userMapper.insert(user);
-        userManager.insertUserDetail(user.getId());
-    }
-
-    private GetUserListElement buildUserListElement(User userEntity) {
-        GetUserListElement element = new GetUserListElement();
-        UserDetail detailEntity = userDetailMapper.selectById(userEntity.getId());
-        element.setId(userEntity.getId());
-        element.setAvatar(userManager.getUserAvatar(userEntity));
-        element.setNickname(userEntity.getNickname());
-        element.setStudentId(userEntity.getStudentId());
-        element.setEmail(detailEntity.getEmail());
-        element.setCreatedAt(userEntity.getCreatedAt());
-        element.setReportCount(userEntity.getReportCount());
-        element.setStatus(getUserStatus(userEntity));
-        element.setMutedUntil(userEntity.getMutedUntil());
-        return element;
-    }
-
-    private UserStatusEnum getUserStatus(User userEntity) {
-        if (userEntity.getMutedUntil() == null || userEntity.getMutedUntil().isBefore(LocalDateTime.now())) {
-            if (userEntity.getReportCount() > userEntity.getResolvedReportCount()) {
-                return UserStatusEnum.PENDING;
-            }
-            return UserStatusEnum.NORMAL;
-        }
-        return UserStatusEnum.MUTED;
-    }
-
-    private GetAdminListElement buildAdminListElement(User userEntity) {
-        GetAdminListElement element = new GetAdminListElement();
-        element.setId(userEntity.getId());
-        element.setNickname(userEntity.getNickname());
-        element.setType(userEntity.getRole());
-        element.setCreatedAt(userEntity.getCreatedAt());
-
-        LambdaQueryWrapper<Report> reportWrapper = new LambdaQueryWrapper<Report>()
-                .ne(Report::getStatus, ReportStatusEnum.PENDING)
-                .eq(Report::getReviewerId, userEntity.getId());
-        element.setReportCount(Math.toIntExact(reportMapper.selectCount(reportWrapper)));
-        return element;
+        return userManager.getAdminList(request);
     }
 }

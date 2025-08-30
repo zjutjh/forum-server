@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Duration;
 import java.util.*;
@@ -94,7 +95,7 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
 
         // 获取24小时内活跃帖子
         Set<Object> postIds = redisTemplate.opsForZSet().rangeByScore(ACTIVE_POSTS_KEY, threshold, currentTime);
-        if (postIds == null || postIds.isEmpty()) {
+        if (CollectionUtils.isEmpty(postIds)) {
             return;
         }
 
@@ -141,17 +142,14 @@ public class PostRankManager implements ApplicationListener<ApplicationReadyEven
 
     public List<Long> getTopFiveHotPostIds() {
         Set<Object> topPosts = redisTemplate.opsForZSet().reverseRange(HOT_RANK_KEY, 0, 4);
-        if (topPosts == null || topPosts.isEmpty()) {
+        if (CollectionUtils.isEmpty(topPosts)) {
             return Collections.emptyList();
         }
 
-        List<Long> result = new ArrayList<>();
-        for (Object obj : topPosts) {
-            if (obj != null) {
-                result.add(Long.parseLong(obj.toString()));
-            }
-        }
-        return result;
+        return topPosts.stream()
+                .filter(Objects::nonNull)
+                .map(obj -> Long.parseLong(obj.toString()))
+                .toList();
     }
 
 

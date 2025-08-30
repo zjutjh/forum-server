@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.jh.forum.api.dubbo.service.PostService;
+import org.jh.forum.common.constants.PostSortTypeEnum;
 import org.jh.forum.common.dto.request.*;
 import org.jh.forum.common.dto.response.*;
 import org.jh.forum.common.entity.Post;
@@ -29,10 +30,10 @@ public class PostServiceImpl implements PostService {
     @Override
     public BaseListResponse<GetPostListElement> getPostList(GetPostListRequest request) {
         BaseListResponse<GetPostListElement> postList;
-        if ("new".equals(request.getSortType())) {
-            postList = postManager.getPostList(request.getCategory(), request.getPage(), request.getPageSize());
-        } else {
+        if (PostSortTypeEnum.HOT.equals(request.getSortType())) {
             postList = postManager.getHotPostList(request.getCategory(), request.getPage(), request.getPageSize());
+        } else {
+            postList = postManager.getPostList(request.getCategory(), request.getPage(), request.getPageSize());
         }
         return postList;
     }
@@ -66,14 +67,10 @@ public class PostServiceImpl implements PostService {
     @Override
     public TopFivePostList getTopFivePosts() {
         List<Post> list = postManager.getTopFivePosts();
-
-        List<TopFivePostList.TopFivePostListElement> topPosts = list.stream()
+        return new TopFivePostList(list.stream()
                 .map(post -> new TopFivePostList.TopFivePostListElement(
                         post.getId(),
-                        post.getTitle()))
-                .toList();
-
-        return new TopFivePostList(topPosts);
+                        post.getTitle())).toList());
     }
 
     @Override

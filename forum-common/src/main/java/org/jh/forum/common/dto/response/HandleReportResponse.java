@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * 处理举报响应
+ *
  * @author zzb
  */
 @Builder

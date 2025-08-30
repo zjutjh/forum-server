@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Schema(description = "FAQ问题列表响应数据")
 public class FAQQuestionListElement {
     @Schema(description = "问题ID")
     private Long questionId;

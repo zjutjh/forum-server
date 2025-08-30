@@ -21,7 +21,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void publishComment(PublishCommentRequest request) {
-        commentManager.publishComment(request.getTargetType(), request.getTargetId(), request.getContent(), request.getPicture());
+        commentManager.publishComment(
+                request.getTargetType(),
+                request.getTargetId(),
+                request.getContent(),
+                request.getPicture()
+        );
     }
 
     @Override
@@ -41,12 +46,24 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public BaseListResponse<CommentElement> getCommentList(GetCommentListRequest request) {
-        return commentManager.getCommentList(request.getId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getHighlightCommentId());
+        return commentManager.getCommentList(
+                request.getId(),
+                request.getPage(),
+                request.getPageSize(),
+                request.getSortType(),
+                request.getHighlightCommentId()
+        );
     }
 
     @Override
     public GetCommentReplyListResponse getReplyList(GetReplyListRequest request) {
-        return commentManager.getReplyList(request.getId(), request.getPage(), request.getPageSize(), request.getSortType(), request.getHighlightReplyId());
+        return commentManager.getReplyList(
+                request.getId(),
+                request.getPage(),
+                request.getPageSize(),
+                request.getSortType(),
+                request.getHighlightReplyId()
+        );
     }
 
     @Override
@@ -56,12 +73,22 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public BaseListResponse<CommentElement> getAdminCommentList(GetCommentListAdminRequest request) {
-        return commentManager.getAdminCommentList(request.getId(), request.getStatus(), request.getPage(), request.getPageSize());
+        return commentManager.getAdminCommentList(
+                request.getId(),
+                request.getStatus(),
+                request.getPage(),
+                request.getPageSize()
+        );
     }
 
     @Override
     public BaseListResponse<ReplyElement> getAdminReplyList(GetReplyListAdminRequest request) {
-        return commentManager.getAdminReplyList(request.getId(), request.getPage(), request.getPageSize(), request.getStatus());
+        return commentManager.getAdminReplyList(
+                request.getId(),
+                request.getPage(),
+                request.getPageSize(),
+                request.getStatus()
+        );
     }
 
     @Override

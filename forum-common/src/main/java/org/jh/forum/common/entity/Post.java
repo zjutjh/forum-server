@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.PostCategoryEnum;
 
 /**
+ * 帖子实体类
+ *
  * @author SugarMGP
  * @TableName post
  */

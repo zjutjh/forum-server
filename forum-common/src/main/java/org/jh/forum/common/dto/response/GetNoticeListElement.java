@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 
 
 /**
+ * 获取通知列表元素
+ *
  * @author lyyzzz
  */
 @Builder

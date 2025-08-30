@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 管理员获取帖子信息
+ *
  * @author SugarMGP
  */
 @Builder

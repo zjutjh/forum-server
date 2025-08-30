@@ -11,6 +11,8 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDate;
 
 /**
+ * 用户详情实体类
+ *
  * @author SugarMGP
  * @TableName user_detail
  */

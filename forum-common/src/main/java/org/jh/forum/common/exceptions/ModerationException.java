@@ -6,6 +6,8 @@ import org.jh.forum.common.dto.response.ModerationResultResponse;
 import java.util.List;
 
 /**
+ * 审核异常
+ *
  * @author SugarMGP
  */
 @Getter

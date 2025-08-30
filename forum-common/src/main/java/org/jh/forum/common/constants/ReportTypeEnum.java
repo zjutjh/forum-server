@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 举报原因类型枚举
+ *
  * @author zzb
  */
 @Getter

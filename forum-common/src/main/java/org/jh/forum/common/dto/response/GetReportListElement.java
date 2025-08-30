@@ -12,6 +12,8 @@ import org.jh.forum.common.constants.TargetTypeEnum;
 import java.time.LocalDateTime;
 
 /**
+ * 获取举报列表元素
+ *
  * @author zzb
  */
 @Builder

@@ -3,6 +3,7 @@ package org.jh.forum.common.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -15,6 +16,7 @@ import jakarta.validation.constraints.NotNull;
 public class BaseListRequest {
     @Schema(description = "页码")
     @Min(1)
+    @Max(999)
     @NotNull
     private Integer page;
 

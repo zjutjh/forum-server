@@ -8,6 +8,8 @@ import org.jh.forum.common.constants.CommentStatusEnum;
 import jakarta.validation.constraints.NotNull;
 
 /**
+ * 管理员获取回复列表请求
+ *
  * @author qianqianzyk
  */
 @EqualsAndHashCode(callSuper = true)

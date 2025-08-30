@@ -7,7 +7,6 @@ import org.jh.forum.common.dto.response.*;
  * 公告服务接口
  *
  * @author SituChengxiang(SK)
- * RPC远程调用接口
  */
 public interface AnnouncementService {
 
@@ -40,7 +39,7 @@ public interface AnnouncementService {
     void stickyAnnouncement(StickyAnnouncementRequest request);
 
     /**
-     * 根据ID查询公告详情
+     * 管理员根据ID查询公告详情
      *
      * @param id 公告ID
      * @return 公告详情
@@ -70,13 +69,4 @@ public interface AnnouncementService {
      * @return 置顶公告列表
      */
     StickyAnnouncementList getTopAnnouncements();
-
-    /**
-     * 发送系统通知（RPC接口）
-     *
-     * @param title        通知标题
-     * @param content      通知内容
-     * @param targetUserId 目标用户ID，-1L表示全体用户
-     */
-    void sendSystemNotification(String title, String content, Long targetUserId);
 }

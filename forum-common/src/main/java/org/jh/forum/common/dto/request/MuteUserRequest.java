@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 /**
+ * 管理员禁言用户请求
+ *
  * @author SugarMGP
  */
 @Data

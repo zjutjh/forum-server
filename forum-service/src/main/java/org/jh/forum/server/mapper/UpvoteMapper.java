@@ -15,8 +15,10 @@ import org.jh.forum.common.entity.Upvote;
 public interface UpvoteMapper extends BaseMapper<Upvote> {
     /**
      * 不推荐直接使用该方法，建议使用 updatePostUpvote 或 updateCommentUpvote
+     *
+     * @see UpvoteMapper#updatePostUpvote
+     * @see UpvoteMapper#updateCommentUpvote
      */
-    @Deprecated
     @Update("""
             INSERT INTO upvote(id, user_id, post_id, comment_id, status, created_at, updated_at, create_uid, update_uid, deleted)
             VALUES(#{id}, #{userId}, #{postId}, #{commentId}, TRUE, CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3), #{userId}, #{userId}, FALSE)

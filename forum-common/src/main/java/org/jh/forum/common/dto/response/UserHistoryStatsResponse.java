@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * 用户历史统计响应
+ *
  * @author zzb
  */
 @Builder
@@ -40,5 +42,4 @@ public class UserHistoryStatsResponse {
         @Schema(description = "近60天内成立次数")
         private Integer recentEstablishedCount;
     }
-
 }

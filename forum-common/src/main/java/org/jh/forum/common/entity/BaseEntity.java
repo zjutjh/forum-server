@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
+ * 基础实体类（无对应表，仅作为基类）
+ *
  * @author SugarMGP
  */
 @SuperBuilder

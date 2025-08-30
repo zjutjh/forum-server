@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
  * @author SituChengxiang
  */
 @Data
-@Schema(description = "创建公告请求")
 public class CreateAnnouncementRequest {
     @NotBlank
     @Size(max = 50, min = 2)

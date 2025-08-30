@@ -1,20 +1,16 @@
 package org.jh.forum.common.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.HandleReportEnum;
 
 import jakarta.validation.constraints.*;
 
 /**
+ * 处理举报请求
+ *
  * @author zzb
  */
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class HandleReportRequest {
     @Schema(description = "举报ID")

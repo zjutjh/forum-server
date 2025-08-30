@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 消息类型枚举
+ *
  * @author lyyzzz6
  */
 @Getter

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * 用户信息DTO
+ *
  * @author SugarMGP
  */
 @Builder

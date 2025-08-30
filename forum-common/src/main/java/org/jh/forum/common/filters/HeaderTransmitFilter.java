@@ -11,6 +11,9 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
+/**
+ * @author MangoGovo
+ */
 @Slf4j
 @Activate(group = {CONSUMER})
 public class HeaderTransmitFilter implements Filter {

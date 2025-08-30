@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 用户性别枚举
+ *
  * @author SugarMGP
  */
 @Getter

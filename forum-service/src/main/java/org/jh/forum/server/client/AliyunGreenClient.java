@@ -16,6 +16,7 @@ import org.jh.forum.common.exceptions.ModerationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author SugarMGP
@@ -52,12 +53,12 @@ public class AliyunGreenClient {
         log.info("阿里云文本审核, content: {}, service: {}, response: {}", text, service.getServiceName(), JSON.toJSONString(body));
 
         TextModerationPlusResponseBody.TextModerationPlusResponseBodyData data = body.getData();
-        if (data == null || data.getResult() == null) {
+        if (Objects.isNull(data) || Objects.isNull(data.getResult())) {
             return;
         }
 
         RiskLevelEnum level = EnumUtil.getBy(RiskLevelEnum::getValue, data.getRiskLevel());
-        if (level == RiskLevelEnum.HIGH) {
+        if (RiskLevelEnum.HIGH.equals(level)) {
             List<ModerationResultResponse.Label> labels = data.getResult().stream()
                     .map(result ->
                             ModerationResultResponse.Label.builder()
@@ -95,12 +96,12 @@ public class AliyunGreenClient {
         log.info("阿里云图片审核, imageUrl: {}, response: {}", imageUrl, JSON.toJSONString(body));
 
         ImageModerationResponseBody.ImageModerationResponseBodyData data = body.getData();
-        if (data == null || data.getResult() == null) {
+        if (Objects.isNull(data) || Objects.isNull(data.getResult())) {
             return;
         }
 
         RiskLevelEnum level = EnumUtil.getBy(RiskLevelEnum::getValue, data.getRiskLevel());
-        if (level == RiskLevelEnum.HIGH) {
+        if (RiskLevelEnum.HIGH.equals(level)) {
             List<ModerationResultResponse.Label> labels = data.getResult().stream()
                     .map(result ->
                             ModerationResultResponse.Label.builder()

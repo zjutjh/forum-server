@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
+ * 文件实体类
+ *
  * @author SugarMGP
  * @TableName file
  */

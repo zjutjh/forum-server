@@ -15,13 +15,10 @@ import java.time.LocalDateTime;
  *
  * @author SituChengiang
  */
-
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-@Schema(description = "公告列表项（管理员版）")
 public class GetAdminAnnouncementListElement {
     @Schema(description = "公告ID")
     private Long id;

@@ -41,11 +41,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      */
     @Override
     public void editAnnouncement(EditAnnouncementRequest request) {
-        if (announcementManager.hasPermission(request.getId(), StpUtil.getLoginIdAsLong())) {
-            announcementManager.editAnnouncement(request);
-        } else {
+        if (!announcementManager.hasPermission(request.getId(), StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
+        announcementManager.editAnnouncement(request);
     }
 
     /**
@@ -53,11 +52,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      */
     @Override
     public void stickyAnnouncement(StickyAnnouncementRequest request) {
-        if (announcementManager.hasPermission(request.getId(), StpUtil.getLoginIdAsLong())) {
-            announcementManager.stickyAnnouncement(request.getId(), request.getSticky());
-        } else {
+        if (!announcementManager.hasPermission(request.getId(), StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
+        announcementManager.stickyAnnouncement(request.getId(), request.getSticky());
     }
 
     /**
@@ -65,11 +63,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      */
     @Override
     public void deleteAnnouncement(Long id) {
-        if (announcementManager.hasPermission(id, StpUtil.getLoginIdAsLong())) {
-            announcementManager.deleteAnnouncement(id);
-        } else {
+        if (!announcementManager.hasPermission(id, StpUtil.getLoginIdAsLong())) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
+        announcementManager.deleteAnnouncement(id);
     }
 
     /**
@@ -85,7 +82,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
      */
     @Override
     public BaseListResponse<GetAnnouncementListElement> userListAnnouncements(GetAnnouncementListRequest request) {
-        return announcementManager.userListAnnouncements(request.getPage(), request.getPageSize(), request.getType());
+        return announcementManager.userListAnnouncements(
+                request.getPage(),
+                request.getPageSize(),
+                request.getType()
+        );
     }
 
     /**
@@ -115,14 +116,5 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .toList();
 
         return new StickyAnnouncementList(topAnnouncements);
-    }
-
-    /**
-     * 发送系统通知
-     */
-    @Override
-    public void sendSystemNotification(String title, String content, Long targetUserId) {
-        log.debug("发送系统通知: title={}, targetUserId={}", title, targetUserId);
-        announcementManager.sendSystemNotification(title, content, targetUserId);
     }
 }

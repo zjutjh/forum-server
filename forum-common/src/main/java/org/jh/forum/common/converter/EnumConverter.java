@@ -19,9 +19,12 @@ import java.util.Set;
 @Slf4j
 public class EnumConverter implements GenericConverter {
 
+    /**
+     * 获取可转换的枚举类型
+     * 声明：String -> Enum 任意子类
+     */
     @Override
     public Set<ConvertiblePair> getConvertibleTypes() {
-        // 声明：String -> Enum 任意子类
         return Set.of(new ConvertiblePair(String.class, Enum.class));
     }
 
@@ -67,7 +70,7 @@ public class EnumConverter implements GenericConverter {
                 }
             }
         } catch (Exception e) {
-            log.warn("Enum Deserialize Error", e);
+            log.error("Enum deserialization failed, input value = {}", value, e);
             return null;
         }
         return null;

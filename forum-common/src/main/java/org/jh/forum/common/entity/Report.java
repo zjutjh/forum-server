@@ -11,6 +11,8 @@ import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
 /**
+ * 举报实体类
+ *
  * @author zzb
  * @TableName report
  */

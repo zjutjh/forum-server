@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 评论操作枚举
+ *
  * @author qianqianzyk
  */
 @Getter

@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.AttachmentTypeEnum;
 
 /**
+ * 附件信息DTO（暂未使用）
+ *
  * @author SugarMGP
  */
 @Builder

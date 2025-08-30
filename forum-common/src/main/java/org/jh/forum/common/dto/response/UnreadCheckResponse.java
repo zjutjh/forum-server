@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * 检查未读消息响应
+ *
  * @author lyyzzz
  */
 @Builder

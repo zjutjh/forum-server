@@ -1,9 +1,7 @@
 package org.jh.forum.common.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.FAQCategoryEnum;
 
 import jakarta.validation.constraints.NotBlank;
@@ -16,9 +14,6 @@ import jakarta.validation.constraints.Size;
  * @author ZeroHzzzz
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Schema(description = "FAQ问题更新请求参数")
 public class FAQQuestionUpdateRequest {
     @Schema(description = "问题ID")
     @NotNull

@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
  * @author SituChengxiang
  */
 @Data
-@Schema(description = "修改公告")
 public class EditAnnouncementRequest {
     @NotNull
     @Schema(description = "公告ID")

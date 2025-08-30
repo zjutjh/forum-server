@@ -6,17 +6,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 对象类型枚举
+ *
  * @author SugarMGP
  */
 @Getter
 @AllArgsConstructor
 public enum TargetTypeEnum {
     POST("post", "帖子"),
-
     COMMENT("comment", "评论"),
-
     USER("user", "用户"),
-
     REPORT("report", "举报");
 
     @EnumValue

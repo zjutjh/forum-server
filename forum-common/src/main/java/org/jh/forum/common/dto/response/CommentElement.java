@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 评论列表元素
+ *
  * @author qianqianzyk
  */
 @Builder

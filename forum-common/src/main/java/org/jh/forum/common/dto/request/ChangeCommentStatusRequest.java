@@ -7,6 +7,8 @@ import org.jh.forum.common.constants.CommentOperationEnum;
 import jakarta.validation.constraints.NotNull;
 
 /**
+ * 管理员修改评论状态请求
+ *
  * @author qianqianzyk
  */
 @Data

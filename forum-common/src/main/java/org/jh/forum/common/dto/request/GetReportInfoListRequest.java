@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
+ * 获取举报信息列表请求
+ *
  * @author zzb
  */
 @EqualsAndHashCode(callSuper = true)

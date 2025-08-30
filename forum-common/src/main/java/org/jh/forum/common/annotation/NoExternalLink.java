@@ -7,7 +7,10 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 /**
+ * 禁止外链注解，在请求入参中使用
+ *
  * @author SugarMGP
+ * @see NoExternalLinkValidator
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)

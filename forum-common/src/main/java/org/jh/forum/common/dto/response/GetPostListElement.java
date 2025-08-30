@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 获取帖子列表元素
+ *
  * @author SugarMGP
  */
 @Builder

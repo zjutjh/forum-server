@@ -1,10 +1,7 @@
 package org.jh.forum.common.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.jh.forum.common.annotation.NoExternalLink;
 import org.jh.forum.common.constants.CommentTargetTypeEnum;
 
@@ -13,11 +10,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
+ * 发表评论请求
+ *
  * @author qianqianzyk
  */
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class PublishCommentRequest {
     @Schema(description = "评论目标类型")

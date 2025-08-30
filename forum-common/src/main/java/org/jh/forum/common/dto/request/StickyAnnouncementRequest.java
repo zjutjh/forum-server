@@ -12,7 +12,6 @@ import jakarta.validation.constraints.NotNull;
  * @author SituChengxiang
  */
 @Data
-@Schema(description = "置顶/取消置顶公告请求")
 public class StickyAnnouncementRequest {
     @NotNull
     @Min(1)

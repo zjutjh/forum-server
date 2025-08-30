@@ -6,9 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 公告类型枚举
+ *
  * @author SituChengxiang
  */
-
 @AllArgsConstructor
 @Getter
 public enum AnnouncementTypeEnum {

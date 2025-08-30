@@ -1,10 +1,7 @@
 package org.jh.forum.common.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.jh.forum.common.annotation.NoExternalLink;
 import org.jh.forum.common.constants.GenderEnum;
 
@@ -12,11 +9,10 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 /**
+ * 修改用户资料请求
+ *
  * @author MeaquaOWO
  */
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class UpdateUserProfileRequest {
     @NotNull

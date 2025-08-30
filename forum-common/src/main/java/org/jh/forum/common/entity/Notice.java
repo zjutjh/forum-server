@@ -11,7 +11,10 @@ import org.jh.forum.common.constants.NoticeTypeEnum;
 
 
 /**
+ * 通知实体类
+ *
  * @author lyyzzz
+ * @TableName notice
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

@@ -8,6 +8,8 @@ import org.jh.forum.common.constants.UserStatusEnum;
 import jakarta.validation.constraints.NotNull;
 
 /**
+ * 管理员获取用户列表请求
+ *
  * @author SugarMGP
  */
 @EqualsAndHashCode(callSuper = true)

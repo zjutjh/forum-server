@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
+ * 评论实体类
+ *
  * @author qianqianzyk
  * @TableName comment
  */

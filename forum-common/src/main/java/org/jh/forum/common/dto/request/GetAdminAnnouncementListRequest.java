@@ -14,7 +14,6 @@ import org.jh.forum.common.constants.AnnouncementTypeEnum;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Schema(description = "管理员公告列表查询请求")
 public class GetAdminAnnouncementListRequest extends BaseListRequest {
     @Schema(description = "类型筛选 (空则全部)")
     private AnnouncementTypeEnum type;

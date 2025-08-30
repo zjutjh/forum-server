@@ -2,6 +2,7 @@ package org.jh.forum.server.config;
 
 import com.alibaba.cloud.nacos.NacosConfigManager;
 import com.alibaba.nacos.api.config.listener.AbstractListener;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ForumConfigNameConstantEnum;
 import org.jh.forum.server.config.service.BaseConfigService;
@@ -10,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import jakarta.annotation.Resource;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -24,7 +24,7 @@ import java.util.Objects;
 @Configuration
 @Slf4j
 public class NacosConfigConfiguration {
-    public static final Map<String, BaseConfigService> CONFIG_SERVICE_MAP = new HashMap<>();
+    public static final Map<String, BaseConfigService> CONFIG_SERVICE_MAP = Maps.newHashMap();
 
     @Resource
     private NacosConfigManager nacosConfigManager;
@@ -45,23 +45,22 @@ public class NacosConfigConfiguration {
                 String configInfo = nacosConfigManager.getConfigService().getConfigAndSignListener(dataId, group, 5000, new AbstractListener() {
                     @Override
                     public void receiveConfigInfo(String configInfo) {
-                        BaseConfigService configService = CONFIG_SERVICE_MAP.get(dataId);
-                        if (Objects.isNull(configService)) {
-                            log.error("NacosConfigConfiguration can not find this config service, dataId:{}", dataId);
-                            return;
-                        }
-                        configService.parseConfig(configInfo);
+                        applyConfig(dataId, configInfo);
                     }
                 });
 
                 // 解析初始配置内容
-                BaseConfigService configService = CONFIG_SERVICE_MAP.get(dataId);
-                if (Objects.isNull(configService)) {
-                    log.error("NacosConfigConfiguration can not find this config service, dataId:{}", dataId);
-                    return;
-                }
-                configService.parseConfig(configInfo);
+                applyConfig(dataId, configInfo);
             }
         };
+    }
+
+    private void applyConfig(String dataId, String configInfo) {
+        BaseConfigService configService = CONFIG_SERVICE_MAP.get(dataId);
+        if (Objects.isNull(configService)) {
+            log.error("NacosConfigConfiguration can not find this config service, dataId = {}", dataId);
+            return;
+        }
+        configService.parseConfig(configInfo);
     }
 }

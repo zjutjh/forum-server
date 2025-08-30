@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 
 
 /**
- * @author O v O
+ * 用户实体类
+ *
+ * @author MangoGovo
  * @TableName user
  */
 @EqualsAndHashCode(callSuper = true)

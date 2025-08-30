@@ -6,6 +6,8 @@ import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 
 /**
+ * 登录请求
+ *
  * @author MangoGovo
  */
 @Data

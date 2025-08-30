@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 帖子板块枚举
+ *
  * @author SugarMGP
  */
 @Getter

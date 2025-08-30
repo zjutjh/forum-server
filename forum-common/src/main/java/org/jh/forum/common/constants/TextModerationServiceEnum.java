@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 文本审核服务枚举
+ *
  * @author SugarMGP
  */
 @Getter

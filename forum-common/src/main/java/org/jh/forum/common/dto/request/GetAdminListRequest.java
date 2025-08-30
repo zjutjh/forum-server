@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
+ * 管理员列表查询请求
+ *
  * @author SugarMGP
  */
 @EqualsAndHashCode(callSuper = true)

@@ -30,21 +30,19 @@ public interface CommentMapper extends BaseMapper<Comment> {
 
     // 获取被删除的评论 ID 或有被删除的子回复的评论 ID
     @Select("""
-            SELECT id FROM comment
-            WHERE post_id = #{postId}
-              AND parent_id = 0
-              AND deleted = true
-            
-            UNION
-            
-            SELECT id FROM comment
-            WHERE post_id = #{postId}
-              AND parent_id = 0
-              AND deleted = false
-              AND id IN (
-                  SELECT DISTINCT parent_id FROM comment
-                  WHERE deleted = true AND parent_id != 0
-              )
+            SELECT c.id
+            FROM comment c
+            WHERE c.post_id = #{postId}
+              AND c.parent_id = 0
+              AND (
+                    c.deleted = true
+                    OR EXISTS (
+                        SELECT 1
+                        FROM comment r
+                        WHERE r.parent_id = c.id
+                          AND r.deleted = true
+                    )
+                  )
             """)
     List<Long> getDeletedOrHasDeletedReplyCommentIds(@Param("postId") Long postId);
 
@@ -58,10 +56,17 @@ public interface CommentMapper extends BaseMapper<Comment> {
     @Select("""
             SELECT COUNT(*)
             FROM comment c
-            LEFT JOIN comment p ON c.parent_id = p.id
             WHERE c.post_id = #{postId}
               AND c.deleted = false
-              AND (c.parent_id = 0 OR p.deleted = false)
+              AND (
+                    c.parent_id = 0
+                    OR EXISTS (
+                        SELECT 1
+                        FROM comment p
+                        WHERE p.id = c.parent_id
+                          AND p.deleted = false
+                    )
+                  )
             """)
     Integer selectCommentCount(@Param("postId") Long postId);
 }

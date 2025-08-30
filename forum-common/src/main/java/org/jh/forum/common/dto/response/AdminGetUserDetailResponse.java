@@ -12,6 +12,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
+ * 管理员获取用户详情响应
+ *
  * @author MeaquaOWO
  */
 @Builder

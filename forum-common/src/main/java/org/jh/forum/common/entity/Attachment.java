@@ -10,6 +10,8 @@ import org.jh.forum.common.constants.AttachmentTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
 /**
+ * 附件实体类
+ *
  * @author SugarMGP
  * @TableName attachment
  */

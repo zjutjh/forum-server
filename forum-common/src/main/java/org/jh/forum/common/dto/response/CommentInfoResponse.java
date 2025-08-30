@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 评论信息响应
+ *
  * @author SugarMGP
  */
 @Builder

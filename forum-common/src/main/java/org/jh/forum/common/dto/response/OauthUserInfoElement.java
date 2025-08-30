@@ -7,6 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.GenderEnum;
 
+/**
+ * 统一学生信息
+ *
+ * @author MangoGovo
+ */
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

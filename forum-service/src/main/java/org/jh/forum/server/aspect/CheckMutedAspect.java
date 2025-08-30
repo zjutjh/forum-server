@@ -13,7 +13,10 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 /**
+ * 检查用户禁言切片
+ *
  * @author SugarMGP
+ * @see org.jh.forum.common.annotation.CheckMuted
  */
 @Aspect
 @Component

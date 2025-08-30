@@ -9,7 +9,10 @@ import lombok.experimental.SuperBuilder;
 import org.jh.forum.common.constants.ReportTypeEnum;
 
 /**
+ * 举报信息实体类
+ *
  * @author zzb
+ * @TableName report_info
  */
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "report_info")

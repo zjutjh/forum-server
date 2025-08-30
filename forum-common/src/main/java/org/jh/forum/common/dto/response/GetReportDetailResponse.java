@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 获取举报详情响应
+ *
  * @author zzb
  */
 @Builder

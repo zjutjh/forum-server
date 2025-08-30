@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
+ * 帖子话题关系表
+ *
  * @author SugarMGP
  * @TableName post_topic_relation
  */

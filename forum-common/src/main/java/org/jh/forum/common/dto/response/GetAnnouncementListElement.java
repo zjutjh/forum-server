@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Schema(description = "公告列表项（用户版）")
 public class GetAnnouncementListElement {
     @Schema(description = "公告ID")
     private Long id;

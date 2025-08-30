@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 import jakarta.validation.constraints.NotBlank;
 
 /**
+ * 获取举报列表请求
+ *
  * @author zzb
  */
 @EqualsAndHashCode(callSuper = true)

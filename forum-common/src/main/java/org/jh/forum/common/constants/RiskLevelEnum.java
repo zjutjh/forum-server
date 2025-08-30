@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 审核风险等级枚举
+ *
  * @author SugarMGP
  */
 @AllArgsConstructor

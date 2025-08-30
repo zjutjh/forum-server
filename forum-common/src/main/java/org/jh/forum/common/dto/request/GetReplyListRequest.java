@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 /**
+ * 获取回复列表请求
+ *
  * @author qianqianzyk
  */
 @EqualsAndHashCode(callSuper = true)

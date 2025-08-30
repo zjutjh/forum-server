@@ -10,6 +10,8 @@ import org.jh.forum.common.constants.GenderEnum;
 import java.time.LocalDate;
 
 /**
+ * 获取用户信息响应（个人页面）
+ *
  * @author MeaquaOWO
  */
 @Builder
@@ -37,9 +39,6 @@ public class GetUserProfileResponse {
 
     @Schema(description = "用户性别")
     private GenderEnum gender;
-
-    @Schema(description = "是否为自己")
-    private Boolean isSelf;
 
     @Schema(description = "用户背景图URL")
     private String background;

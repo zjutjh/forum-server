@@ -13,7 +13,10 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.util.EnumSet;
 
 /**
+ * 禁止外链注解校验器
+ *
  * @author SugarMGP
+ * @see NoExternalLink
  */
 public class NoExternalLinkValidator implements ConstraintValidator<NoExternalLink, String> {
 

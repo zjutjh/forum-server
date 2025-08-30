@@ -22,11 +22,12 @@ import org.jh.forum.common.entity.User;
 import org.jh.forum.common.exceptions.ApiException;
 import org.jh.forum.server.mapper.AnnouncementMapper;
 import org.jh.forum.server.mapper.UserMapper;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -36,9 +37,10 @@ import java.util.Optional;
  * @author SituChengxiang
  */
 @Slf4j
-@Component
+@Service
 public class AnnouncementManager {
 
+    private static final String DEFAULT_SIGNATORY = "系统管理员";
     private static final int DEFAULT_TOPPED = 3;
     private static final long ALL_USER_ID = -1L;
 
@@ -68,7 +70,7 @@ public class AnnouncementManager {
     }
 
     /**
-     * 创建系统通知（供RPC接口使用）
+     * 创建系统通知
      */
     public void sendSystemNotification(String title, String content, Long targetUserId) {
         Announcement notification = Announcement.builder()
@@ -77,7 +79,7 @@ public class AnnouncementManager {
                 .type(AnnouncementTypeEnum.SYSTEMATIC)
                 .publishedAt(LocalDateTime.now())
                 .status(AnnouncementStatusEnum.PUBLISHED)
-                .signatory("系统管理员")
+                .signatory(DEFAULT_SIGNATORY)
                 .sticky(false)
                 .targetUid(targetUserId)
                 .build();
@@ -89,7 +91,7 @@ public class AnnouncementManager {
      */
     public void editAnnouncement(EditAnnouncementRequest request) {
         Announcement announcement = getAnnouncementOrThrow(request.getId());
-        if (announcement.getTargetUid() != ALL_USER_ID) {
+        if (!announcement.getTargetUid().equals(ALL_USER_ID)) {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
 
@@ -102,10 +104,10 @@ public class AnnouncementManager {
             announcement.setPublishedAt(getPublishedAt(request.getStatus(), request.getPublishedAt()));
             announcement.setType(request.getType());
         } else {
-            // 如果尝试修改状态、发布时间、类型等关键字段，则报错（兜底用的）
-            if ((request.getPublishedAt() != null && !request.getPublishedAt().isEqual(announcement.getPublishedAt()))
-                    || (request.getStatus() != null && !request.getStatus().equals(announcement.getStatus()))
-                    || (request.getType() != null && !request.getType().equals(announcement.getType()))) {
+            // 如果尝试修改状态、发布时间、类型等关键字段，则报错
+            if (!Objects.equals(request.getPublishedAt(), announcement.getPublishedAt())
+                    || !Objects.equals(request.getStatus(), announcement.getStatus())
+                    || !Objects.equals(request.getType(), announcement.getType())) {
                 throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
             }
         }
@@ -132,7 +134,7 @@ public class AnnouncementManager {
             throw new ApiException(ExceptionEnum.ANNOUNCEMENT_STICKY_LIMIT_REACHED);
         }
         Announcement announcement = getAnnouncementOrThrow(id);
-        if (announcement.getTargetUid() != ALL_USER_ID) {
+        if (!announcement.getTargetUid().equals(ALL_USER_ID)) {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
         if (announcement.getPublishedAt() == null || announcement.getPublishedAt().isAfter(LocalDateTime.now())) {
@@ -150,7 +152,7 @@ public class AnnouncementManager {
         if (user == null) {
             return false;
         }
-        if (user.getRole() == UserTypeEnum.SUPER_ADMIN) {
+        if (UserTypeEnum.SUPER_ADMIN.equals(user.getRole())) {
             return true;
         }
         Announcement announcement = getAnnouncementOrThrow(announcementId);

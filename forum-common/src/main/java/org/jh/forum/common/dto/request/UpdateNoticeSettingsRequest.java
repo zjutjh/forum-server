@@ -6,6 +6,8 @@ import lombok.Data;
 import jakarta.validation.constraints.NotNull;
 
 /**
+ * 修改通知设置请求
+ *
  * @author SugarMGP
  */
 @Data

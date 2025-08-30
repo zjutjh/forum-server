@@ -6,6 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
 /**
+ * 获取评论回复列表响应
+ *
  * @author SugarMGP
  */
 @EqualsAndHashCode(callSuper = true)

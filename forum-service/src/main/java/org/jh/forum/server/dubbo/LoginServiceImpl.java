@@ -7,17 +7,19 @@ import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.rpc.RpcContext;
 import org.jh.forum.api.dubbo.service.LoginService;
 import org.jh.forum.common.constants.ExceptionEnum;
+import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
+import org.jh.forum.common.dto.request.AdminRegisterRequest;
 import org.jh.forum.common.dto.response.LoginResponse;
 import org.jh.forum.common.dto.response.OauthUserInfoElement;
 import org.jh.forum.common.entity.User;
 import org.jh.forum.common.exceptions.ApiException;
-import org.jh.forum.server.config.service.SuperLoginSwitchService;
 import org.jh.forum.server.manager.UserManager;
 import org.jh.forum.server.mapper.UserMapper;
 import org.jh.forum.server.utils.UserCenterUtils;
@@ -28,6 +30,7 @@ import org.jh.usercenter.api.UserCenterService;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static org.jh.forum.server.config.service.AdminRegisterSwitchService.adminRegisterSwitch;
 import static org.jh.forum.server.config.service.SuperLoginSwitchService.superLoginSwitch;
 
 /**
@@ -37,7 +40,7 @@ import static org.jh.forum.server.config.service.SuperLoginSwitchService.superLo
 @Slf4j
 @AllArgsConstructor
 public class LoginServiceImpl implements LoginService {
-    private final SuperLoginSwitchService superLoginSwitchService;
+    private static final String OPERATOR_HEADER = "X-JH-Operator";
     private UserMapper userMapper;
     private UserManager userManager;
     private UserCenterService userCenterService;
@@ -124,7 +127,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     private Boolean hasSuperPermission() {
-        String operatorId = RpcContext.getClientAttachment().getAttachment("X-JH-Operator");
+        String operatorId = RpcContext.getClientAttachment().getAttachment(OPERATOR_HEADER);
         if (Objects.isNull(operatorId) || Objects.isNull(superLoginSwitch)) {
             return false;
         }
@@ -157,7 +160,7 @@ public class LoginServiceImpl implements LoginService {
 
         Value data = resp.getData();
         if (data.getKindCase() != Value.KindCase.STRUCT_VALUE) {
-            log.error("用户中心请求结果类型异常");
+            log.error("用户中心请求结果类型异常, data = {}", data);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
         Struct dataStruct = data.getStructValue();
@@ -167,5 +170,43 @@ public class LoginServiceImpl implements LoginService {
                 .gender(UserCenterUtils.toGenderEnum(dataStruct.getFieldsOrThrow("gender").getStringValue()))
                 .studentType(dataStruct.getFieldsOrThrow("userTypeDesc").getStringValue())
                 .build();
+    }
+
+    @Override
+    public void adminRegister(AdminRegisterRequest request) {
+        if (Objects.isNull(adminRegisterSwitch)) {
+            log.info("未获取到 AdminRegister 配置");
+            throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
+        }
+        String secretKey = adminRegisterSwitch.getKey();
+        Boolean adminRegisterEnabled = adminRegisterSwitch.getEnabled();
+        // 接口是否下线
+        if (!adminRegisterEnabled) {
+            log.info("AdminRegister 接口已下线");
+            throw new ApiException(ExceptionEnum.NOT_FOUND_ERROR);
+        }
+        // 校验key
+        if (StringUtils.isBlank(request.getKey()) || !request.getKey().equals(secretKey)) {
+            throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
+        }
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, request.getUsername()));
+        if (user != null) {
+            user.setPassword(BCrypt.hashpw(request.getPassword()));
+            user.setRole(request.getUserType());
+            userMapper.updateById(user);
+            return;
+        }
+        user = User.builder()
+                .nickname(userManager.generateRandomNickname())
+                .realname("测试账号")
+                .studentId(request.getUsername())
+                .password(BCrypt.hashpw(request.getPassword()))
+                .collegeId("000000")
+                .gender(GenderEnum.UNKNOWN)
+                .role(request.getUserType())
+                .reportCount(0)
+                .resolvedReportCount(0).build();
+        userMapper.insert(user);
+        userManager.insertUserDetail(user.getId());
     }
 }

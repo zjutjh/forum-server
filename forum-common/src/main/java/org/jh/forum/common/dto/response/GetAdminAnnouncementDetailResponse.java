@@ -9,11 +9,12 @@ import org.jh.forum.common.constants.AnnouncementTypeEnum;
 import java.time.LocalDateTime;
 
 /**
+ * 管理员公告详情响应
+ *
  * @author SituChengxiang
  */
 @Data
 @Builder
-@Schema(description = "管理员公告详情响应")
 public class GetAdminAnnouncementDetailResponse {
     @Schema(description = "公告标题")
     private String title;

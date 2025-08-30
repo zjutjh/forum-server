@@ -10,13 +10,14 @@ import org.jh.forum.common.constants.UserTypeEnum;
 import java.time.LocalDateTime;
 
 /**
+ * 超管获取管理员列表元素
+ *
  * @author SugarMGP
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "管理员列表项")
 public class GetAdminListElement {
     @Schema(description = "账号ID")
     private Long id;

@@ -10,13 +10,14 @@ import org.jh.forum.common.constants.UserStatusEnum;
 import java.time.LocalDateTime;
 
 /**
+ * 普通用户账号列表项
+ *
  * @author SugarMGP
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "用户账号列表项")
 public class GetUserListElement {
     @Schema(description = "用户ID")
     private Long id;

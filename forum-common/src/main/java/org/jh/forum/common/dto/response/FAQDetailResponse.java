@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Schema(description = "FAQ详情响应数据")
 public class FAQDetailResponse {
     @Schema(description = "分类名称")
     private FAQCategoryEnum category;

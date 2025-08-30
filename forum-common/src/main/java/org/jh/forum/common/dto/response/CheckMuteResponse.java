@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
+ * 检测禁言响应
+ *
  * @author SugarMGP
  */
 @Builder

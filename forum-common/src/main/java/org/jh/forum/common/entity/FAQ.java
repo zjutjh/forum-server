@@ -12,6 +12,7 @@ import org.jh.forum.common.constants.FAQCategoryEnum;
  * FAQ实体类
  *
  * @author ZeroHzzzz
+ * @TableName faq
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
