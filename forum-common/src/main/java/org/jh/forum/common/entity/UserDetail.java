@@ -37,8 +37,6 @@ public class UserDetail {
 
     private Boolean birthdayVisible;
 
-    private Boolean collegeVisible;
-
     private Boolean realnameVisible;
 
     private Boolean studentIdVisible;

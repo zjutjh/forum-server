@@ -312,7 +312,6 @@ create table user_detail
     birthday           date         default '1900-01-01' not null comment '生日',
     background_image   varchar(255) default ''           not null comment '背景图地址',
     birthday_visible   boolean      default true         not null comment '生日可见性',
-    college_visible    boolean      default true         not null comment '学院可见性',
     realname_visible   boolean      default true         not null comment '实名可见性',
     student_id_visible boolean      default true         not null comment '学号可见性'
 );

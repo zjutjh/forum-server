@@ -49,9 +49,6 @@ public class GetUserProfileResponse {
     @Schema(description = "学号是否可见")
     private Boolean studentIdVisible;
 
-    @Schema(description = "学院是否可见")
-    private Boolean collegeIdVisible;
-
     @Schema(description = "生日是否可见")
     private Boolean birthdayVisible;
 

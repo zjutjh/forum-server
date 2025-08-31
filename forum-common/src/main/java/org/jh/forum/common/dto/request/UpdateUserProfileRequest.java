@@ -59,10 +59,6 @@ public class UpdateUserProfileRequest {
     private Boolean birthdayVisible;
 
     @NotNull
-    @Schema(description = "学院是否可见")
-    private Boolean collegeVisible;
-
-    @NotNull
     @Schema(description = "真实姓名是否可见")
     private Boolean realnameVisible;
 

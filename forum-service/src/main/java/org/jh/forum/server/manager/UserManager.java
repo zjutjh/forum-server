@@ -51,7 +51,6 @@ public class UserManager {
                 .signature("")
                 .birthday(LocalDate.of(1900, 1, 1))
                 .birthdayVisible(true)
-                .collegeVisible(true)
                 .realnameVisible(true)
                 .studentIdVisible(true)
                 .build());
@@ -175,7 +174,6 @@ public class UserManager {
         detailEntity.setEmail(request.getEmail());
         detailEntity.setProfile(request.getProfile());
         detailEntity.setBirthdayVisible(request.getBirthdayVisible());
-        detailEntity.setCollegeVisible(request.getCollegeVisible());
         detailEntity.setRealnameVisible(request.getRealnameVisible());
         detailEntity.setStudentIdVisible(request.getStudentIdVisible());
 
@@ -215,11 +213,10 @@ public class UserManager {
                 .background(detailEntity.getBackgroundImage())
                 .birthdayVisible(detailEntity.getBirthdayVisible())
                 .realnameVisible(detailEntity.getRealnameVisible())
-                .collegeIdVisible(detailEntity.getCollegeVisible())
                 .studentIdVisible(detailEntity.getStudentIdVisible())
-                .realname(detailEntity.getRealnameVisible() || isSelf ? userEntity.getRealname() : null)
-                .collegeId(detailEntity.getCollegeVisible() || isSelf ? userEntity.getCollegeId() : null)
+                .collegeId(userEntity.getCollegeId())
                 .birthday(birthday)
+                .realname(detailEntity.getRealnameVisible() || isSelf ? userEntity.getRealname() : null)
                 .studentId(detailEntity.getStudentIdVisible() || isSelf ? userEntity.getStudentId() : null)
                 .build();
     }
