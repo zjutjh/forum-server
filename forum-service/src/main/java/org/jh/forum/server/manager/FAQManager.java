@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.jh.forum.common.constants.AdminOperationLogTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.FAQCategoryEnum;
 import org.jh.forum.common.dto.request.FAQQuestionListRequest;
@@ -27,6 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FAQManager {
     private final FAQMapper faqMapper;
+    private final OperationLogManager operationLogManager;
 
     /**
      * 根据分类获取FAQ列表
@@ -87,6 +89,12 @@ public class FAQManager {
                 .viewCount(0)
                 .build();
         faqMapper.insert(faq);
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.CREATE_OR_UPDATE_FAQ,
+                "",
+                faq.toString(),
+                faq.getId()
+        );
     }
 
     /**
@@ -94,11 +102,20 @@ public class FAQManager {
      */
     public void updateFaq(Long questionId, FAQCategoryEnum category, String question, String answer, Boolean isPicked) {
         FAQ faq = getFaqOrThrow(questionId);
+        String beforeContent = faq.toString();
+
         faq.setCategory(category);
         faq.setQuestion(question);
         faq.setAnswer(answer);
         faq.setIsPicked(isPicked);
         faqMapper.updateById(faq);
+
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.CREATE_OR_UPDATE_FAQ,
+                beforeContent,
+                faq.toString(),
+                faq.getId()
+        );
     }
 
     /**
@@ -107,6 +124,12 @@ public class FAQManager {
     public void deleteFaq(Long questionId) {
         getFaqOrThrow(questionId);
         faqMapper.deleteById(questionId);
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.DELETE_FAQ,
+                "",
+                "",
+                questionId
+        );
     }
 
     public FAQ getFaqOrThrow(Long id) {

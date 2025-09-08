@@ -152,16 +152,21 @@ create table notice
     attribute      text                                      null comment '属性列（json string）'
 );
 
-create table operation_log
+create table admin_operation_log
 (
     id             bigint                                    not null comment '修改记录ID'
         primary key,
-    type           varchar(20)                               not null comment '修改类型',
+    type           varchar(40)                               not null comment '修改类型',
     target_id      bigint                                    not null comment '修改对象ID',
     user_id        bigint                                    not null comment '修改用户ID',
     before_content text                                      not null comment '修改前内容',
     after_content  text                                      not null comment '修改后内容',
-    created_at     timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间'
+    created_at     timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
+    updated_at     timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
+    create_uid     bigint                                    not null comment '创建用户',
+    update_uid     bigint                                    not null comment '更新用户',
+    deleted        boolean                                   not null comment '是否被删除',
+    attribute      text                                      null comment '属性列（json string）'
 );
 
 create table post

@@ -48,6 +48,7 @@ public class CommentManager {
     private final NoticeManager noticeManager;
     private final PostManager postManager;
     private final AliyunGreenClient aliyunGreenClient;
+    private final OperationLogManager operationLogManager;
 
     @Transactional
     public void publishComment(CommentTargetTypeEnum commentTargetType, Long commentTargetId, String content, String pictureUrl) {
@@ -452,6 +453,13 @@ public class CommentManager {
                 }
             }
         }
+
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.DELETE_OR_RESTORE_COMMENT,
+                "",
+                operation.getValue(),
+                commentId
+        );
     }
 
     private ReplyElement buildReplyElement(Comment reply, Long postAuthorId) {

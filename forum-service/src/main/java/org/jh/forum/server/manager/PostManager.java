@@ -51,6 +51,7 @@ public class PostManager {
     private final UpvoteMapper upvoteMapper;
     private final NoticeManager noticeManager;
     private final AliyunGreenClient aliyunGreenClient;
+    private final OperationLogManager operationLogManager;
 
     @Transactional
     public void publishPost(PublishPostRequest request) {
@@ -194,11 +195,20 @@ public class PostManager {
         if (post == null) {
             return;
         }
+        String beforeContent = post.toString();
         if (!post.getUserId().equals(StpUtil.getLoginIdAsLong()) && !isAdmin) {
             throw new ApiException(ExceptionEnum.PERMISSION_NOT_ALLOWED);
         }
         postRankManager.removePost(id);
         postMapper.deleteById(id);
+        if (isAdmin) {
+            operationLogManager.addOperationLog(
+                    AdminOperationLogTypeEnum.DELETE_POST,
+                    beforeContent,
+                    "",
+                    id
+            );
+        }
     }
 
     @IgnoreLogicDelete
@@ -337,6 +347,12 @@ public class PostManager {
     public void restorePost(Long id) {
         getPostOrThrow(id);
         postMapper.restorePost(id);
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.RESTORE_POST,
+                "",
+                "",
+                id
+        );
     }
 
     public void pinPost(Long id, Boolean pinned) {
@@ -349,6 +365,12 @@ public class PostManager {
         Post post = getPostOrThrow(id);
         post.setIsPinned(pinned);
         postMapper.updateById(post);
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.PIN_POST,
+                "",
+                pinned.toString(),
+                id
+        );
     }
 
     public void topPost(Long id, Boolean topped) {

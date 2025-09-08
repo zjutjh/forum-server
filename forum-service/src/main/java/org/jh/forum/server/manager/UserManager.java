@@ -42,6 +42,7 @@ public class UserManager {
     private final AliyunGreenClient aliyunGreenClient;
     private final FileManager fileManager;
     private final ReportMapper reportMapper;
+    private final OperationLogManager operationLogManager;
 
     public void insertUserDetail(Long userId) {
         userDetailMapper.insert(UserDetail.builder()
@@ -116,6 +117,12 @@ public class UserManager {
         userMapper.update(new LambdaUpdateWrapper<User>()
                 .eq(User::getId, id)
                 .set(User::getMutedUntil, LocalDateTime.now().plusHours(hours))
+        );
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.MUTE_USER,
+                "",
+                hours + "hours",
+                id
         );
     }
 

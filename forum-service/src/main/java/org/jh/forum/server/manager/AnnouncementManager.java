@@ -7,10 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jh.forum.common.constants.AnnouncementStatusEnum;
-import org.jh.forum.common.constants.AnnouncementTypeEnum;
-import org.jh.forum.common.constants.ExceptionEnum;
-import org.jh.forum.common.constants.UserTypeEnum;
+import org.jh.forum.common.constants.*;
 import org.jh.forum.common.dto.request.CreateAnnouncementRequest;
 import org.jh.forum.common.dto.request.EditAnnouncementRequest;
 import org.jh.forum.common.dto.response.BaseListResponse;
@@ -50,6 +47,9 @@ public class AnnouncementManager {
     @Resource
     private UserMapper userMapper;
 
+    @Resource
+    private OperationLogManager operationLogManager;
+
     /**
      * 创建公告
      * 前端请求只能创建全体用户的公告，不能创建系统通知
@@ -67,6 +67,12 @@ public class AnnouncementManager {
                 .targetUid(ALL_USER_ID)
                 .build();
         announcementMapper.insert(announcement);
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.CREATE_OR_UPDATE_ANNOUNCEMENT,
+                "",
+                announcement.toString(),
+                announcement.getId()
+        );
     }
 
     /**
@@ -94,6 +100,7 @@ public class AnnouncementManager {
         if (!announcement.getTargetUid().equals(ALL_USER_ID)) {
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
+        String beforeContent = announcement.toString();
 
         announcement.setTitle(request.getTitle());
         announcement.setContent(request.getContent());
@@ -113,6 +120,12 @@ public class AnnouncementManager {
         }
 
         announcementMapper.updateById(announcement);
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.CREATE_OR_UPDATE_ANNOUNCEMENT,
+                beforeContent,
+                announcement.toString(),
+                announcement.getId()
+        );
     }
 
     /**
@@ -121,6 +134,12 @@ public class AnnouncementManager {
     public void deleteAnnouncement(Long id) {
         getAnnouncementOrThrow(id);
         announcementMapper.deleteById(id);
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.DELETE_ANNOUNCEMENT,
+                "",
+                "",
+                id
+        );
     }
 
     /**
@@ -140,8 +159,15 @@ public class AnnouncementManager {
         if (announcement.getPublishedAt() == null || announcement.getPublishedAt().isAfter(LocalDateTime.now())) {
             throw new ApiException(ExceptionEnum.ANNOUNCEMENT_NOT_PUBLISHED);
         }
+        String beforeContent = announcement.getSticky().toString();
         announcement.setSticky(isSticky);
         announcementMapper.updateById(announcement);
+        operationLogManager.addOperationLog(
+                AdminOperationLogTypeEnum.PIN_ANNOUNCEMENT,
+                beforeContent,
+                announcement.getSticky().toString(),
+                announcement.getId()
+        );
     }
 
     /**
