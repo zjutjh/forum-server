@@ -88,21 +88,6 @@ create table favorite
     attribute  text                                      null comment '属性列（json string）'
 );
 
-create table feedback
-(
-    id         bigint                                    not null comment '意见反馈ID'
-        primary key,
-    user_id    bigint                                    not null comment '用户ID',
-    category   varchar(20)                               not null comment '反馈类别',
-    content    varchar(500)                              not null comment '反馈内容',
-    created_at timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '创建时间',
-    updated_at timestamp(3)                              not null on update CURRENT_TIMESTAMP(3) comment '更新时间',
-    create_uid bigint                                    not null comment '创建用户',
-    update_uid bigint                                    not null comment '更新用户',
-    deleted    boolean                                   not null comment '是否被删除',
-    attribute  text                                      null comment '属性列（json string）'
-);
-
 create table file
 (
     id         bigint                                    not null comment '文件ID'
