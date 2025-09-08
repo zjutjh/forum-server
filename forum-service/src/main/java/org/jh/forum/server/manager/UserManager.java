@@ -121,7 +121,7 @@ public class UserManager {
         operationLogManager.addOperationLog(
                 AdminOperationLogTypeEnum.MUTE_USER,
                 "",
-                hours + "hours",
+                hours != 0 ? hours + " hours" : "unmute",
                 id
         );
     }
