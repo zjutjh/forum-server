@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -112,9 +111,9 @@ public class AnnouncementManager {
             announcement.setType(request.getType());
         } else {
             // 如果尝试修改状态、发布时间、类型等关键字段，则报错
-            if (!Objects.equals(request.getPublishedAt(), announcement.getPublishedAt())
-                    || !Objects.equals(request.getStatus(), announcement.getStatus())
-                    || !Objects.equals(request.getType(), announcement.getType())) {
+            if ((request.getPublishedAt() != null && !request.getPublishedAt().isEqual(announcement.getPublishedAt()))
+                    || (request.getStatus() != null && !request.getStatus().equals(announcement.getStatus()))
+                    || (request.getType() != null && !request.getType().equals(announcement.getType()))) {
                 throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
             }
         }
