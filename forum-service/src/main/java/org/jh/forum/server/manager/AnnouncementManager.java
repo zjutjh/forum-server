@@ -98,6 +98,7 @@ public class AnnouncementManager {
     public void editAnnouncement(EditAnnouncementRequest request) {
         Announcement announcement = getAnnouncementOrThrow(request.getId());
         if (!announcement.getTargetUid().equals(ALL_USER_ID)) {
+            log.error("对象ID判断错误");
             throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
         }
         String beforeContent = announcement.toString();
@@ -115,6 +116,7 @@ public class AnnouncementManager {
             if (!Objects.equals(request.getPublishedAt(), announcement.getPublishedAt())
                     || !Objects.equals(request.getStatus(), announcement.getStatus())
                     || !Objects.equals(request.getType(), announcement.getType())) {
+                log.error("尝试修改状态、发布时间、类型");
                 throw new ApiException(ExceptionEnum.INVALID_PARAMETER);
             }
         }
