@@ -10,6 +10,7 @@ import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetReportDetailResponse {
+public class GetReportDetailResponse implements Serializable {
     @Schema(description = "被举报人ID")
     private Long targetUserId;
 

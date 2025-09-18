@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 点赞帖子响应
  *
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UpvotePostResponse {
+public class UpvotePostResponse implements Serializable {
     @Schema(description = "点赞状态")
     private Boolean status;
 }

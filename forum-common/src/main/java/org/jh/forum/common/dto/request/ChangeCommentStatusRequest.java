@@ -5,6 +5,7 @@ import lombok.Data;
 import org.jh.forum.common.constants.CommentOperationEnum;
 
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 管理员修改评论状态请求
@@ -12,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
  * @author qianqianzyk
  */
 @Data
-public class ChangeCommentStatusRequest {
+public class ChangeCommentStatusRequest implements Serializable {
     @Schema(description = "评论或回复ID")
     @NotNull
     private Long id;

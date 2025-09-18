@@ -7,6 +7,7 @@ import org.jh.forum.common.constants.FAQCategoryEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 
 /**
  * FAQ问题更新请求
@@ -14,7 +15,7 @@ import jakarta.validation.constraints.Size;
  * @author ZeroHzzzz
  */
 @Data
-public class FAQQuestionUpdateRequest {
+public class FAQQuestionUpdateRequest implements Serializable {
     @Schema(description = "问题ID")
     @NotNull
     private Long questionId;

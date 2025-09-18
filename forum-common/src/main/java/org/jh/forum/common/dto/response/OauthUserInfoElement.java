@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.GenderEnum;
 
+import java.io.Serializable;
+
 /**
  * 统一学生信息
  *
@@ -16,7 +18,7 @@ import org.jh.forum.common.constants.GenderEnum;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class OauthUserInfoElement {
+public class OauthUserInfoElement implements Serializable {
     @Schema(description = "性别")
     GenderEnum gender;
     @Schema(description = "姓名")

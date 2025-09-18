@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.dto.PictureInfoDTO;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetReportInfoElement {
+public class GetReportInfoElement implements Serializable {
     @Schema(description = "举报人ID")
     private Long userId;
 

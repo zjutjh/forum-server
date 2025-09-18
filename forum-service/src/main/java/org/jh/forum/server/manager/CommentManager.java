@@ -241,13 +241,13 @@ public class CommentManager {
                 .eq("parent_id", comment.getId())
                 .orderByDesc("upvote_count + reply_count * 2")
                 .orderByAsc("created_at")
-                .last("limit 1"));
+                .last("limit 2"));
         return hottestReply.stream()
                 .map(reply -> buildReplyElement(reply, postAuthorId))
                 .toList();
     }
 
-    public GetCommentReplyListResponse getReplyList(Long commentId, Integer page, Integer pageSize, String sort, Long highlightReplyId) {
+    public GetCommentReplyListResponse getReplyList(Long commentId, Integer page, Integer pageSize, Long highlightReplyId) {
         Comment parent = getCommentOrThrow(commentId);
         Post post = postManager.getPostOrThrow(parent.getPostId());
 
@@ -267,9 +267,6 @@ public class CommentManager {
 
         if (excludeId != null) {
             wrapper.orderByAsc("CASE WHEN id = " + excludeId + " THEN 0 ELSE 1 END");
-        }
-        if ("hot".equals(sort)) {
-            wrapper.orderByDesc("upvote_count + reply_count * 2");
         }
         wrapper.orderByAsc("created_at");
 

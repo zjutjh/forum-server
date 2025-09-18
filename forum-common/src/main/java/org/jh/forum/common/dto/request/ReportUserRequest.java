@@ -6,6 +6,7 @@ import org.jh.forum.common.constants.ReportTypeEnum;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
  * @author zzb
  */
 @Data
-public class ReportUserRequest {
+public class ReportUserRequest implements Serializable {
     @Schema(description = "举报类型 other-其他 speech_violation-言论违规 personal_info_violation-个人信息违规")
     @NotNull
     private ReportTypeEnum type;

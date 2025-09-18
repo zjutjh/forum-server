@@ -7,6 +7,7 @@ import org.jh.forum.common.constants.UserTypeEnum;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 管理员注册请求
@@ -14,7 +15,7 @@ import jakarta.validation.constraints.NotNull;
  * @author MangoGovo
  */
 @Data
-public class AdminRegisterRequest {
+public class AdminRegisterRequest implements Serializable {
     @Schema(description = "用户名")
     @NotBlank(message = "用户名不能为空")
     String username;

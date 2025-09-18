@@ -20,7 +20,7 @@ import java.time.Instant;
 public class AccessLogFilter implements Filter {
 
     static {
-        AnsiOutput.setEnabled(AnsiOutput.Enabled.ALWAYS);
+        AnsiOutput.setEnabled(AnsiOutput.Enabled.DETECT);
     }
 
     private static AnsiColor getStatusColor(int status) {

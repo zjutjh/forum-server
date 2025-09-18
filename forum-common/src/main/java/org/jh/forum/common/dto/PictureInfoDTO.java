@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 图片信息DTO
  *
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PictureInfoDTO {
+public class PictureInfoDTO implements Serializable {
     @Schema(description = "图片URL")
     String url;
 

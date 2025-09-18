@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.UserTypeEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetAdminListElement {
+public class GetAdminListElement implements Serializable {
     @Schema(description = "账号ID")
     private Long id;
 

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 处理举报响应
  *
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class HandleReportResponse {
+public class HandleReportResponse implements Serializable {
     @Schema(description = "下一个举报ID")
     Long nextReportId;
 }

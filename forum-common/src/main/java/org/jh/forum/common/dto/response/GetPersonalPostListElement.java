@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.PostCategoryEnum;
 import org.jh.forum.common.dto.PictureInfoDTO;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetPersonalPostListElement {
+public class GetPersonalPostListElement implements Serializable {
     @Schema(description = "帖子ID")
     private Long id;
 

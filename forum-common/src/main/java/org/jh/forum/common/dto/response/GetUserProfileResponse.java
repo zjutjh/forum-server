@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.GenderEnum;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -18,7 +19,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetUserProfileResponse {
+public class GetUserProfileResponse implements Serializable {
     @Schema(description = "用户Id")
     private Long userId;
 

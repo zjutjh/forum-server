@@ -9,6 +9,7 @@ import org.jh.forum.common.constants.PostCategoryEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ import java.util.List;
  * @author SugarMGP
  */
 @Data
-public class PublishPostRequest {
+public class PublishPostRequest implements Serializable {
     @Schema(description = "帖子标题")
     @NotBlank
     @Size(max = 30)

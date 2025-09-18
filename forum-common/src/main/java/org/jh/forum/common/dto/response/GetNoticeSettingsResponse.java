@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 获取用户通知设置
  *
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetNoticeSettingsResponse {
+public class GetNoticeSettingsResponse implements Serializable {
     @Schema(description = "点赞提醒开关")
     private Boolean upvoteNotice;
 

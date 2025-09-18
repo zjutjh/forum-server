@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  */
 @Data
 @SuperBuilder
-public class BaseListResponse<T> {
+public class BaseListResponse<T extends Serializable> implements Serializable {
     @Schema(description = "页码")
     private Integer page;
 
@@ -28,7 +29,7 @@ public class BaseListResponse<T> {
     @Schema(description = "列表")
     private List<T> list;
 
-    public static <T> BaseListResponse<T> emptyListResponse(int page, int pageSize) {
+    public static <T extends Serializable> BaseListResponse<T> emptyListResponse(int page, int pageSize) {
         return BaseListResponse.<T>builder()
                 .page(page)
                 .pageSize(pageSize)

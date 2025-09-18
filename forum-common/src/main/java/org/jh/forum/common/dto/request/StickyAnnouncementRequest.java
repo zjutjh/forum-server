@@ -5,6 +5,7 @@ import lombok.Data;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 置顶公告请求DTO
@@ -12,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
  * @author SituChengxiang
  */
 @Data
-public class StickyAnnouncementRequest {
+public class StickyAnnouncementRequest implements Serializable {
     @NotNull
     @Min(1)
     @Schema(description = "公告ID")

@@ -8,6 +8,7 @@ import org.jh.forum.common.constants.AnnouncementTypeEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
  * @author SituChengxiang
  */
 @Data
-public class EditAnnouncementRequest {
+public class EditAnnouncementRequest implements Serializable {
     @NotNull
     @Schema(description = "公告ID")
     private Long id;

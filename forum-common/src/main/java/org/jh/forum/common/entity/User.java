@@ -56,11 +56,6 @@ public class User extends BaseEntity {
     private GenderEnum gender;
 
     /**
-     * 手机号
-     */
-    private String phone;
-
-    /**
      * 头像ID
      */
     private Long avatarId;

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserStatusEnum;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class AdminGetUserDetailResponse {
+public class AdminGetUserDetailResponse implements Serializable {
     @Schema(description = "用户昵称")
     private String nickname;
 

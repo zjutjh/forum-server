@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ModerationResultResponse {
+public class ModerationResultResponse implements Serializable {
     @Schema(description = "审核是否通过")
     private Boolean pass;
 
@@ -37,7 +38,7 @@ public class ModerationResultResponse {
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Builder
-    public static class Label {
+    public static class Label implements Serializable {
         @Schema(description = "标签名称")
         private String description;
 

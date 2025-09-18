@@ -6,6 +6,7 @@ import lombok.Data;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 管理员禁言用户请求
@@ -13,7 +14,7 @@ import jakarta.validation.constraints.NotNull;
  * @author SugarMGP
  */
 @Data
-public class MuteUserRequest {
+public class MuteUserRequest implements Serializable {
     @Schema(description = "用户ID")
     @NotNull
     private Long id;

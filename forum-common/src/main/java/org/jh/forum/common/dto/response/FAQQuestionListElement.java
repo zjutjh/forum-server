@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.FAQCategoryEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FAQQuestionListElement {
+public class FAQQuestionListElement implements Serializable {
     @Schema(description = "问题ID")
     private Long questionId;
 

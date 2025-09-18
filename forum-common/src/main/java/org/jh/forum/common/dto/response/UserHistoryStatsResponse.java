@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 用户历史统计响应
  *
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UserHistoryStatsResponse {
+public class UserHistoryStatsResponse implements Serializable {
     @Schema(description = "帖子统计")
     private StatDetail post;
 
@@ -32,7 +34,7 @@ public class UserHistoryStatsResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     @Data
-    public static class StatDetail {
+    public static class StatDetail implements Serializable {
         @Schema(description = "被举报次数")
         private Integer reportCount;
 

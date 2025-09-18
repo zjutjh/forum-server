@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 修改通知设置请求
@@ -11,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
  * @author SugarMGP
  */
 @Data
-public class UpdateNoticeSettingsRequest {
+public class UpdateNoticeSettingsRequest implements Serializable {
     @NotNull
     @Schema(description = "点赞消息开关")
     private Boolean upvoteNotice;

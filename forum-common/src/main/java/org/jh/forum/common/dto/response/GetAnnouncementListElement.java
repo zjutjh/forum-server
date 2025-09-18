@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.AnnouncementTypeEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetAnnouncementListElement {
+public class GetAnnouncementListElement implements Serializable {
     @Schema(description = "公告ID")
     private Long id;
 

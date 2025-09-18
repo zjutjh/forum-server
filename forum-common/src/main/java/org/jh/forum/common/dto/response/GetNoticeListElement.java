@@ -9,6 +9,7 @@ import org.jh.forum.common.constants.NoticePositionTypeEnum;
 import org.jh.forum.common.constants.NoticeTypeEnum;
 import org.jh.forum.common.dto.UserInfoDTO;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetNoticeListElement {
+public class GetNoticeListElement implements Serializable {
     @Schema(description = "通知ID")
     private Long id;
 

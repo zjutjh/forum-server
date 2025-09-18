@@ -7,6 +7,7 @@ import org.jh.forum.common.constants.TargetTypeEnum;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ import java.util.List;
  * @author zzb
  */
 @Data
-public class ReportContentRequest {
+public class ReportContentRequest implements Serializable {
     @Schema(description = "举报对象类型")
     @NotNull
     private TargetTypeEnum target;

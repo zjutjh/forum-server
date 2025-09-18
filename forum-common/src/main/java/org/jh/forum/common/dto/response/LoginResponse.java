@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.UserTypeEnum;
 
+import java.io.Serializable;
+
 /**
  * 登录响应
  *
@@ -16,7 +18,7 @@ import org.jh.forum.common.constants.UserTypeEnum;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class LoginResponse {
+public class LoginResponse implements Serializable {
     @Schema(description = "用户类型")
     private UserTypeEnum userType;
 

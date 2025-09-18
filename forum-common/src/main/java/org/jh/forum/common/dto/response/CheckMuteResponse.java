@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class CheckMuteResponse {
+public class CheckMuteResponse implements Serializable {
     @Schema(description = "禁言截止时间")
     private LocalDateTime mutedUntil;
 }

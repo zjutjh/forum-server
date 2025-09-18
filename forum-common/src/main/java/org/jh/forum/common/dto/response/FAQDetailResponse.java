@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.constants.FAQCategoryEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FAQDetailResponse {
+public class FAQDetailResponse implements Serializable {
     @Schema(description = "分类名称")
     private FAQCategoryEnum category;
 

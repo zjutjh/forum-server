@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jh.forum.common.dto.PictureInfoDTO;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PersonalCommentListElement {
+public class PersonalCommentListElement implements Serializable {
     @Schema(description = "帖子ID")
     private Long postId;
 

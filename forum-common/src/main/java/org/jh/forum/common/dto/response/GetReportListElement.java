@@ -9,6 +9,7 @@ import org.jh.forum.common.constants.ReportStatusEnum;
 import org.jh.forum.common.constants.ReportTypeEnum;
 import org.jh.forum.common.constants.TargetTypeEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetReportListElement {
+public class GetReportListElement implements Serializable {
     @Schema(description = "举报ID")
     private Long id;
 

@@ -103,12 +103,9 @@ dubbo:
   application:
     name: JH-forum-server-dubbo
     logger: slf4j
-    serialize-check-status: DISABLE
-    check-serializable: false
   protocol:
     name: tri
     port: 50052
-    serialization: custom-hessian
   registry:
     address: nacos://127.0.0.1:8848
     username: nacos_name

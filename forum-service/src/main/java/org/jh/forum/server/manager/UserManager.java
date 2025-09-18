@@ -51,9 +51,9 @@ public class UserManager {
                 .profile("")
                 .signature("")
                 .birthday(LocalDate.of(1900, 1, 1))
-                .birthdayVisible(true)
-                .realnameVisible(true)
-                .studentIdVisible(true)
+                .birthdayVisible(false)
+                .realnameVisible(false)
+                .studentIdVisible(false)
                 .build());
     }
 

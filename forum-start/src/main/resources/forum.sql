@@ -272,7 +272,6 @@ create table user
     password                  varchar(255)                              not null comment '密码哈希',
     college_id                varchar(10)                               not null comment '学院ID',
     gender                    varchar(20)                               not null comment '性别(男,女,保密)',
-    phone                     varchar(20)  default ''                   not null comment '手机号',
     avatar_id                 bigint       default 0                    not null comment '头像ID',
     upvote_notice             boolean      default true                 not null comment '点赞消息开关',
     comment_notice            boolean      default true                 not null comment '评论消息开关',
@@ -289,7 +288,7 @@ create table user
     attribute                 text                                      null comment '属性列（json string）',
     muted_until               timestamp(3)                              null comment '禁言截止时间',
     constraint uq_user
-        unique (nickname, student_id, phone)
+        unique (nickname, student_id)
 );
 
 create table user_detail
@@ -301,8 +300,8 @@ create table user_detail
     email              varchar(50)  default ''           not null comment '个人邮箱',
     birthday           date         default '1900-01-01' not null comment '生日',
     background_image   varchar(255) default ''           not null comment '背景图地址',
-    birthday_visible   boolean      default true         not null comment '生日可见性',
-    realname_visible   boolean      default true         not null comment '实名可见性',
-    student_id_visible boolean      default true         not null comment '学号可见性'
+    birthday_visible   boolean      default false        not null comment '生日可见性',
+    realname_visible   boolean      default false        not null comment '实名可见性',
+    student_id_visible boolean      default false        not null comment '学号可见性'
 );
 

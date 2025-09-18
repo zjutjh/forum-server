@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 个人主页置顶帖子请求DTO
@@ -11,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
  * @author SugarMGP
  */
 @Data
-public class TopPostRequest {
+public class TopPostRequest implements Serializable {
     @NotNull
     @Schema(description = "帖子ID")
     private Long id;

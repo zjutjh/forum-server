@@ -9,6 +9,7 @@ import org.jh.forum.common.constants.AnnouncementTypeEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
  * @author SituChengxiang
  */
 @Data
-public class CreateAnnouncementRequest {
+public class CreateAnnouncementRequest implements Serializable {
     @NotBlank
     @Size(max = 50, min = 2)
     @Schema(description = "公告标题", example = "重要系统维护通知")

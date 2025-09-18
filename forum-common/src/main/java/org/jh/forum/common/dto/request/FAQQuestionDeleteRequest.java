@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * FAQ问题删除请求
@@ -11,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
  * @author ZeroHzzzz
  */
 @Data
-public class FAQQuestionDeleteRequest {
+public class FAQQuestionDeleteRequest implements Serializable {
     @Schema(description = "问题ID")
     @NotNull
     private Long questionId;

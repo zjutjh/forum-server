@@ -6,6 +6,7 @@ import lombok.Data;
 import org.jh.forum.common.constants.AnnouncementStatusEnum;
 import org.jh.forum.common.constants.AnnouncementTypeEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
-public class GetAdminAnnouncementDetailResponse {
+public class GetAdminAnnouncementDetailResponse implements Serializable {
     @Schema(description = "公告标题")
     private String title;
 

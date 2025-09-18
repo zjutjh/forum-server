@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -17,14 +18,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class StickyAnnouncementList {
+public class StickyAnnouncementList implements Serializable {
 
     @Schema(description = "首页置顶公告列表")
     private List<StickyAnnouncementElement> announcements;
 
     @AllArgsConstructor
     @Data
-    public static class StickyAnnouncementElement {
+    public static class StickyAnnouncementElement implements Serializable {
         @Schema(description = "公告ID")
         private Long id;
 

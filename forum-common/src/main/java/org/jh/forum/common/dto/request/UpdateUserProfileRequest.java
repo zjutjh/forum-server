@@ -6,6 +6,7 @@ import org.jh.forum.common.annotation.NoExternalLink;
 import org.jh.forum.common.constants.GenderEnum;
 
 import jakarta.validation.constraints.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -14,7 +15,7 @@ import java.time.LocalDate;
  * @author MeaquaOWO
  */
 @Data
-public class UpdateUserProfileRequest {
+public class UpdateUserProfileRequest implements Serializable {
     @NotNull
     @Schema(description = "用户头像URL")
     private String avatar;

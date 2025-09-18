@@ -6,6 +6,7 @@ import lombok.Data;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 分页请求体基类
@@ -13,7 +14,7 @@ import jakarta.validation.constraints.NotNull;
  * @author MangoGovo
  */
 @Data
-public class BaseListRequest {
+public class BaseListRequest implements Serializable {
     @Schema(description = "页码")
     @Min(1)
     @Max(999)

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class CommentInfoResponse {
+public class CommentInfoResponse implements Serializable {
     @Schema(description = "评论ID")
     private Long commentId;
 

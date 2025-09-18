@@ -5,6 +5,7 @@ import lombok.Data;
 import org.jh.forum.common.constants.HandleReportEnum;
 
 import jakarta.validation.constraints.*;
+import java.io.Serializable;
 
 /**
  * 处理举报请求
@@ -12,7 +13,7 @@ import jakarta.validation.constraints.*;
  * @author zzb
  */
 @Data
-public class HandleReportRequest {
+public class HandleReportRequest implements Serializable {
     @Schema(description = "举报ID")
     @NotNull
     private Long reportId;

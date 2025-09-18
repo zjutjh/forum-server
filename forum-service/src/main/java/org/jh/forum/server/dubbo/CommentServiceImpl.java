@@ -61,7 +61,6 @@ public class CommentServiceImpl implements CommentService {
                 request.getId(),
                 request.getPage(),
                 request.getPageSize(),
-                request.getSortType(),
                 request.getHighlightReplyId()
         );
     }

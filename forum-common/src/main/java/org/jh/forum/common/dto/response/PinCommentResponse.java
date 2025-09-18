@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 置顶评论响应
  *
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PinCommentResponse {
+public class PinCommentResponse implements Serializable {
     @Schema(description = "置顶状态")
     private Boolean status;
 }

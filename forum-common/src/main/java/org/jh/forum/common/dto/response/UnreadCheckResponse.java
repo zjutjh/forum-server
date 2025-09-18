@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 检查未读消息响应
  *
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UnreadCheckResponse {
+public class UnreadCheckResponse implements Serializable {
     @Schema(description = "未读通知数")
     private Integer unreadNoticeCount;
 

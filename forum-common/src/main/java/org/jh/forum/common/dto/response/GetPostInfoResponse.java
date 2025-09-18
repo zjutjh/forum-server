@@ -9,6 +9,7 @@ import org.jh.forum.common.constants.PostCategoryEnum;
 import org.jh.forum.common.dto.PictureInfoDTO;
 import org.jh.forum.common.dto.UserInfoDTO;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,7 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GetPostInfoResponse {
+public class GetPostInfoResponse implements Serializable {
     @Schema(description = "发帖人信息")
     private UserInfoDTO publisherInfo;
 

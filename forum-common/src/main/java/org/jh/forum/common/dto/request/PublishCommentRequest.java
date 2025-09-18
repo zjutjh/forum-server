@@ -8,6 +8,7 @@ import org.jh.forum.common.constants.CommentTargetTypeEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 
 /**
  * 发表评论请求
@@ -15,7 +16,7 @@ import jakarta.validation.constraints.Size;
  * @author qianqianzyk
  */
 @Data
-public class PublishCommentRequest {
+public class PublishCommentRequest implements Serializable {
     @Schema(description = "评论目标类型")
     @NotNull
     private CommentTargetTypeEnum targetType;

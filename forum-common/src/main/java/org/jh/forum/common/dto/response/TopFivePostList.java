@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -17,14 +18,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class TopFivePostList {
+public class TopFivePostList implements Serializable {
 
     @Schema(description = "前五帖子列表")
     private List<TopFivePostListElement> posts;
 
     @AllArgsConstructor
     @Data
-    public static class TopFivePostListElement {
+    public static class TopFivePostListElement implements Serializable {
         @Schema(description = "帖子ID")
         private Long id;
 
