@@ -266,7 +266,7 @@ create table user
 (
     id                        bigint                                    not null comment '用户ID'
         primary key,
-    nickname                  varchar(50)                               not null comment '用户昵称',
+    nickname                  varchar(30)                               not null comment '用户昵称',
     realname                  varchar(20)                               not null comment '真实姓名',
     student_id                varchar(16)                               not null comment '学号',
     password                  varchar(255)                              not null comment '密码哈希',

@@ -21,7 +21,7 @@ public class UpdateUserProfileRequest implements Serializable {
     private String avatar;
 
     @NotBlank
-    @Size(max = 20)
+    @Size(max = 12)
     @Schema(description = "用户昵称")
     @NoExternalLink
     private String nickname;
@@ -45,6 +45,7 @@ public class UpdateUserProfileRequest implements Serializable {
     @NotNull
     @Email
     @Schema(description = "用户邮箱")
+    @Size(max = 40)
     private String email;
 
     @NotNull
