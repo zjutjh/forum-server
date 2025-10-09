@@ -61,7 +61,7 @@ public class NoticeManager {
                     if (notice.getType() == NoticeTypeEnum.COMMENT) {
                         LambdaQueryWrapper<Upvote> upvoteWrapper = new LambdaQueryWrapper<Upvote>()
                                 .eq(Upvote::getUserId, receiverId)
-                                .eq(Upvote::getCommentId, notice.getCommentId());
+                                .eq(Upvote::getCommentId, notice.getNewCommentId());
                         Upvote upvote = upvoteMapper.selectOne(upvoteWrapper);
                         isLiked = upvote != null && upvote.getStatus();
                     }
