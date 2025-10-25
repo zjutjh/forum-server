@@ -24,8 +24,8 @@ import java.util.Objects;
 @Configuration
 @Slf4j
 public class NacosConfigConfiguration {
-
     public static final Map<String, BaseConfigService> CONFIG_SERVICE_MAP = Maps.newHashMap();
+
     @Resource
     private NacosConfigManager nacosConfigManager;
 
@@ -45,23 +45,22 @@ public class NacosConfigConfiguration {
                 String configInfo = nacosConfigManager.getConfigService().getConfigAndSignListener(dataId, group, 5000, new AbstractListener() {
                     @Override
                     public void receiveConfigInfo(String configInfo) {
-                        BaseConfigService configService = CONFIG_SERVICE_MAP.get(dataId);
-                        if (Objects.isNull(configService)) {
-                            log.error("NacosConfigConfiguration can not find this config service, dataId:{}", dataId);
-                            return;
-                        }
-                        configService.parseConfig(configInfo);
+                        applyConfig(dataId, configInfo);
                     }
                 });
 
                 // 解析初始配置内容
-                BaseConfigService configService = CONFIG_SERVICE_MAP.get(dataId);
-                if (Objects.isNull(configService)) {
-                    log.error("NacosConfigConfiguration can not find this config service, dataId:{}", dataId);
-                    return;
-                }
-                configService.parseConfig(configInfo);
+                applyConfig(dataId, configInfo);
             }
         };
+    }
+
+    private void applyConfig(String dataId, String configInfo) {
+        BaseConfigService configService = CONFIG_SERVICE_MAP.get(dataId);
+        if (Objects.isNull(configService)) {
+            log.error("NacosConfigConfiguration can not find this config service, dataId = {}", dataId);
+            return;
+        }
+        configService.parseConfig(configInfo);
     }
 }

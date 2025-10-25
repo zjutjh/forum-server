@@ -1,21 +1,19 @@
 package org.jh.forum.start.handler;
 
-import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.start.models.AjaxResult;
-import org.jh.forum.start.models.ErrorDetail;
+import org.jh.forum.start.utils.HandlerUtils;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.time.Instant;
 
 /**
  * 处理参数校验相关异常
@@ -25,8 +23,6 @@ import java.time.Instant;
  */
 @Order(10)
 @ControllerAdvice
-@Slf4j
-@RequiredArgsConstructor
 public class ValidateExceptionHandler {
 
     /**
@@ -38,11 +34,8 @@ public class ValidateExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
     public AjaxResult<Object> validationBodyException(MethodArgumentNotValidException e, HttpServletRequest request) {
-        ErrorDetail errorDetail = ErrorDetail.builder().code(ExceptionEnum.INVALID_PARAMETER.getErrorCode())
-                .message(ExceptionEnum.INVALID_PARAMETER.getErrorMsg()).build();
-        log.error("[{}] | {} | request={}", Instant.now(), request.getRequestURI(),
-                JSON.toJSONString(request.getParameterMap()), e);
-        return AjaxResult.FAIL("参数校验错误", errorDetail);
+        HandlerUtils.logException(e, request);
+        return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
     }
 
     /**
@@ -51,15 +44,11 @@ public class ValidateExceptionHandler {
      * @param e 错误信息集合
      * @return 错误信息
      */
-
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     @ResponseBody
     public AjaxResult<Object> validationBodyException(SQLIntegrityConstraintViolationException e, HttpServletRequest request) {
-        ErrorDetail errorDetail = ErrorDetail.builder().code(ExceptionEnum.DATABASE_ERROR.getErrorCode())
-                .message(e.getMessage()).build();
-        log.error("[{}] | {} | request={}", Instant.now(), request.getRequestURI(),
-                JSON.toJSONString(request.getParameterMap()), e);
-        return AjaxResult.FAIL("SQL执行失败", errorDetail);
+        HandlerUtils.logException(e, request);
+        return AjaxResult.fail(ExceptionEnum.SERVER_ERROR);
     }
 
     /**
@@ -71,11 +60,33 @@ public class ValidateExceptionHandler {
     @ExceptionHandler(JsonMappingException.class)
     @ResponseBody
     public AjaxResult<Object> validationBodyException(JsonMappingException e, HttpServletRequest request) {
-        ErrorDetail errorDetail = ErrorDetail.builder().code(ExceptionEnum.JSON_PARSE_ERROR.getErrorCode())
-                .message(e.getMessage()).build();
-        log.error("[{}] | {} | request={}", Instant.now(), request.getRequestURI(),
-                JSON.toJSONString(request.getParameterMap()), e);
-        return AjaxResult.FAIL("Json解析失败，", errorDetail);
+        HandlerUtils.logException(e, request);
+        return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
     }
 
+    /**
+     * Json格式错误拦截处理
+     *
+     * @param e 错误信息集合
+     * @return 错误信息
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseBody
+    public AjaxResult<Object> validationBodyException(HttpMessageNotReadableException e, HttpServletRequest request) {
+        HandlerUtils.logException(e, request);
+        return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
+    }
+
+    /**
+     * Query参数错误拦截处理
+     *
+     * @param e 错误信息集合
+     * @return 错误信息
+     */
+    @ExceptionHandler(ServletRequestBindingException.class)
+    @ResponseBody
+    public AjaxResult<Object> validationQueryException(ServletRequestBindingException e, HttpServletRequest request) {
+        HandlerUtils.logException(e, request);
+        return AjaxResult.fail(ExceptionEnum.INVALID_PARAMETER);
+    }
 }

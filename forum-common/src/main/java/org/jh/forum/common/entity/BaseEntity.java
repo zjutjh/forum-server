@@ -1,0 +1,42 @@
+package org.jh.forum.common.entity;
+
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+/**
+ * 基础实体类（无对应表，仅作为基类）
+ *
+ * @author SugarMGP
+ */
+@SuperBuilder
+@Data
+@NoArgsConstructor(force = true)
+@AllArgsConstructor
+public class BaseEntity implements Serializable {
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private Long id;
+
+    @TableField(value = "created_at", fill = FieldFill.INSERT)
+    private LocalDateTime createdAt;
+
+    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedAt;
+
+    @TableField(value = "create_uid", fill = FieldFill.INSERT)
+    private Long createUid;
+
+    @TableField(value = "update_uid", fill = FieldFill.INSERT_UPDATE)
+    private Long updateUid;
+
+    @TableLogic
+    @TableField(fill = FieldFill.INSERT)
+    private Boolean deleted;
+
+    private String attribute;
+}

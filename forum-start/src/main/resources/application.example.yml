@@ -1,7 +1,14 @@
 server:
   port: 8080
-
+api:
+  prefix: /api
 spring:
+  jackson:
+    time-zone: Asia/Shanghai
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 15MB
   application:
     name: JH-forum-server
   data:
@@ -23,14 +30,14 @@ spring:
         password: nacos
         contextPath: /nacos
         server-addr: 127.0.0.1:8848
-      sentinel:
-        transport:
-          port: 8719
-          dashboard: localhost:9080
+    sentinel:
+      transport:
+        port: 8719
+        dashboard: localhost:9080
   config:
     import: "nacos:nacos-config-example.properties?refresh=true"
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/hotel_db?useSSL=false&autoReconnect=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/hotel_db?useSSL=false&autoReconnect=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: mysql_password
@@ -50,7 +57,7 @@ spring:
       # 多久才进行一次检测需要关闭的空闲连接，单位是毫秒
       time-between-eviction-runs-millis: 60000
       # 配置扩展插件：stat-监控统计，log4j-日志，wall-防火墙（防止SQL注入），去掉后，监控界面的sql无法统计
-      filters: stat,wall
+      filters: stat,wall,slf4j
       # 检测连接是否有效的 SQL语句，为空时以下三个配置均无效
       validation-query: SELECT 1
       # 申请连接时执行validationQuery检测连接是否有效，默认true，开启后会降低性能
@@ -77,20 +84,20 @@ spring:
           slow-sql-millis: 5000
           # 合并多个连接池的监控数据，默认false
           merge-sql: false
-    jpa:
-      open-in-view: false
-      generate-ddl: false
-      show-sql: false
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.MySQLDialect
-          format_sql: true
-          use-new-id-generator-mappings: false
+  jpa:
+    open-in-view: false
+    generate-ddl: false
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use-new-id-generator-mappings: false
 
 arthas:
-  enabled: true
   ip: 127.0.0.1
-  port: 3658
+  telnetPort: 3658
+  httpPort: 8563
 
 dubbo:
   application:
@@ -103,5 +110,57 @@ dubbo:
     address: nacos://127.0.0.1:8848
     username: nacos_name
     password: nacos_password
+  consumer:
+    filter: "-exception"
   provider:
-    filter: dubboRequestFilter
+    filter: "dubboRequestFilter,-exception"
+# springdoc-openapi项目配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: org.jh.forum.start
+# knife4j的增强配置，不需要增强可以不配
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+############## Sa-Token 配置 (文档: https://sa-token.cc) ##############
+sa-token:
+  # token 名称（同时也是 cookie 名称）
+  token-name: forum_session
+  # token 有效期（单位：秒） 默认30天，-1 代表永久有效
+  timeout: 2592000
+  # token 最低活跃频率（单位：秒），如果 token 超过此时间没有访问系统就会被冻结，默认-1 代表不限制，永不冻结
+  active-timeout: -1
+  # 是否允许同一账号多地同时登录 （为 true 时允许一起登录, 为 false 时新登录挤掉旧登录）
+  is-concurrent: false
+  # 在多人登录同一账号时，是否共用一个 token （为 true 时所有登录共用一个 token, 为 false 时每次登录新建一个 token）
+  is-share: false
+  # token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: true
+  # Dubbo 支持
+  check-same-token: true
+
+cube:
+  baseUrl:
+  apiKey:
+  bucketName:
+
+user-center:
+  grpc: grpc://127.0.0.1:8082
+
+aliyun:
+  green:
+    enabled: false
+    access-key-id:
+    access-key-secret:
+    region-id: cn-shanghai
+    endpoint: green-cip.cn-shanghai.aliyuncs.com
+    connect-timeout: 3000
+    read-timeout: 6000

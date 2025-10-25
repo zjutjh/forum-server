@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jh.forum.server.config.service.ForumSwitchService;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -30,9 +31,13 @@ public class RedisUtil {
     public static final String LOCK_SUCCESS = "OK";
 
     public static final String LOCK_FAIL = "LOCK_FAIL";
-
+    private final ThreadLocal<Map<String, LockInfo>> currentValue = ThreadLocal.withInitial(() -> new HashMap<>(8));
+    private final RedisProperties redisProperties;
     private JedisPool jedisPool;
-    private ThreadLocal<Map<String, LockInfo>> currentValue = ThreadLocal.withInitial(() -> new HashMap<>(8));
+
+    public RedisUtil(RedisProperties redisProperties) {
+        this.redisProperties = redisProperties;
+    }
 
     static <V> V getOrElse(Callable<V> callable, V val) {
         V result = null;
@@ -63,7 +68,13 @@ public class RedisUtil {
         poolConfig.setMinIdle(1);
 
         // 创建 JedisPool 实例
-        jedisPool = new JedisPool(poolConfig, "localhost", 6379);
+        jedisPool = new JedisPool(poolConfig,
+                redisProperties.getHost(),
+                redisProperties.getPort(),
+                2000,
+                redisProperties.getPassword(),
+                redisProperties.getDatabase()
+        );
     }
 
     /**

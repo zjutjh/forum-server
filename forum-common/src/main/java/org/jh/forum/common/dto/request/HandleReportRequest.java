@@ -1,0 +1,47 @@
+package org.jh.forum.common.dto.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import org.jh.forum.common.constants.HandleReportEnum;
+
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+
+/**
+ * 处理举报请求
+ *
+ * @author zzb
+ */
+@Data
+public class HandleReportRequest implements Serializable {
+    @Schema(description = "举报ID")
+    @NotNull
+    private Long reportId;
+
+    @Schema(description = "判定结果：success-举报成立，failure-举报不成立")
+    @NotNull
+    private String status;
+
+    @Schema(description = "是否删除原帖子/评论")
+    @NotNull
+    private Boolean shouldDelete;
+
+    @Schema(
+            description = """
+                    处罚类型：no_punishment-无处罚，short_mute-短期禁言(1天)，
+                    long_mute-长期禁言(7天)，custom_mute-自定义禁言时长
+                    """
+    )
+    @NotNull
+    private HandleReportEnum type;
+
+    @Schema(description = "自定义禁言天数，仅当处罚类型为custom_mute时有效")
+    @Min(1)
+    @Max(90)
+    private Integer days;
+
+    @Schema(description = "反馈信息")
+    @NotBlank
+    @Size(min = 50, max = 400)
+    private String result;
+}

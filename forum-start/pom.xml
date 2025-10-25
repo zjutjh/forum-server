@@ -48,6 +48,16 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.MangoGovo.jh-user-center-java-sdk</groupId>
+            <artifactId>jh-user-center-spring-boot-3-dubbo-starter</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
     </dependencyManagement>
@@ -55,17 +65,11 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-            </plugin>
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>org.jh.forum.start.ForumStartApplication</mainClass>
-                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -78,5 +82,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
