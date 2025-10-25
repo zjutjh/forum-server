@@ -262,7 +262,7 @@ public class AnnouncementManager {
                         .signatory(announcement.getSignatory())
                         .publishedAt(announcement.getPublishedAt())
                         .sticky(announcement.getSticky())
-                        .isRead(user.getLastAnnouncementReadAt().isBefore(announcement.getPublishedAt()))
+                        .isRead(user.getLastAnnouncementReadAt().isAfter(announcement.getPublishedAt()))
                         .build())
                 .toList();
 
