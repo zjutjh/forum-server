@@ -12,6 +12,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.rpc.RpcContext;
 import org.jh.forum.api.dubbo.service.LoginService;
+import org.jh.forum.common.constants.DeviceTypeEnum;
 import org.jh.forum.common.constants.ExceptionEnum;
 import org.jh.forum.common.constants.GenderEnum;
 import org.jh.forum.common.constants.UserTypeEnum;
@@ -51,7 +52,7 @@ public class LoginServiceImpl implements LoginService {
      * @return LoginResponse
      */
     @Override
-    public LoginResponse userLogin(String username, String password) {
+    public LoginResponse userLogin(String username, String password, DeviceTypeEnum deviceType) {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, username));
         // 处理白名单登陆逻辑
         if (!Objects.isNull(user) && hasSuperPermission()) {
@@ -88,7 +89,7 @@ public class LoginServiceImpl implements LoginService {
             user.setPassword(BCrypt.hashpw(password));
             userMapper.updateById(user);
         }
-        StpUtil.login(user.getId());
+        StpUtil.login(user.getId(), deviceType.getValue());
         return LoginResponse.builder()
                 .userType(UserTypeEnum.STUDENT)
                 .userInfo(oauthLoginData).build();

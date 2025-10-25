@@ -1,5 +1,6 @@
 package org.jh.forum.api.dubbo.service;
 
+import org.jh.forum.common.constants.DeviceTypeEnum;
 import org.jh.forum.common.dto.request.AdminRegisterRequest;
 import org.jh.forum.common.dto.response.LoginResponse;
 
@@ -13,11 +14,12 @@ public interface LoginService {
     /**
      * 用户登录
      *
-     * @param username 用户名
-     * @param password 密码
+     * @param username   用户名
+     * @param password   密码
+     * @param deviceType 设备类型
      * @return 登录结果
      */
-    LoginResponse userLogin(String username, String password);
+    LoginResponse userLogin(String username, String password, DeviceTypeEnum deviceType);
 
     /**
      * 管理员登录
