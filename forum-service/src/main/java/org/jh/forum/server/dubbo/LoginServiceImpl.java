@@ -56,7 +56,7 @@ public class LoginServiceImpl implements LoginService {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getStudentId, username));
         // 处理白名单登陆逻辑
         if (!Objects.isNull(user) && hasSuperPermission()) {
-            StpUtil.login(user.getId());
+            StpUtil.login(user.getId(), deviceType.getValue());
             OauthUserInfoElement userInfo = OauthUserInfoElement.builder()
                     .studentType("本科生")
                     .gender(user.getGender())
